@@ -23,7 +23,7 @@
  *      dem sie überhaupt zur Wahl steht.
  */
 import { ladeGraph } from "./graph.mjs";
-import { ladeIndex } from "./notizen.mjs";
+import { ladeIndex, rubrikBild } from "./notizen.mjs";
 
 const MONAT = 30.44 * 24 * 3600 * 1000;
 const alter = (a, b) => (a && b ? (Date.parse(a) - Date.parse(b)) / MONAT : 0);
@@ -133,7 +133,8 @@ export function spinne(start, laenge = 7) {
       titel: hier.titel,
       rubrik: hier.rubrik,
       datum: hier.datum,
-      banner: hier.vorschau,
+      banner: hier.vorschau ?? rubrikBild(hier.rubrik),
+      eigenesBild: Boolean(hier.vorschau),
       teaser: hier.beschreibung,
       grund,
     });

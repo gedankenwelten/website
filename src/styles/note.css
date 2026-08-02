@@ -461,3 +461,48 @@ details.malerhand p {
 /* Der Prompt ist Werkzeug, kein Text — er darf leiser sein als die
    Begründung darüber. */
 details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
+
+/* ── Tabellen ──
+   In den Notes stehen echte Datenblöcke: fünf Falsifikationsbedingungen
+   mit Spalte „Eingetreten?", Werkverzeichnisse, Zahlenvergleiche. Die
+   erbten bisher die Serife und den Fließtext-Durchschuss der Lesespalte
+   und lasen sich wie ein umgebrochener Absatz.
+   Eine Tabelle ist aber kein Text, sondern ein Raster — Sans, kleiner,
+   Ziffern auf gleicher Breite, und die Zeilen durch Linien getrennt
+   statt durch Abstand. */
+.tabelle {
+  margin: 2.6rem 0; overflow-x: auto;
+  /* Zwei Fingerbreit über die Lesespalte hinaus: Wo eine Tabelle vier
+     Spalten hat, ist die Zeilenlänge des Textes das falsche Maß. */
+  width: calc(100% + 4.5rem); margin-left: -2.25rem;
+  padding: 0 2.25rem;
+}
+.tabelle table {
+  width: 100%; border-collapse: collapse;
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: .82rem; line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.tabelle th {
+  text-align: left; vertical-align: bottom;
+  padding: 0 1rem .55rem 0;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--tinte-fern); border-bottom: 1px solid var(--linie);
+  white-space: nowrap;
+}
+.tabelle td {
+  vertical-align: top; padding: .68rem 1rem .68rem 0;
+  border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent);
+  color: var(--tinte-leise);
+}
+.tabelle tr > *:last-child { padding-right: 0; }
+.tabelle tbody tr:first-child td { border-top: 0; }
+/* Die erste Spalte ist fast immer das Merkmal, nicht der Wert — sie darf
+   in der Farbe des Textes stehen, der Rest tritt zurück. */
+.tabelle td:first-child { color: var(--tinte); }
+.tabelle td strong, .tabelle th strong { color: var(--tinte); font-weight: 600; }
+.tabelle a { color: var(--akzent); text-decoration: none; border-bottom: 1px solid var(--akzent-weich); }
+.tabelle code { font-size: .95em; }
+/* Eine reine Nummernspalte („#") soll nicht so breit sein wie ihr Kopf. */
+.tabelle td:first-child:has(+ td) { white-space: normal; }
+.tabelle th:first-child { width: 1%; }

@@ -32,7 +32,7 @@ function vorbereiten(markdown) {
  * stehen — die Datei hat sich ja nicht bewegt. Das kostet sonst eine
  * Viertelstunde Fehlersuche an einem Fehler, den es gar nicht gibt.
  */
-const FORM_VERSION = 3;
+const FORM_VERSION = 4;
 
 export function notizenLoader() {
   return {

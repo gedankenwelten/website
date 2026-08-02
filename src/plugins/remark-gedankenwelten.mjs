@@ -143,6 +143,21 @@ export default function remarkGedankenwelten() {
       return [SKIP, i + teile.length];
     });
 
+    /* ── 2b. Tabellen bekommen einen Rahmen zum Schieben ────────────── */
+    /* Eine vierspaltige Tabelle in einer 41-rem-Spalte bricht jede Zelle
+       in drei Zeilen um und wird unlesbar. Der Umschlag darf im Notfall
+       waagerecht scrollen — und trägt die Gestalt (Kopfzeile, Linien,
+       Ziffern) über die CSS-Klasse. */
+    visit(tree, "table", (node, i, eltern) => {
+      if (!eltern || eltern.type === "tabelle") return;
+      eltern.children[i] = {
+        type: "tabelle",
+        data: { hProperties: { className: ["tabelle"] } },
+        children: [node],
+      };
+      return SKIP;
+    });
+
     /* ── 3. + 4. Callouts und O-Ton, in Dokumentreihenfolge ─────────── */
     visit(tree, (node) => {
       // Zeitstempel merken, während wir durchlaufen — der O-Ton erbt ihn

@@ -11,7 +11,7 @@ import "../styles/note.css";
 import "../styles/stern.css";
 import "../styles/start.css";
 import { alleFaeden } from "../lib/faden.mjs";
-import { ladeIndex } from "../lib/notizen.mjs";
+import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
 import Suche from "../components/Suche.astro";
 
@@ -113,21 +113,10 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
             data-tiefe={tiefe(s.datum).toFixed(4)}
             data-monat={s.datum ? monatJahr(s.datum) : ""}
           >
-            {/* `--knapp` (Versalien) ist für die kurzen Auskünfte gedacht
-                („verweisen aufeinander"). Ein Fund nennt einen ganzen
-                Quellentitel und wird darin unlesbar — er bekommt dieselbe
-                ruhige Kursive wie die geschriebenen Gründe. */}
-            {s.grund && (
-              <p class={`schritt${s.grund.fund ? " schritt--fund" : ""}${s.grund.satz || s.grund.fund ? "" : " schritt--knapp"}`}>
-                {s.grund.fund && <span class="schritt__marke">im Bestand gefunden</span>}
-                {s.grund.wie}
-              </p>
-            )}
-
             <a class="station__karte" href={s.url}>
               {s.banner && (
                 <img
-                  class="station__bild"
+                  class={`station__bild${s.eigenesBild ? "" : " station__bild--rubrik"}`}
                   src={s.banner}
                   alt=""
                   width="1200" height="500"
@@ -143,6 +132,22 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
 
               <h2 class="station__titel">{s.titel}</h2>
               {s.teaser && <p class="station__teaser">{s.teaser}</p>}
+
+              {/* Der Schritt gehört unter den Titel, nicht über die
+                  Rubrikzeile: Dort las er sich als Vorspann der Station,
+                  die man gerade verlassen hat. Er sagt, warum der Weg
+                  *hierher* führt — also steht er bei dem, wohin er führt.
+
+                  `--knapp` (Versalien) ist für die kurzen Auskünfte
+                  („verweisen aufeinander"). Ein Fund nennt einen ganzen
+                  Quellentitel und wird darin unlesbar — er bekommt dieselbe
+                  ruhige Kursive wie die geschriebenen Gründe. */}
+              {s.grund && (
+                <p class={`schritt${s.grund.fund ? " schritt--fund" : ""}${s.grund.satz || s.grund.fund ? "" : " schritt--knapp"}`}>
+                  {s.grund.fund && <span class="schritt__marke">im Bestand gefunden</span>}
+                  {s.grund.wie}
+                </p>
+              )}
             </a>
           </li>
         ))}
@@ -177,9 +182,10 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
           </a>
 
           <a class="karte" href={r.kopf.url}>
-            {r.kopf.vorschau
-              ? <img src={r.kopf.vorschau} alt="" width="1200" height="500" loading="lazy" decoding="async">
-              : <span class={`karte__leer karte__leer--${r.name.toLowerCase()}`}></span>}
+            {/* Vipassana und GoodNews haben keine Note mit Banner — dann
+                steht hier das Bild der Rubrik statt einer leeren Fläche. */}
+            <img src={r.kopf.vorschau ?? rubrikBild(r.name)} alt=""
+                 width="1200" height="500" loading="lazy" decoding="async">
             <span class="karte__titel">{r.kopf.titel}</span>
           </a>
 

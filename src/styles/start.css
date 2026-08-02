@@ -31,25 +31,31 @@
 /* ── Der Weg ── */
 .faden__weg { list-style: none; margin: 0; padding: 0; }
 
+/* Eine Station ist ein Block, kein Absatz — zwischen zweien liegt eine
+   Haarlinie, damit man auf einen Blick sieht, was zu wem gehört. */
 .station { width: var(--spalte); position: relative; }
+.station + .station {
+  margin-top: 2.4rem; padding-top: 2.4rem;
+  border-top: 1px solid color-mix(in oklab, var(--linie) 45%, transparent);
+}
 
-/* Der Schritt zwischen zwei Stationen.
+/* Der Schritt.
    Er trägt den Satz, der im Bestand schon steht — geschrieben, als
-   Montaigne oder Andreas die Verbindung zog. Eingerückt und leiser als
-   die Titel: Er begleitet den Weg, er ist nicht der Weg.
-
-   Er steht dichter an der Station, zu der er führt, als an der, von der
-   er kommt — sonst liest man ihn als Nachsatz zum eben Gelesenen statt
-   als Ankündigung des Nächsten. */
+   Montaigne oder Andreas die Verbindung zog. Er sagt, warum der Weg
+   *hierher* führt, und steht darum unter dem Titel, zu dem er führt.
+   Über der Rubrikzeile las er sich als Vorspann der Station, die man
+   gerade verlassen hatte (02.08., Andreas).
+   Leiser als der Teaser und mit Linie: Der Teaser sagt, worum es geht,
+   der Schritt, warum wir da sind — zwei verschiedene Stimmen. */
 .schritt {
-  margin: 2.9rem 0 1.1rem; padding: .1rem 0 .1rem 1.5rem;
+  margin: .8rem 0 0; padding: .15rem 0 .15rem 1rem;
   border-left: 1px solid var(--linie);
-  font-size: .92rem; line-height: 1.62; color: var(--tinte-leise);
-  font-style: italic; max-width: 33rem; text-wrap: pretty;
+  font-size: .88rem; line-height: 1.55; color: var(--tinte-leise);
+  font-style: italic; text-wrap: pretty;
 }
 .schritt--knapp {
   font-style: normal; font-family: -apple-system, "Inter", sans-serif;
-  font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+  font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
   color: var(--tinte-fern);
 }
 
@@ -84,9 +90,22 @@
   align-items: start;
   text-decoration: none; color: inherit; border: 0 !important;
 }
+
+/* Die Marke bekommt ihre eigene Zeile über beidem: Sie gehört zur
+   ganzen Station, nicht in die Textspalte. Das Bild steht dann auf
+   gleicher Höhe mit dem Titel — mit ihm hat es zu tun, nicht mit
+   „ZEITGEIST · 2. JULI". */
+.station__karte > .kennung   { grid-column: 1 / -1; grid-row: 1; }
+/* Über Titel UND Teaser: Läge das Bild nur in der Titelzeile, wäre
+   die 100 px hohe Zelle höher als ein zweizeiliger Titel — und der
+   Teaser fiele unter das Bild statt neben es. */
+.station__karte > .station__bild   { grid-column: 1; grid-row: 2 / span 3; }
+.station__karte > .station__titel  { grid-column: 2; grid-row: 2; }
+.station__karte > .station__teaser { grid-column: 2; grid-row: 3; }
+.station__karte > .schritt         { grid-column: 2; grid-row: 4; }
 .station__bild {
   display: block; width: 100%; height: 100px; object-fit: cover;
-  border-radius: 3px; margin: .2rem 0 0;
+  border-radius: 3px; margin: .25rem 0 0;
   box-shadow: var(--schatten);
   /* Das Bild ist die Begleitung, nicht die Aussage — es tritt beim
      Berühren erst ganz hervor. */
@@ -94,11 +113,13 @@
   transition: opacity .35s ease, filter .35s ease;
 }
 .station__karte:hover .station__bild { opacity: 1; filter: saturate(1); }
+/* Das Wappen der Rubrik ist ein Ersatz, kein eigenes Bild — es tritt
+   einen Schritt zurück, damit man die beiden nicht verwechselt. */
+.station__bild--rubrik { opacity: .6; filter: saturate(.72); }
+.station__karte:hover .station__bild--rubrik { opacity: .82; filter: saturate(.9); }
 
 /* Wo kein Banner ist, rückt der Text nicht nach links — sonst tanzte
    die Titelkante den Weg entlang. Die Spalte bleibt, sie bleibt leer. */
-.station__karte > .kennung { grid-column: 2; }
-.station__titel, .station__teaser { grid-column: 2; }
 
 .station .kennung { margin: 0 0 .45rem; }
 
@@ -183,18 +204,13 @@
    über die Breite, ist die Kachel genau richtig; falsch war sie nur als
    Hauptachse der Seite. */
 .karte { display: block; text-decoration: none; color: inherit; border: 0 !important; margin-bottom: .85rem; }
-.karte img, .karte__leer {
+.karte img {
   display: block; width: 100%; height: 86px; object-fit: cover;
   border-radius: 3px; margin-bottom: .55rem;
   box-shadow: var(--schatten);
   filter: saturate(.9); opacity: .93; transition: opacity .35s, filter .35s;
 }
 .karte:hover img { opacity: 1; filter: saturate(1); }
-/* Vipassana und GoodNews haben (noch) keine Banner — statt eines Lochs
-   eine ruhige Fläche in der Farbe der Rubrik. */
-.karte__leer { background: var(--papier-tief); box-shadow: none; border: 1px solid var(--linie); }
-.karte__leer--vipassana { background: color-mix(in oklab, var(--r-vipassana) 14%, var(--papier-tief)); }
-.karte__leer--goodnews  { background: color-mix(in oklab, var(--r-goodnews)  14%, var(--papier-tief)); }
 .karte__titel {
   display: block; font-size: .98rem; line-height: 1.28; font-weight: 600;
   transition: color .2s; text-wrap: balance;

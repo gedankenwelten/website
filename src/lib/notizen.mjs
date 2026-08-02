@@ -38,6 +38,22 @@ function hatVorschau(datei) {
   return vorschauen.has(datei.replace(/\.[^.]+$/, "") + ".webp");
 }
 
+/**
+ * Das Bild der Rubrik — für Notes, die kein eigenes Banner haben.
+ *
+ * Bei Zeitgeist sind das 191 von 276. Eine leere Fläche ist ehrlich,
+ * aber auf einem Weg, der von Bildern lebt, sieht sie aus wie ein
+ * Fehler. Der Bestand hat für jede Rubrik längst eins liegen (aus der
+ * Quartz-Fassung, 640 × 360) — das ist erkennbar kein Notenbild,
+ * sondern das Wappen des Regals, aus dem sie kommt.
+ *
+ * Nicht auf der Rubrikseite: Dort stünde 191-mal dasselbe Bild
+ * untereinander, und aus einem Wappen würde eine Tapete.
+ */
+export function rubrikBild(rubrik) {
+  return `/assets/rubrik-banner/${rubrik.toLowerCase()}.jpg`;
+}
+
 export function ladeIndex() {
   if (index) return index;
 
