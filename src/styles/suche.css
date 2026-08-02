@@ -1,0 +1,125 @@
+/* ══════════════════════════════════════════════════════════════════
+   Die Suche — eine Schicht über dem Blatt
+   ══════════════════════════════════════════════════════════════════ */
+
+.suche { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; }
+.suche[hidden] { display: none; }
+
+/* Kein schwarzer Vorhang: Das Papier bleibt sichtbar, es tritt nur
+   zurück. Man sucht in einem Buch, das aufgeschlagen bleibt. */
+.suche__grund {
+  position: absolute; inset: 0;
+  background: color-mix(in oklab, var(--papier) 78%, transparent);
+  backdrop-filter: blur(3px);
+  animation: sucheAuf .18s ease;
+}
+
+.suche__blatt {
+  position: relative; margin-top: 7vh; width: min(46rem, calc(100vw - 4rem));
+  max-height: 80vh; display: flex; flex-direction: column;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: var(--schatten);
+  padding: 1.5rem 1.7rem 1.2rem;
+  animation: sucheHoch .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes sucheAuf { from { opacity: 0 } }
+@keyframes sucheHoch { from { opacity: 0; transform: translateY(-8px) } }
+
+.suche__zeile { display: flex; align-items: center; gap: 1rem; }
+.suche__zeile input {
+  flex: 1; min-width: 0; background: none; border: 0; outline: none;
+  font-family: inherit; font-size: 1.5rem; color: var(--tinte);
+  padding: .2rem 0;
+}
+.suche__zeile input::placeholder { color: var(--tinte-fern); }
+.suche__zeile input::-webkit-search-cancel-button { display: none; }
+
+.suche__zu {
+  flex: 0 0 auto;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  background: none; border: 1px solid var(--linie); border-radius: 4px;
+  padding: .25rem .5rem; cursor: pointer; transition: all .2s;
+}
+.suche__zu:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.suche__filter { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: 1.1rem; }
+.suche__rubrik {
+  font-family: -apple-system, "Inter", sans-serif; font-size: .72rem;
+  color: var(--tinte-leise); background: none;
+  border: 1px solid var(--linie); border-radius: 100px;
+  padding: .22rem .5rem .22rem .68rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: .38rem; transition: all .2s;
+}
+.suche__rubrik i {
+  font-style: normal; font-size: .65rem; color: var(--tinte-fern);
+  font-variant-numeric: tabular-nums;
+}
+.suche__rubrik:hover { color: var(--akzent); border-color: var(--akzent-weich); }
+.suche__rubrik.ist { color: var(--papier); background: var(--akzent); border-color: var(--akzent); }
+/* Eine Rubrik, in der diese Anfrage nichts findet, bleibt stehen (der
+   Filter soll nicht springen), tritt aber zurück. */
+.suche__rubrik--leer { opacity: .38; }
+.suche__rubrik.ist i { color: var(--papier); opacity: .7; }
+
+.suche__hinweis {
+  margin: 1.1rem 0 0; padding-top: 1rem; border-top: 1px solid var(--linie);
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.suche__hinweis--warnung { text-transform: none; letter-spacing: 0; font-size: .8rem; line-height: 1.5; }
+
+.suche__treffer { list-style: none; margin: .4rem 0 0; padding: 0; overflow-y: auto; }
+.suche__treffer-eintrag + .suche__treffer-eintrag { border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent); }
+
+.suche__treffer a {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: .9rem .6rem; margin: 0 -.6rem; border-radius: 4px;
+  text-decoration: none; color: inherit; transition: background .2s;
+}
+.suche__treffer a:hover, .suche__treffer a:focus-visible { background: var(--papier-tief); outline: none; }
+
+.suche__treffer img, .suche__leer {
+  flex: 0 0 auto; width: 104px; height: 44px; object-fit: cover;
+  border-radius: 3px; margin-top: .2rem; opacity: .9;
+}
+.suche__leer { border-left: 2px solid var(--linie); }
+.suche__leer--zeitgeist    { border-color: var(--r-zeitgeist); }
+.suche__leer--denker       { border-color: var(--r-denker); }
+.suche__leer--denkervita   { border-color: var(--r-denkervita); }
+.suche__leer--geistesblitz { border-color: var(--r-geistesblitz); }
+.suche__leer--kultur       { border-color: var(--r-kultur); }
+.suche__leer--panorama     { border-color: var(--r-panorama); }
+.suche__leer--gedanken     { border-color: var(--r-gedanken); }
+.suche__leer--spuren       { border-color: var(--r-spuren); }
+.suche__leer--goodnews     { border-color: var(--r-goodnews); }
+.suche__leer--vipassana    { border-color: var(--r-vipassana); }
+
+.suche__text { min-width: 0; }
+.suche__kennung {
+  display: block; margin-bottom: .22rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.suche__text b { display: block; font-size: 1.05rem; line-height: 1.3; font-weight: 600; }
+.suche__treffer a:hover b { color: var(--akzent); }
+
+.suche__stelle {
+  display: block; margin-top: .3rem;
+  font-size: .88rem; line-height: 1.5; color: var(--tinte-leise);
+}
+/* Die Fundstelle selbst — kein gelber Marker, sondern die Farbe des
+   Hauses, so wie ein Bleistift die Zeile begleitet. */
+.suche__stelle mark {
+  background: none; color: var(--akzent); font-weight: 600;
+  box-shadow: inset 0 -.42em 0 var(--akzent-weich);
+}
+
+.suche__mehr { margin: 1rem 0 0; }
+.suche__mehr button {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
+  background: none; border: 1px solid var(--linie); border-radius: 100px;
+  padding: .42rem 1rem; cursor: pointer; transition: all .2s;
+}
+.suche__mehr button:hover { color: var(--akzent); border-color: var(--akzent); }

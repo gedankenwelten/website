@@ -70,8 +70,12 @@
   display: block; text-decoration: none; color: inherit;
   border: 0 !important;
 }
+/* 220 px, nicht 168: Andreas' Blick am 02.08. — bei den kleineren
+   Streifen war das Bild Beiwerk, hier führt es und der Titel folgt ihm.
+   Der Auftakt musste dafür mitwachsen (unten), sonst wäre die Tür kaum
+   noch von den Stationen zu unterscheiden. */
 .station__bild {
-  display: block; width: 100%; height: 168px; object-fit: cover;
+  display: block; width: 100%; height: 220px; object-fit: cover;
   border-radius: 3px; margin: 0 0 1.5rem;
   box-shadow: var(--schatten);
   /* Das Bild ist die Begleitung, nicht die Aussage — es tritt beim
@@ -97,7 +101,7 @@
 /* Der Auftakt darf größer sein — er ist das Frischeste im Bestand und
    zugleich die Tür. Danach wird es gleichmäßig: Der Weg hat kein
    Gefälle, nur eine Richtung. */
-.station--auftakt .station__bild { height: 300px; margin-bottom: 2rem; }
+.station--auftakt .station__bild { height: 370px; margin-bottom: 2rem; }
 .station--auftakt .station__titel { font-size: 2.75rem; line-height: 1.12; letter-spacing: -.022em; }
 .station--auftakt .station__teaser { font-size: 1.2rem; }
 

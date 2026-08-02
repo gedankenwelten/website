@@ -3,6 +3,8 @@ import "../styles/note.css";
 import "../styles/stern.css";
 import Stern from "../components/Stern.astro";
 import { filterbareThemen } from "../lib/rubriken.mjs";
+import { ladeGraph } from "../lib/graph.mjs";
+import Suche from "../components/Suche.astro";
 
 const { note, kopf } = Astro.props;
 const d = note.data;
@@ -25,6 +27,13 @@ const rubrik = note.id.split("/")[0];
    gefiltert. Was dort nichts trennt (der Typ-Tag, das Jahr, der Autor),
    bleibt stehen, wird aber nicht zum Link. */
 const filterbar = filterbareThemen(rubrik);
+
+/* Kataloge und die beiden alten Quartz-Deckblätter bleiben aus dem
+   Suchindex. „Zeitgeist — Übersicht" enthält 276 Titel und träfe damit
+   auf fast jede Anfrage — als Treffer wäre das keine Fundstelle,
+   sondern ein Inhaltsverzeichnis, das sich vordrängt. */
+const nichtSuchbar = ladeGraph().katalog.has(note.id)
+  || note.id.split("/").pop().toLowerCase() === "index";
 ---
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
@@ -43,6 +52,7 @@ const filterbar = filterbareThemen(rubrik);
 </div>
 
 <div class="schalter">
+  <button data-suche-auf type="button" title="Suchen (/ oder ⌘K)">Suchen</button>
   <button id="theme">Dunkel</button>
 </div>
 
@@ -72,11 +82,30 @@ const filterbar = filterbareThemen(rubrik);
     {d.description && <p class="standfirst">{d.description}</p>}
   </header>
 
-  <div class="strang" id="text">
+  {/* Was die Suche liest: der Text der Note, nichts sonst. Der Stern
+      steht außerhalb und bliebe ohnehin draußen; die Marken darunter
+      sind Navigation und würden als Treffer nur Wortsalat ergeben.
+      Die Rubrik kommt als Filter mit, das Datum zum Sortieren. */}
+  <div class="strang" id="text"
+       data-pagefind-body={nichtSuchbar ? undefined : true}
+       data-pagefind-ignore={nichtSuchbar ? true : undefined}
+       data-pagefind-filter={`Rubrik:${rubrik}`}
+       data-pagefind-meta={`rubrik:${rubrik}`}>
+    {/* Titel, Datum und Banner für die Trefferliste. Über Attribute und
+        nicht als `schlüssel:wert` im Text: „Isabel Wilkerson — Race,
+        Caste and Social Justice" enthält ein Komma, und das trennt dort
+        zwei Angaben. */}
+    <span hidden
+          data-pagefind-meta="titel[data-wert]" data-wert={d.title}></span>
+    {datum && <span hidden
+          data-pagefind-meta="datum[data-wert]" data-wert={datum}></span>}
+    {kopf.banner && <span hidden
+          data-pagefind-meta="bild[data-wert]" data-wert={kopf.banner}></span>}
+
     <slot />
 
     {d.tags?.length > 0 && (
-      <div class="marken-zeile">
+      <div class="marken-zeile" data-pagefind-ignore>
         {d.tags.map((t) => filterbar.has(t)
           ? <a href={`/${rubrik}?thema=${encodeURIComponent(t)}`}>{t}</a>
           : <span>{t}</span>)}
@@ -132,6 +161,8 @@ const beobachter = new IntersectionObserver(
 );
 document.querySelectorAll(".nebenan").forEach((n) => beobachter.observe(n));
 </script>
+
+<Suche />
 
 <script src="/leser.js" is:inline></script>
 </body>

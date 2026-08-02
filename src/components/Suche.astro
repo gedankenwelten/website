@@ -1,0 +1,39 @@
+---
+/**
+ * Die Suche — der dritte Zugang.
+ *
+ * Der Faden führt, die Rubrik legt aus. Beides setzt voraus, dass man
+ * sich treiben lässt. Wer weiß, was er sucht, braucht keinen Weg: Er
+ * braucht ein Feld.
+ *
+ * Sie liegt über der Seite statt auf einer eigenen — wer mitten im Text
+ * ein Wort nachschlagen will, soll nicht die Note verlassen müssen.
+ * Geladen wird der Index erst beim Öffnen (rund 40 kB plus die Stücke,
+ * die die Anfrage wirklich braucht); vorher kostet sie nichts.
+ */
+import "../styles/suche.css";
+---
+
+<div class="suche" id="suche" hidden>
+  <div class="suche__grund" data-schliessen></div>
+
+  <div class="suche__blatt" role="dialog" aria-modal="true" aria-label="Suche">
+    <div class="suche__zeile">
+      <input id="sucheFeld" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Im Bestand suchen …" aria-label="Suchbegriff">
+      <button class="suche__zu" type="button" data-schliessen aria-label="Schließen">esc</button>
+    </div>
+
+    <div class="suche__filter" id="sucheFilter" hidden></div>
+
+    <p class="suche__hinweis" id="sucheHinweis">
+      Volltext über alle Notes. Ein Wort genügt; mehrere schränken ein.
+    </p>
+
+    <ol class="suche__treffer" id="sucheTreffer"></ol>
+
+    <p class="suche__mehr" hidden id="sucheMehr"><button type="button">mehr zeigen</button></p>
+  </div>
+</div>
+
+<script src="/suche.js" is:inline></script>

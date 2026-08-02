@@ -13,6 +13,7 @@ import "../styles/start.css";
 import { alleFaeden } from "../lib/faden.mjs";
 import { ladeIndex } from "../lib/notizen.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
+import Suche from "../components/Suche.astro";
 
 const faeden = alleFaeden(7);
 const idx = ladeIndex();
@@ -83,6 +84,7 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
 </div>
 
 <div class="schalter">
+  <button data-suche-auf type="button" title="Suchen (/ oder ⌘K)">Suchen</button>
   <button id="theme">Dunkel</button>
 </div>
 
@@ -268,6 +270,8 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
 
   if (faeden.length) leisteBauen(faeden[0]);
 </script>
+
+<Suche />
 
 <script src="/leser.js" is:inline></script>
 </body>

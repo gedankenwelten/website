@@ -50,8 +50,8 @@
 .rubrik__zurueckstellen button:hover { border-bottom-color: var(--akzent); }
 
 /* ── Themenband ──
-   Was der Bestand selbst über sich sagt. Kein Suchfeld: Suchen kann nur,
-   wer den Namen schon kennt — ein Thema antippen setzt nichts voraus. */
+   Was der Bestand selbst über sich sagt. Anders als das Suchfeld (das
+   über der Seite liegt, „/") setzt ein Thema keine Kenntnis voraus. */
 .themen {
   display: flex; flex-wrap: wrap; gap: .45rem;
   padding-bottom: 2.6rem; margin-bottom: 3.4rem;

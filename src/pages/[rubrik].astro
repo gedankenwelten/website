@@ -11,12 +11,13 @@
  * Zwei Zugänge, weil der Bestand zwei Fragen kennt. **Wann** — die
  * Bänder nach Monaten, die Zeitleiste am Rand zeigt die Tiefe. Und
  * **worum** — das Themenband über der Liste, aus den Tags der Rubrik
- * selbst gebaut. Beides ohne Suchfeld: Suchen kann nur, wer den Namen
- * schon kennt.
+ * selbst gebaut. Kein Suchfeld auf der Seite: Suchen setzt voraus, dass
+ * man den Namen schon kennt, und wer den kennt, drückt „/".
  */
 import "../styles/note.css";
 import "../styles/rubrik.css";
 import { RUBRIKEN_INFO, rubrikBestand, alleRubriken, langDatum, monatJahr } from "../lib/rubriken.mjs";
+import Suche from "../components/Suche.astro";
 
 export function getStaticPaths() {
   return Object.keys(RUBRIKEN_INFO).map((rubrik) => ({ params: { rubrik } }));
@@ -66,6 +67,7 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
 </div>
 
 <div class="schalter">
+  <button data-suche-auf type="button" title="Suchen (/ oder ⌘K)">Suchen</button>
   <button id="theme">Dunkel</button>
 </div>
 
@@ -216,9 +218,9 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
   addEventListener("resize", verfolgen);
 
   /* ── Das Themenband ──
-     Kein Suchfeld: Wer sucht, muss den Namen schon kennen. Ein Thema
-     anzutippen setzt dagegen keine Kenntnis voraus — es zeigt nur, was
-     der Bestand selbst über sich sagt. Gefiltert wird im Browser; die
+     Wer sucht, muss den Namen schon kennen — dafür liegt das Suchfeld
+     über der Seite. Ein Thema anzutippen setzt dagegen keine Kenntnis
+     voraus; es zeigt nur, was der Bestand selbst über sich sagt. Gefiltert wird im Browser; die
      Notes liegen ohnehin alle im Dokument, und ein zweiter Satz Seiten
      je Tag wäre für eine Geste, die man dreimal macht, zu viel. */
   const posten = [...document.querySelectorAll(".posten")];
@@ -289,6 +291,8 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
   if (ausDerAdresse) filtern(ausDerAdresse, false);
   else leisteBauen();
 </script>
+
+<Suche />
 
 <script src="/leser.js" is:inline></script>
 </body>
