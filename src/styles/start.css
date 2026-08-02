@@ -14,16 +14,17 @@
 .start__nochmal { margin-left: auto; margin-right: auto; }
 
 /* ── Kopf ──
-   Kein Menü, kein Suchfeld, kein Kartenraster. Wer hier ankommt, soll
-   zuerst lesen, nicht bedienen. */
-.start__kopf { margin: 7.5rem 0 6rem; }
+   Kein Menü, kein Kartenraster. Wer hier ankommt, soll zuerst lesen,
+   nicht bedienen — aber auch nicht erst scrollen müssen, um überhaupt
+   etwas zu sehen. */
+.start__kopf { margin: 3.4rem 0 3rem; }
 
 .wortmarke {
-  font-size: 4.1rem; line-height: 1; letter-spacing: -.03em; font-weight: 600;
-  margin: 0 0 1.6rem; hyphens: manual;
+  font-size: 3.1rem; line-height: 1; letter-spacing: -.03em; font-weight: 600;
+  margin: 0 0 .7rem; hyphens: manual;
 }
 .start__satz {
-  font-size: 1.22rem; line-height: 1.6; color: var(--tinte-leise);
+  font-size: 1.1rem; line-height: 1.55; color: var(--tinte-leise);
   font-style: italic; margin: 0; max-width: 34rem; text-wrap: pretty;
 }
 
@@ -35,9 +36,13 @@
 /* Der Schritt zwischen zwei Stationen.
    Er trägt den Satz, der im Bestand schon steht — geschrieben, als
    Montaigne oder Andreas die Verbindung zog. Eingerückt und leiser als
-   die Titel: Er begleitet den Weg, er ist nicht der Weg. */
+   die Titel: Er begleitet den Weg, er ist nicht der Weg.
+
+   Er steht dichter an der Station, zu der er führt, als an der, von der
+   er kommt — sonst liest man ihn als Nachsatz zum eben Gelesenen statt
+   als Ankündigung des Nächsten. */
 .schritt {
-  margin: 3.4rem 0 2.6rem; padding: .1rem 0 .1rem 1.5rem;
+  margin: 2.9rem 0 1.1rem; padding: .1rem 0 .1rem 1.5rem;
   border-left: 1px solid var(--linie);
   font-size: .92rem; line-height: 1.62; color: var(--tinte-leise);
   font-style: italic; max-width: 33rem; text-wrap: pretty;
@@ -63,50 +68,64 @@
    wurde — 515 von 748, bei Denker und DenkerVita fast lückenlos. Eine
    Startseite, die davon nichts zeigt, wirft das Beste weg, was der
    Bestand an Bildern hat.
-   Karte heißt hier trotzdem nicht Kachel: kein Rahmen, kein Kasten, keine
-   gleich große Zelle in einem Raster. Bild, Marke, Titel, Zeile — in der
-   Spalte, in der auch gelesen wird. */
+
+   **Das Bild steht neben seinem Titel, nicht über ihm** (02.08., nach
+   Andreas' Klick ins Falsche). Über dem Titel ist ein Bild zweideutig:
+   Darüber endet gerade eine Station, darunter beginnt die nächste, und
+   das Auge ordnet es der zu, die es zuerst gelesen hat. Nebeneinander
+   gibt es nichts zu deuten — und es kostet halb so viel Strecke, was
+   die eigentliche Bitte war: mehr Weg auf einen Blick. */
 .station__karte {
-  display: block; text-decoration: none; color: inherit;
-  border: 0 !important;
+  display: grid; grid-template-columns: 14rem 1fr;
+  /* Nur zwischen den Spalten. `gap` allein gilt auch für die Zeilen und
+     riss den Titel von seinem Teaser weg — die beiden gehören eng
+     zusammen, der Teaser sagt ja, worum es in genau diesem Titel geht. */
+  column-gap: 1.3rem; row-gap: 0;
+  align-items: start;
+  text-decoration: none; color: inherit; border: 0 !important;
 }
-/* 220 px, nicht 168: Andreas' Blick am 02.08. — bei den kleineren
-   Streifen war das Bild Beiwerk, hier führt es und der Titel folgt ihm.
-   Der Auftakt musste dafür mitwachsen (unten), sonst wäre die Tür kaum
-   noch von den Stationen zu unterscheiden. */
 .station__bild {
-  display: block; width: 100%; height: 220px; object-fit: cover;
-  border-radius: 3px; margin: 0 0 1.5rem;
+  display: block; width: 100%; height: 100px; object-fit: cover;
+  border-radius: 3px; margin: .2rem 0 0;
   box-shadow: var(--schatten);
   /* Das Bild ist die Begleitung, nicht die Aussage — es tritt beim
      Berühren erst ganz hervor. */
   filter: saturate(.9); opacity: .93;
-  transition: opacity .35s ease, filter .35s ease, transform .5s cubic-bezier(.2,.8,.2,1);
+  transition: opacity .35s ease, filter .35s ease;
 }
 .station__karte:hover .station__bild { opacity: 1; filter: saturate(1); }
 
-.station .kennung { margin: 0 0 .9rem; }
+/* Wo kein Banner ist, rückt der Text nicht nach links — sonst tanzte
+   die Titelkante den Weg entlang. Die Spalte bleibt, sie bleibt leer. */
+.station__karte > .kennung { grid-column: 2; }
+.station__titel, .station__teaser { grid-column: 2; }
+
+.station .kennung { margin: 0 0 .45rem; }
 
 .station__titel {
-  margin: 0; font-size: 1.86rem; line-height: 1.22; letter-spacing: -.014em;
-  font-weight: 600; text-wrap: balance; transition: color .2s;
+  margin: 0; font-size: 1.3rem; line-height: 1.26; letter-spacing: -.012em;
+  font-weight: 600; text-wrap: pretty; transition: color .2s;
 }
 .station__karte:hover .station__titel { color: var(--akzent); }
 
 .station__teaser {
-  margin: 1rem 0 0; font-size: 1.06rem; line-height: 1.58;
-  color: var(--tinte-leise); max-width: 34rem; text-wrap: pretty;
+  margin: .4rem 0 0; font-size: .97rem; line-height: 1.52;
+  color: var(--tinte-leise); text-wrap: pretty;
+  /* Drei Zeilen genügen als Vorgeschmack; die vierte kostet nur Weg. */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
-/* Der Auftakt darf größer sein — er ist das Frischeste im Bestand und
-   zugleich die Tür. Danach wird es gleichmäßig: Der Weg hat kein
-   Gefälle, nur eine Richtung. */
-.station--auftakt .station__bild { height: 370px; margin-bottom: 2rem; }
-.station--auftakt .station__titel { font-size: 2.75rem; line-height: 1.12; letter-spacing: -.022em; }
-.station--auftakt .station__teaser { font-size: 1.2rem; }
+/* Der Auftakt bleibt die Tür: volle Breite, Bild über dem Titel. Dort
+   ist es eindeutig, weil nichts darüber steht, dem es gehören könnte. */
+.station--auftakt .station__karte { display: block; }
+.station--auftakt .station__bild { height: 195px; margin: 0 0 1.2rem; }
+.station--auftakt .kennung { margin-bottom: .7rem; }
+.station--auftakt .station__titel { font-size: 2.1rem; line-height: 1.12; letter-spacing: -.022em; text-wrap: balance; }
+.station--auftakt .station__teaser { margin-top: .7rem; font-size: 1.06rem; -webkit-line-clamp: 4; }
 
 .faden__fuss {
-  width: var(--spalte); margin-top: 4.5rem;
+  width: var(--spalte); margin-top: 3rem;
   padding-top: 1.4rem; border-top: 1px solid var(--linie);
   font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
@@ -132,26 +151,26 @@
 /* ── Der Bestand ──
    Die Breite, die der Weg nicht abdeckt. Kein Raster aus Karten: zehn
    Regale, jedes mit seinem Umfang und dem, was zuletzt dazukam. */
-.bestand { margin: 9rem auto 0; width: calc(var(--spalte) + var(--neben) + var(--luft)); }
+.bestand { margin: 5.5rem auto 0; width: calc(var(--spalte) + var(--neben) + var(--luft)); }
 
 .bestand h2 {
   font-family: -apple-system, "Inter", sans-serif;
   font-size: 10.5px; font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
-  color: var(--tinte-fern); margin: 0 0 2.6rem;
+  color: var(--tinte-fern); margin: 0 0 1.9rem;
   display: flex; align-items: center; gap: 1.4rem;
 }
 .bestand h2::before, .bestand h2::after { content: ""; flex: 1; height: 1px; background: var(--linie); }
 
 .bestand__gitter {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2.8rem 3.2rem;
+  gap: 2.1rem 2.8rem;
 }
 .regal__kopf {
   display: flex; align-items: center; gap: .6rem;
   text-decoration: none; transition: color .2s, border-color .2s;
   font-family: -apple-system, "Inter", sans-serif; font-size: 11.5px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte);
-  padding-bottom: .8rem; border-bottom: 1px solid var(--linie); margin-bottom: .9rem;
+  padding-bottom: .6rem; border-bottom: 1px solid var(--linie); margin-bottom: .75rem;
 }
 .regal__kopf i {
   margin-left: auto; font-style: normal; color: var(--tinte-fern);
@@ -163,10 +182,10 @@
 /* Die Karte im Regal — hier darf es ein Raster sein. Unten, als Übersicht
    über die Breite, ist die Kachel genau richtig; falsch war sie nur als
    Hauptachse der Seite. */
-.karte { display: block; text-decoration: none; color: inherit; border: 0 !important; margin-bottom: 1.1rem; }
+.karte { display: block; text-decoration: none; color: inherit; border: 0 !important; margin-bottom: .85rem; }
 .karte img, .karte__leer {
-  display: block; width: 100%; height: 112px; object-fit: cover;
-  border-radius: 3px; margin-bottom: .7rem;
+  display: block; width: 100%; height: 86px; object-fit: cover;
+  border-radius: 3px; margin-bottom: .55rem;
   box-shadow: var(--schatten);
   filter: saturate(.9); opacity: .93; transition: opacity .35s, filter .35s;
 }
@@ -177,15 +196,17 @@
 .karte__leer--vipassana { background: color-mix(in oklab, var(--r-vipassana) 14%, var(--papier-tief)); }
 .karte__leer--goodnews  { background: color-mix(in oklab, var(--r-goodnews)  14%, var(--papier-tief)); }
 .karte__titel {
-  display: block; font-size: 1.02rem; line-height: 1.3; font-weight: 600;
+  display: block; font-size: .98rem; line-height: 1.28; font-weight: 600;
   transition: color .2s; text-wrap: balance;
 }
 .karte:hover .karte__titel { color: var(--akzent); }
 
 .regal ul { list-style: none; margin: 0; padding: 0; }
-.regal li { margin-bottom: .5rem; }
+/* Die Titel im Regal sind Zeilen, keine Absätze — der Fließtext-
+   Durchschuss (1,72) machte aus drei Titeln eine halbe Seite. */
+.regal li { margin-bottom: .3rem; line-height: 1.34; }
 .regal a {
-  color: var(--tinte-leise); text-decoration: none; font-size: .93rem; line-height: 1.4;
+  color: var(--tinte-leise); text-decoration: none; font-size: .9rem; line-height: 1.34;
   border-bottom: 1px solid transparent; transition: color .2s, border-color .2s;
 }
 .regal a:hover { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
