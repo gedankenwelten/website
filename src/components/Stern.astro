@@ -1,0 +1,201 @@
+---
+/**
+ * Der Stern — was um diese Note herum liegt.
+ *
+ * Steht am Fuß der Seite, nicht am Rand: Man kommt hier an, nachdem man
+ * gelesen hat. Die Anordnung ist beim Bauen gesetzt, das SVG hat feste
+ * Koordinaten; im Browser läuft nur, was auf Berührung reagiert.
+ */
+import { sternFuer } from "../lib/graph.mjs";
+import { setzen } from "../lib/layout.mjs";
+
+const { id } = Astro.props;
+const roh = sternFuer(id);
+const stern = roh && roh.nodes.length > 1 ? setzen(roh) : null;
+const B = stern?.buehne;
+
+const P = (n) => (n.seite === "rechts" ? 11 : -11);
+
+/* Die Endlage steht im `transform`-Attribut — ohne Skript und ohne CSS
+   sitzt der Stern trotzdem richtig. Die Anfangslage (auf halbem Weg zur
+   Mitte) reicht das Stylesheet nach, aber erst, wenn das Skript sie
+   angefordert hat. */
+const anfang = (n) => ({
+  "--x": `${n.x}px`, "--y": `${n.y}px`,
+  "--zx": `${(B.breite / 2 + (n.x - B.breite / 2) * 0.55).toFixed(1)}px`,
+  "--zy": `${(B.hoehe / 2 + (n.y - B.hoehe / 2) * 0.55).toFixed(1)}px`,
+});
+
+// Was unter dem Bild steht, solange niemand etwas berührt.
+let ruhe = "";
+if (stern) {
+  const w = stern.links.filter((l) => !l.rand && l.art === "wikilink").length;
+  const q = stern.links.filter((l) => !l.rand && l.art === "quelle").length;
+  const zahl = ["keine", "eine", "zwei", "drei", "vier", "fünf", "sechs",
+                "sieben", "acht", "neun", "zehn", "elf", "zwölf"];
+  const n = (x) => zahl[x] ?? String(x);
+  const teile = [];
+  if (w) teile.push(`${w === 1 ? "Ein gedachter Verweis" : `${n(w)} gedachte Verweise`}`);
+  if (q) teile.push(`${q === 1 ? "eine geteilte Quelle, die noch niemand verlinkt hat" : `${n(q)} geteilte Quellen, die noch niemand verlinkt hat`}`);
+  ruhe = teile.join(" · ") || "Nachbarschaft ohne Verweis";
+  if (stern.weitere > 0) ruhe += ` · ${stern.weitere} weitere nicht gezeigt`;
+}
+---
+{stern && (
+  <section class="stern" aria-label="Verbindungen dieser Note">
+    <h2>Im Bestand</h2>
+
+    <svg
+      class="stern__buehne"
+      viewBox={`0 0 ${B.breite} ${B.hoehe}`}
+      role="img"
+      aria-label={`${stern.nodes.length - 1} benachbarte Notes`}
+    >
+      <g class="stern__kanten">
+        {stern.links.map((l) => {
+          const a = stern.nodes.find((n) => n.id === l.source);
+          const b = stern.nodes.find((n) => n.id === l.target);
+          const klasse = ["kante", `kante--${l.art}`, l.rand ? "kante--rand" : ""].filter(Boolean).join(" ");
+
+          /* Jede Linie sagt, wen sie verbindet. „Verweisen aufeinander"
+             allein hilft niemandem, der den Zeiger irgendwo im Netz hält —
+             die Zeile steht unter dem Bild, nicht neben der Linie. */
+          const wer = l.rand
+            ? `${a.titel} ↔ ${b.titel}`
+            : (a.mitte ? b : a).titel;
+          const wie = l.art === "quelle"
+            ? (l.quellen?.length > 1
+                ? `beide zitieren ${l.quellen.length} gemeinsame Quellen, u. a. ${l.quellen[0].titel}`
+                : `beide zitieren ${l.quellen?.[0]?.titel ?? "dieselbe Quelle"}`)
+            : (l.rand ? "verweisen aufeinander" : l.warum ?? "verweisen aufeinander");
+          // Mittelpunkt statt Gedankenstrich: Die Titel führen selbst schon
+          // einen („Sven Beckert — DenkerVita"), ein zweiter machte daraus
+          // eine Kette, in der nichts mehr trennt.
+          const warum = `${wer} · ${wie}`;
+          return (
+            <g class={klasse} data-a={l.source} data-b={l.target} data-warum={warum}>
+              <line class="kante__fang" x1={a.x} y1={a.y} x2={b.x} y2={b.y}></line>
+              <line class="kante__strich" x1={a.x} y1={a.y} x2={b.x} y2={b.y}></line>
+            </g>
+          );
+        })}
+      </g>
+
+      <g class="stern__knoten">
+        {stern.nodes.map((n, i) =>
+          n.mitte ? (
+            <g class="knoten knoten--mitte" data-id={n.id} transform={`translate(${n.x} ${n.y})`} style={{ ...anfang(n), "--takt": "0ms" }}>
+              <circle class="knoten__hof" r="13"></circle>
+              <circle class="knoten__punkt" r="4.5"></circle>
+            </g>
+          ) : (
+            <a
+              class={`knoten knoten--${n.rubrik.toLowerCase()}`}
+              href={n.url}
+              data-id={n.id}
+              data-titel={n.titel}
+              data-rubrik={n.rubrik}
+              transform={`translate(${n.x} ${n.y})`}
+              style={{ ...anfang(n), "--takt": `${60 + i * 26}ms` }}
+            >
+              <circle class="knoten__punkt" r="3.4"></circle>
+              <text
+                class="knoten__schrift"
+                x={P(n)}
+                y={n.schwanz ? -1 : 4}
+                text-anchor={n.seite === "rechts" ? "start" : "end"}
+              >
+                <tspan class="knoten__kopf" x={P(n)}>{n.kopf}</tspan>
+                {n.schwanz && <tspan class="knoten__schwanz" x={P(n)} dy="13">{n.schwanz}</tspan>}
+              </text>
+            </a>
+          ),
+        )}
+      </g>
+    </svg>
+
+    <p class="stern__sage" data-ruhe={ruhe}>{ruhe}</p>
+
+    <div class="stern__schluessel">
+      <span><i class="schl schl--wiki"></i>verlinkt</span>
+      <span><i class="schl schl--quelle"></i>dieselbe Quelle, nie verlinkt</span>
+    </div>
+  </section>
+)}
+
+<script>
+  /* Der Stern hört zu. Mehr braucht er nicht: keine Physik, keine
+     Neuberechnung — die Anordnung steht schon im Dokument.
+
+     Statt eines Kästchens, das dem Zeiger hinterherfliegt, spricht eine
+     einzige Zeile unter dem Bild. Sie sagt, was man gerade berührt, und
+     fällt danach in ihren Ruhesatz zurück. Ein Lesezimmer verträgt keine
+     Sprechblasen. */
+  for (const stern of document.querySelectorAll(".stern")) {
+    const svg = stern.querySelector(".stern__buehne");
+    const sage = stern.querySelector(".stern__sage");
+    const ruhe = sage.dataset.ruhe;
+    const kanten = [...svg.querySelectorAll(".kante")];
+    const knoten = [...svg.querySelectorAll(".knoten")];
+
+    let halt = null;
+    const sagen = (t) => { sage.textContent = t ?? ruhe; sage.classList.toggle("wach", !!t); };
+    const loesen = () => {
+      clearTimeout(halt);
+      halt = setTimeout(() => {
+        svg.classList.remove("hebt");
+        for (const e of [...kanten, ...knoten]) e.classList.remove("an", "aus");
+        sagen(null);
+      }, 90);
+    };
+    const heben = (dabei, text) => {
+      clearTimeout(halt);
+      svg.classList.add("hebt");
+      for (const e of [...kanten, ...knoten]) {
+        const drin = dabei.has(e);
+        e.classList.toggle("an", drin);
+        e.classList.toggle("aus", !drin);
+      }
+      sagen(text);
+    };
+
+    for (const k of knoten) {
+      const id = k.dataset.id;
+      const anhang = kanten.filter((e) => e.dataset.a === id || e.dataset.b === id);
+      const nachbarn = new Set(anhang.flatMap((e) => [e.dataset.a, e.dataset.b]));
+      const dabei = new Set([k, ...anhang, ...knoten.filter((n) => nachbarn.has(n.dataset.id))]);
+      // Die Rubrik nur dann dazu, wenn der Titel sie nicht ohnehin trägt —
+      // „DenkerVita · Sven Beckert — DenkerVita" sagt es zweimal.
+      const t = k.dataset.titel ?? "";
+      const wort = k.classList.contains("knoten--mitte")
+        ? null
+        : t.includes(k.dataset.rubrik) ? t : `${t} · ${k.dataset.rubrik}`;
+      k.addEventListener("pointerenter", () => heben(dabei, wort));
+      k.addEventListener("pointerleave", loesen);
+      k.addEventListener("focus", () => heben(dabei, wort));
+      k.addEventListener("blur", loesen);
+    }
+
+    for (const e of kanten) {
+      const enden = knoten.filter((n) => n.dataset.id === e.dataset.a || n.dataset.id === e.dataset.b);
+      e.addEventListener("pointerenter", () => heben(new Set([e, ...enden]), e.dataset.warum));
+      e.addEventListener("pointerleave", loesen);
+    }
+
+    /* Ankommen: die Knoten treten aus der Mitte an ihren Platz, sobald der
+       Stern ins Bild rückt. Einmal, dann steht er still.
+
+       Die Anfangslage setzt erst dieses Skript frei (`regt`) — ohne
+       Javascript gilt weiter das `transform`-Attribut, und der Stern steht
+       einfach da. Wer Bewegung abbestellt hat, bekommt dasselbe. */
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) stern.classList.add("regt");
+
+    new IntersectionObserver((eintraege, beobachter) => {
+      for (const e of eintraege) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add("da");
+        beobachter.unobserve(e.target);
+      }
+    }, { rootMargin: "0px 0px -12% 0px" }).observe(stern);
+  }
+</script>

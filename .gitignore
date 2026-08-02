@@ -1,0 +1,13 @@
+# Abhängigkeiten und Build — jederzeit wiederherstellbar
+node_modules/
+dist/
+.astro/
+
+# Erzeugte Bilder. `scripts/vorschau.mjs` legt sie aus den Bannern im
+# Cortex neu an (11 s für 581 Stück); die Frames stammen aus den Videos
+# und gehören uns nicht.
+public/vorschau/
+public/frames/
+
+.DS_Store
+*.log

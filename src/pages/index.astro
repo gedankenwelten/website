@@ -1,0 +1,268 @@
+---
+/**
+ * Die Startseite — ein Weg statt eines Rasters.
+ *
+ * Die alte Startseite sortiert nach Datum und begräbt damit strukturell
+ * 740 von 748 Notes. Diese hier führt: Sie beginnt bei etwas Frischem und
+ * geht dann an geschriebenen Verbindungen entlang rückwärts durch die
+ * Zeit. Nach sieben Stationen ist man im April, ohne gesucht zu haben.
+ */
+import "../styles/note.css";
+import "../styles/stern.css";
+import "../styles/start.css";
+import { alleFaeden } from "../lib/faden.mjs";
+import { ladeIndex } from "../lib/notizen.mjs";
+import { ladeGraph } from "../lib/graph.mjs";
+
+const faeden = alleFaeden(7);
+const idx = ladeIndex();
+const g = ladeGraph();
+
+const notes = idx.alle.filter((n) => !g.katalog.has(n.id));
+const datiert = notes.map((n) => n.datum).filter(Boolean).sort();
+const [erstesDatum, letztesDatum] = [datiert[0], datiert[datiert.length - 1]];
+
+/* Die Zeitleiste läuft von heute nach unten in die Vergangenheit — lesen
+   heißt hier zurückgehen. Der Anteil sagt, wie weit eine Station liegt. */
+const spanne = Date.parse(letztesDatum) - Date.parse(erstesDatum) || 1;
+const tiefe = (d) => (d ? (Date.parse(letztesDatum) - Date.parse(d)) / spanne : 0);
+
+const MONATE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const langDatum = (d) => {
+  if (!d) return null;
+  const [j, m, t] = d.split("-");
+  return `${Number(t)}. ${MONATE[Number(m) - 1]} ${j}`;
+};
+const monatJahr = (d) => {
+  const [j, m] = d.split("-");
+  return `${MONATE[Number(m) - 1]} ${j}`;
+};
+// Die Leiste ist 4,5 rem breit — „September 2026" passt dort nicht hinein.
+const kurzMonat = (d) => {
+  const [j, m] = d.split("-");
+  return `${MONATE[Number(m) - 1].slice(0, 3)} ${j.slice(2)}`;
+};
+
+/* Der Bestand unter dem Faden: jede Rubrik mit ihrem Umfang und dem, was
+   zuletzt dazukam. Kein Ersatz für Rubrikenseiten — aber solange es die
+   nicht gibt, führt von hier wenigstens ein Weg hinein. */
+const rubriken = [...Map.groupBy(notes, (n) => n.rubrik)]
+  .map(([name, ns]) => {
+    const neu = [...ns].sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
+    return {
+      name,
+      anzahl: ns.length,
+      // Das Gesicht der Rubrik: die jüngste Note, die überhaupt eins hat.
+      // Bei Zeitgeist trägt nur ein Drittel ein Banner — die jüngste blind
+      // zu nehmen hieße, dort meistens ein Loch zu zeigen.
+      kopf: neu.find((n) => n.banner) ?? neu[0],
+      weitere: neu.filter((n) => n !== (neu.find((x) => x.banner) ?? neu[0])).slice(0, 3),
+    };
+  })
+  .sort((a, b) => b.anzahl - a.anzahl);
+
+const funde = faeden.flat().filter((s) => s.grund?.fund).length;
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gedankenwelten</title>
+  <meta name="description" content="Ein Weg durch {notes.length} Notes — Zeitgeist, Denker, Geistesblitz, Kultur, Spuren.">
+  <meta name="robots" content="noindex, follow">
+</head>
+<body class="ist-start">
+
+<div class="zu-schmal">
+  <p>Diese Fassung ist für den großen Schirm gemacht — sie braucht ihre Ränder.<br><br>
+  <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
+</div>
+
+<div class="schalter">
+  <button id="theme">Dunkel</button>
+</div>
+
+<div class="rail" id="rail">
+  <div class="rail__cap rail__cap--oben">{kurzMonat(letztesDatum)}</div>
+  <div class="rail__line"></div>
+  <div class="rail__cap rail__cap--unten">{kurzMonat(erstesDatum)}</div>
+</div>
+
+<main class="blatt">
+
+  <header class="strang start__kopf">
+    <h1 class="wortmarke">Gedanken&shy;welten</h1>
+    <p class="start__satz">
+      {notes.length} Notes, gelesen und verbunden seit {monatJahr(erstesDatum)}.
+      Diese Seite legt keine davon nach Datum aus — sie geht einen Weg hindurch.
+    </p>
+  </header>
+
+  {faeden.map((faden, fi) => (
+    <section class="faden" data-faden={fi} hidden={fi > 0}>
+      <ol class="faden__weg">
+        {faden.map((s, si) => (
+          <li
+            class={`station${si === 0 ? " station--auftakt" : ""}`}
+            data-tiefe={tiefe(s.datum).toFixed(4)}
+            data-monat={s.datum ? monatJahr(s.datum) : ""}
+          >
+            {/* `--knapp` (Versalien) ist für die kurzen Auskünfte gedacht
+                („verweisen aufeinander"). Ein Fund nennt einen ganzen
+                Quellentitel und wird darin unlesbar — er bekommt dieselbe
+                ruhige Kursive wie die geschriebenen Gründe. */}
+            {s.grund && (
+              <p class={`schritt${s.grund.fund ? " schritt--fund" : ""}${s.grund.satz || s.grund.fund ? "" : " schritt--knapp"}`}>
+                {s.grund.fund && <span class="schritt__marke">im Bestand gefunden</span>}
+                {s.grund.wie}
+              </p>
+            )}
+
+            <a class="station__karte" href={s.url}>
+              {s.banner && (
+                <img
+                  class="station__bild"
+                  src={s.banner}
+                  alt=""
+                  width="1200" height="500"
+                  loading={si === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                >
+              )}
+
+              <div class="kennung">
+                <b>{s.rubrik}</b>
+                {s.datum && <><i>·</i>{langDatum(s.datum)}</>}
+              </div>
+
+              <h2 class="station__titel">{s.titel}</h2>
+              {s.teaser && <p class="station__teaser">{s.teaser}</p>}
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      <p class="faden__fuss">
+        <span>Sieben Stationen, {monatJahr(faden[0].datum)} bis {monatJahr(faden[faden.length - 1].datum)}</span>
+      </p>
+    </section>
+  ))}
+
+  <p class="start__nochmal">
+    <button id="nochmal" type="button">Ein anderer Weg</button>
+    <span class="start__zaehler"><b id="fadenNr">1</b> von {faeden.length}</span>
+  </p>
+
+  {/* Kein `strang`: Dort unterstreicht note.css jeden Link, was im
+      Fließtext richtig ist und in einer Liste aus lauter Links nichts
+      mehr unterscheidet. Die Breite setzt `.bestand` selbst. */}
+  <section class="bestand">
+    <h2>Der Bestand</h2>
+    <div class="bestand__gitter">
+      {rubriken.map((r) => (
+        <div class="regal">
+          <div class="regal__kopf">
+            <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
+            {r.name}
+            <i>{r.anzahl}</i>
+          </div>
+
+          <a class="karte" href={r.kopf.url}>
+            {r.kopf.vorschau
+              ? <img src={r.kopf.vorschau} alt="" width="1200" height="500" loading="lazy" decoding="async">
+              : <span class={`karte__leer karte__leer--${r.name.toLowerCase()}`}></span>}
+            <span class="karte__titel">{r.kopf.titel}</span>
+          </a>
+
+          <ul>
+            {r.weitere.map((n) => <li><a href={n.url}>{n.titel}</a></li>)}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+</main>
+
+<script>
+  /* ── Die Zeitleiste ──
+     Auf der Note zeigt sie den Ort im Gespräch. Hier zeigt sie den Ort im
+     Bestand: oben heute, unten der März. Beim Scrollen wandert der Zeiger
+     nach unten — man sieht, wie weit man sich vom Neuesten entfernt hat.
+     Genau das war der Wunsch: beiläufig im Archiv ankommen. */
+  const rail = document.getElementById("rail");
+  // Weiter oben als auf der Note: Dort steht „0:00", hier „Aug 26" — und
+  // der Zeiger der ersten Station säße dem Wort sonst im Gesicht.
+  const OBEN = 116, UNTEN = 108;
+  const yVon = (p) => `calc(${OBEN}px + (100% - ${OBEN + UNTEN}px) * ${p})`;
+
+  let zeiger = null, marken = [], aktiv = null;
+
+  function leisteBauen(faden) {
+    for (const m of marken) m.remove();
+    marken = [];
+    for (const st of faden.querySelectorAll(".station")) {
+      const m = document.createElement("div");
+      m.className = "mark";
+      m.style.top = yVon(+st.dataset.tiefe);
+      m.title = st.dataset.monat;
+      m.onclick = () => st.scrollIntoView({ block: "center", behavior: "smooth" });
+      rail.appendChild(m);
+      marken.push(m);
+      st._marke = m;
+    }
+    if (!zeiger) {
+      zeiger = document.createElement("div");
+      zeiger.className = "zeiger";
+      zeiger.innerHTML = '<span class="zeiger__zeit"></span>';
+      rail.appendChild(zeiger);
+    }
+    aktiv = null;
+    verfolgen();
+  }
+
+  function verfolgen() {
+    const sichtbar = document.querySelector(".faden:not([hidden])");
+    if (!sichtbar || !zeiger) return;
+    const mitte = innerHeight * 0.42;
+    let beste = null, dist = Infinity;
+    for (const st of sichtbar.querySelectorAll(".station")) {
+      const r = st.getBoundingClientRect();
+      if (r.top > innerHeight || r.bottom < 0) continue;
+      const d = Math.abs(r.top - mitte);
+      if (d < dist) { dist = d; beste = st; }
+    }
+    if (!beste || beste === aktiv) return;
+    aktiv?._marke?.classList.remove("ist");
+    aktiv = beste;
+    beste._marke?.classList.add("ist");
+    zeiger.style.top = yVon(+beste.dataset.tiefe);
+    zeiger.querySelector(".zeiger__zeit").textContent = beste.dataset.monat;
+  }
+
+  addEventListener("scroll", verfolgen, { passive: true });
+  addEventListener("resize", verfolgen);
+
+  /* ── Ein anderer Weg ──
+     Neun Fäden liegen fertig im Dokument, einer je Rubrik als Eingang.
+     Sie im Browser neu zu berechnen hieße, den halben Bestand mitzuliefern
+     — für eine Geste, die neun Zustände hat. */
+  const faeden = [...document.querySelectorAll(".faden")];
+  const nr = document.getElementById("fadenNr");
+  let i = 0;
+  document.getElementById("nochmal")?.addEventListener("click", () => {
+    faeden[i].hidden = true;
+    i = (i + 1) % faeden.length;
+    faeden[i].hidden = false;
+    nr.textContent = String(i + 1);
+    leisteBauen(faeden[i]);
+    faeden[i].scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+
+  if (faeden.length) leisteBauen(faeden[0]);
+</script>
+
+<script src="/leser.js" is:inline></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+---
+import "../styles/note.css";
+import "../styles/stern.css";
+import Stern from "../components/Stern.astro";
+
+const { note, kopf } = Astro.props;
+const d = note.data;
+
+const zeitstempel = kopf.zeitstempel ?? [];
+// Die Videodauer steht nirgends im Frontmatter. Bis wir sie beim Build holen,
+// leiten wir sie aus dem spätesten zitierten Moment ab — knapp zu kurz, aber
+// ehrlich: die Leiste endet dort, wo die Note aufhört zuzuhören.
+const dauer = zeitstempel.length ? Math.ceil(Math.max(...zeitstempel) * 1.02) : 0;
+const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const hm = (s) => `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}`;
+
+const datum = d.aktualisiert instanceof Date
+  ? d.aktualisiert.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
+  : d.aktualisiert ?? null;
+
+const rubrik = note.id.split("/")[0];
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{d.title} · Gedankenwelten</title>
+  {d.description && <meta name="description" content={d.description}>}
+  <meta name="robots" content="noindex, follow">
+</head>
+<body>
+
+<div class="zu-schmal">
+  <p>Diese Fassung ist für den großen Schirm gemacht — sie braucht ihre Ränder.<br><br>
+  <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
+</div>
+
+<div class="schalter">
+  <button id="theme">Dunkel</button>
+</div>
+
+{dauer > 0 && (
+  <div class="rail" id="rail" data-dauer={dauer}>
+    <div class="rail__cap rail__cap--oben">0:00</div>
+    <div class="rail__line"></div>
+    <div class="rail__cap rail__cap--unten">{hm(dauer)}</div>
+  </div>
+)}
+
+<article class="blatt">
+  <header class="strang">
+    {kopf.banner && <img class="banner" src={kopf.banner} alt="">}
+
+    <div class="kennung">
+      <b>{rubrik}</b>
+      {datum && <><i>·</i>{datum}</>}
+      {dauer > 0 && <><i>·</i>{hm(dauer)} h</>}
+      {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
+    </div>
+
+    <h1>{d.title}</h1>
+    {d.description && <p class="standfirst">{d.description}</p>}
+  </header>
+
+  <div class="strang" id="text">
+    <slot />
+
+    {d.tags?.length > 0 && (
+      <div class="marken-zeile">
+        {d.tags.map((t) => <a href={`/tags/${t}`}>{t}</a>)}
+      </div>
+    )}
+  </div>
+
+  <Stern id={note.id} />
+</article>
+
+<figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
+
+{kopf.video && (
+  <div class="begleiter" id="begleiter" data-video={kopf.video}>
+    <div class="begleiter__knopf">▶</div>
+    <div class="begleiter__buehne">
+      <div id="buehne"></div>
+      <div class="begleiter__leiste">
+        <span>bei <b id="beiZeit">0:00</b></span>
+        <span class="begleiter__zu" id="zu">schließen</span>
+      </div>
+    </div>
+  </div>
+)}
+
+<script define:vars={{ verbindungen: kopf.verbindungen ?? [] }}>
+/* Rand-Karten aus den geernteten Verbindungen.
+   Welche Verbindung zu welchem Abschnitt gehört, ist ein Urteil — hier
+   verteilen wir sie vorerst gleichmäßig über die Abschnitte. Das richtige
+   Zuordnen ist eine Aufgabe für Montaigne, nicht für ein Build-Skript. */
+const abschnitte = [...document.querySelectorAll("#text h3")];
+verbindungen.slice(0, abschnitte.length).forEach((v, i) => {
+  const ziel = abschnitte[Math.floor((i + 1) * abschnitte.length / (verbindungen.length + 1))]
+            ?? abschnitte[i];
+  const absatz = ziel?.nextElementSibling;
+  if (!absatz || absatz.tagName !== "P") return;
+  const karte = document.createElement("span");
+  karte.className = "nebenan";
+  karte.innerHTML =
+    `<a href="${v.url ?? "#"}">` +
+    `<span class="nebenan__label">Verwandt</span>` +
+    `<span class="nebenan__titel"></span>` +
+    `<span class="nebenan__warum"></span></a>`;
+  karte.querySelector(".nebenan__titel").textContent = v.titel;
+  karte.querySelector(".nebenan__warum").textContent =
+    v.warum.length > 190 ? v.warum.slice(0, 187).replace(/\s\S*$/, "") + " …" : v.warum;
+  absatz.appendChild(karte);
+});
+
+const beobachter = new IntersectionObserver(
+  (e) => e.forEach((x) => x.isIntersecting && x.target.classList.add("da")),
+  { rootMargin: "0px 0px -20% 0px" },
+);
+document.querySelectorAll(".nebenan").forEach((n) => beobachter.observe(n));
+</script>
+
+<script src="/leser.js" is:inline></script>
+</body>
+</html>

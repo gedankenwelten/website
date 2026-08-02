@@ -1,0 +1,153 @@
+/* ══════════════════════════════════════════════════════════════════
+   Der Stern — Nachbarschaft einer Note
+   Zwei Kantenarten: gedacht (durchgezogen) · geteilt (gestrichelt)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Die Rubrikfarben der Startseite, aufs Papier übersetzt. Der Farbton
+   bleibt — Zeitgeist ist weiter violett, Spuren weiter rosé —, aber die
+   Neonsättigung, die auf schwarzem Grund funktioniert, würde einer warmen
+   Seite die Ruhe nehmen. */
+:root {
+  --r-zeitgeist:   #7c6bb0;
+  --r-denker:      #5a5da8;
+  --r-denkervita:  #a3764a;
+  --r-panorama:    #3d9b8e;
+  --r-gedanken:    #b8801f;
+  --r-geistesblitz:#a58a17;
+  --r-kultur:      #2f8a89;
+  --r-goodnews:    #4a8f57;
+  --r-spuren:      #b85a68;
+  --r-vipassana:   #8a7f6a;
+}
+[data-theme="dunkel"] {
+  --r-zeitgeist:   #b9a6f0;
+  --r-denker:      #9296ee;
+  --r-denkervita:  #d0a377;
+  --r-panorama:    #6fd3c4;
+  --r-gedanken:    #e0aa4a;
+  --r-geistesblitz:#dcbb45;
+  --r-kultur:      #62c2c0;
+  --r-goodnews:    #7cc78c;
+  --r-spuren:      #ec8b96;
+  --r-vipassana:   #a89d88;
+}
+
+.stern {
+  width: calc(var(--marge) + var(--spalte) + var(--neben) + 2 * var(--luft));
+  margin: 7rem auto 0;
+}
+
+/* Dieselbe leise Rubrikmarke wie im Text — der Stern ist ein Abschnitt
+   der Seite, kein angehängtes Werkzeug. */
+.stern h2 {
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
+  color: var(--tinte-fern);
+  margin: 0 0 1.2rem; display: flex; align-items: center; gap: 1.4rem;
+}
+.stern h2::before, .stern h2::after { content: ""; flex: 1; height: 1px; background: var(--linie); }
+
+.stern__buehne { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* ── Kanten ───────────────────────────────────────────────────────
+   Der Wikilink ist Tinte: eine Verbindung, die schon jemand geschrieben
+   hat. Die geteilte Quelle ist Akzent, weil sie ein Fund ist — und
+   gestrichelt, weil sie nur angelegt ist, nicht gezogen. */
+
+.kante__fang { stroke: transparent; stroke-width: 15; fill: none; }
+.kante__strich { fill: none; vector-effect: non-scaling-stroke; transition: stroke .25s, opacity .25s, stroke-width .25s; }
+
+.kante--wikilink .kante__strich { stroke: var(--tinte-fern); stroke-width: 1; opacity: .42; }
+.kante--quelle   .kante__strich { stroke: var(--akzent); stroke-width: 1.25; opacity: .72; stroke-dasharray: 2.5 5; }
+
+/* Kanten zwischen den Nachbarn sind Hintergrund: sie erzählen, wer dort
+   draußen zusammengehört, ohne sich vor die Hauptsache zu stellen. */
+.kante--rand.kante--wikilink .kante__strich { opacity: .17; }
+.kante--rand.kante--quelle   .kante__strich { opacity: .3; stroke-width: 1; }
+
+.kante { cursor: help; }
+.kante.an .kante__strich { opacity: 1; stroke-width: 1.7; }
+.kante.an.kante--wikilink .kante__strich { stroke: var(--tinte-leise); }
+.kante.aus .kante__strich { opacity: .07; }
+
+/* ── Knoten ───────────────────────────────────────────────────────── */
+
+.knoten { cursor: pointer; }
+.knoten__punkt {
+  fill: var(--punkt, var(--tinte-fern));
+  transition: r .22s cubic-bezier(.2,.8,.2,1), fill .25s;
+}
+.knoten__schrift {
+  font-family: -apple-system, "Inter", "Helvetica Neue", sans-serif;
+  fill: var(--tinte); transition: fill .25s;
+}
+.knoten__kopf { font-size: 12.5px; font-weight: 600; letter-spacing: -.004em; }
+.knoten__schwanz { font-size: 10.5px; font-weight: 400; fill: var(--tinte-leise); }
+
+.knoten--zeitgeist    { --punkt: var(--r-zeitgeist); }
+.knoten--denker       { --punkt: var(--r-denker); }
+.knoten--denkervita   { --punkt: var(--r-denkervita); }
+.knoten--panorama     { --punkt: var(--r-panorama); }
+.knoten--gedanken     { --punkt: var(--r-gedanken); }
+.knoten--geistesblitz { --punkt: var(--r-geistesblitz); }
+.knoten--kultur       { --punkt: var(--r-kultur); }
+.knoten--goodnews     { --punkt: var(--r-goodnews); }
+.knoten--spuren       { --punkt: var(--r-spuren); }
+.knoten--vipassana    { --punkt: var(--r-vipassana); }
+
+.knoten:hover .knoten__punkt, .knoten:focus-visible .knoten__punkt { r: 5; }
+.knoten:hover .knoten__kopf, .knoten:focus-visible .knoten__kopf { fill: var(--akzent); }
+.knoten:focus { outline: none; }
+.knoten:focus-visible .knoten__schrift { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Du bist hier. Kein Etikett — der Titel steht oben auf der Seite. */
+.knoten--mitte { cursor: default; }
+.knoten--mitte .knoten__punkt { fill: var(--akzent); }
+.knoten--mitte .knoten__hof {
+  fill: none; stroke: var(--akzent); stroke-width: 1; opacity: .32;
+}
+
+/* Beim Heben tritt die berührte Nachbarschaft vor, der Rest weicht
+   zurück — nichts verschwindet, es wird nur leiser. */
+.stern__buehne.hebt .knoten.aus { opacity: .17; }
+.knoten { transition: opacity .25s; }
+.knoten.an .knoten__punkt { r: 4.6; }
+
+/* ── Die sprechende Zeile ─────────────────────────────────────────
+   Statt eines Kästchens am Mauszeiger: ein Satz, der sich ändert. */
+.stern__sage {
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: .8rem; line-height: 1.5; color: var(--tinte-fern);
+  margin: 1.2rem 0 0; min-height: 2.4em;
+  text-align: center; transition: color .25s;
+  text-wrap: pretty;
+}
+.stern__sage.wach { color: var(--tinte-leise); }
+
+.stern__schluessel {
+  display: flex; justify-content: center; gap: 1.8rem; margin-top: .3rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10px;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.stern__schluessel span { display: inline-flex; align-items: center; gap: .5rem; }
+.schl { display: block; width: 1.5rem; height: 0; }
+.schl--wiki   { border-top: 1px solid var(--tinte-fern); }
+.schl--quelle { border-top: 1.25px dashed var(--akzent); }
+
+/* ── Ankunft ──────────────────────────────────────────────────────
+   Nur wenn das Skript sie freigibt (`regt`) — sonst gilt das
+   `transform`-Attribut und der Stern steht von Anfang an. */
+.stern.regt .knoten {
+  opacity: 0;
+  transform: translate(var(--zx), var(--zy));
+}
+.stern.regt .stern__kanten { opacity: 0; }
+
+.stern.regt.da .knoten {
+  opacity: 1;
+  transform: translate(var(--x), var(--y));
+  transition: transform 1.15s cubic-bezier(.16,.84,.24,1) var(--takt),
+              opacity .8s ease var(--takt);
+}
+.stern.regt.da .stern__kanten { opacity: 1; transition: opacity 1s ease .5s; }
+.stern.regt.da .stern__buehne.hebt .knoten.aus { opacity: .17; }

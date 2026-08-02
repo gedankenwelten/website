@@ -1,0 +1,22 @@
+---
+import { getCollection, render } from "astro:content";
+import Note from "../layouts/Note.astro";
+import { slugify } from "../lib/slug.mjs";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes");
+  return notes.map((note) => {
+    const [rubrik, ...rest] = note.id.split("/");
+    return {
+      params: { pfad: `${rubrik}/${slugify(rest.join("/"))}` },
+      props: { note },
+    };
+  });
+}
+
+const { note } = Astro.props;
+const { Content, remarkPluginFrontmatter: kopf } = await render(note);
+---
+<Note note={note} kopf={kopf}>
+  <Content />
+</Note>
