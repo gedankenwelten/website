@@ -212,3 +212,21 @@ if (knopf) {
     localStorage.setItem("gw-theme", neu);
   };
 }
+
+/* ── Die Malerhand unter dem Bild ──
+   Im Markdown steht der 🎨-Block direkt unter dem Banner-Embed: die
+   Künstlerhand, für die sich `gedankenart` entschieden hat, samt Prompt.
+   Das Layout zieht das Bild aber in den Kopf — und ließ das Osterei
+   allein zwischen Titel und Quelle zurück, wo es nichts erklärt.
+   Hier geht es dorthin zurück, wo es hingehört: als Bildnachweis unter
+   das Bild. Ohne Javascript bleibt es im Text stehen, wo es lesbar ist,
+   nur eben unbegleitet. */
+{
+  const banner = document.querySelector(".banner");
+  const osterei = [...document.querySelectorAll("#text > details")]
+    .find((d) => (d.querySelector("summary")?.textContent ?? "").includes("🎨"));
+  if (banner && osterei) {
+    osterei.classList.add("malerhand");
+    banner.after(osterei);
+  }
+}

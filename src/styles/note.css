@@ -373,8 +373,10 @@ h1 {
 .begleiter.offen .begleiter__buehne { opacity: 1; }
 .begleiter__buehne iframe { width: 100%; flex: 1; border: 0; display: block; background: #000; }
 /* Im Normalfall ersetzt YouTube diesen Container durch das Iframe. Bleibt er
-   stehen (Ausweg bei blockiertem Player), muss er die Höhe selbst füllen. */
-.begleiter__buehne > div { flex: 1; display: flex; }
+   stehen (Ausweg bei blockiertem Player), muss er die Höhe selbst füllen.
+   Nur er: `> div` traf auch die Leiste darunter — die ist ebenfalls ein
+   `div`, bekam damit `flex: 1` und wuchs auf 110 px, wo 41 richtig sind. */
+.begleiter__buehne > #buehne { flex: 1; display: flex; }
 .begleiter__leiste {
   display: flex; align-items: center; gap: .7rem; padding: .55rem .8rem;
   font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
@@ -425,3 +427,37 @@ h1 {
   }
   .zu-schmal p { max-width: 22rem; font-size: 1rem; }
 }
+
+/* ── Die Malerhand ──
+   Der 🎨-Block, den `gedankenart` unter das Banner schreibt: Künstlerin
+   und Prompt. Er sitzt unter dem Bild wie ein Bildnachweis — rechts,
+   klein, geschlossen kaum mehr als ein Zeichen. Wer ihn aufklappt, will
+   wissen, wessen Hand das gemalt hat; wer nicht, sieht ein Bild. */
+details.malerhand {
+  margin: .55rem 0 0; text-align: right;
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: .78rem; line-height: 1.6; color: var(--tinte-leise);
+}
+details.malerhand summary {
+  display: inline-block; cursor: pointer; opacity: .45;
+  font-size: .82rem; padding: .1rem .3rem; border-radius: 4px;
+  transition: opacity .25s, background .25s;
+  list-style: none;
+}
+details.malerhand summary::-webkit-details-marker { display: none; }
+details.malerhand summary::before {
+  content: "gemalt von"; margin-right: .45em;
+  font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--tinte-fern); opacity: 0; transition: opacity .25s;
+}
+details.malerhand summary:hover { opacity: 1; background: var(--papier-tief); }
+details.malerhand summary:hover::before,
+details.malerhand[open] summary::before { opacity: 1; }
+details.malerhand[open] summary { opacity: 1; margin-bottom: .5rem; }
+details.malerhand p {
+  text-align: left; margin: 0 0 .8rem;
+  padding-left: 1.1rem; border-left: 1px solid var(--linie);
+}
+/* Der Prompt ist Werkzeug, kein Text — er darf leiser sein als die
+   Begründung darüber. */
+details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
