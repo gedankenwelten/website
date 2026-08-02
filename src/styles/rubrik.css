@@ -1,0 +1,207 @@
+/* ══════════════════════════════════════════════════════════════════
+   Die Rubrikseite — der Bestand ausgelegt
+   Kopf · Themenband · Bänder · Posten · Weiter
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Breiter als die Lesespalte, schmaler als das Blatt. Gelesen wird hier
+   nicht — hier wird überflogen, und dafür braucht die Zeile Länge, aber
+   keine Landebahn. Dieselbe Breite wie „Der Bestand" auf der Startseite. */
+.rubrik {
+  width: calc(var(--spalte) + var(--neben) + var(--luft));
+  margin: 0 auto; padding-bottom: 10rem;
+}
+
+/* ── Kopf ── */
+.rubrik__kopf { margin: 6.5rem 0 3.6rem; }
+
+.rubrik__zurueck {
+  margin: 0 0 2.8rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .17em; text-transform: uppercase;
+}
+.rubrik__zurueck a {
+  color: var(--tinte-fern); text-decoration: none;
+  border-bottom: 1px solid transparent; transition: color .2s, border-color .2s;
+}
+.rubrik__zurueck a:hover { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
+
+.rubrik__name {
+  font-size: 3.6rem; line-height: 1.05; letter-spacing: -.025em; font-weight: 600;
+  margin: 0 0 1.3rem;
+}
+.rubrik__satz {
+  margin: 0 0 2rem; max-width: 36rem;
+  font-size: 1.2rem; line-height: 1.6; font-style: italic;
+  color: var(--tinte-leise); text-wrap: pretty;
+}
+.rubrik__zahlen { margin: 0; }
+.rubrik__zahlen b { font-variant-numeric: tabular-nums; }
+
+.rubrik__gewaehlt {
+  color: var(--akzent); letter-spacing: .1em;
+}
+.rubrik__gewaehlt::before { content: "· "; color: var(--linie); }
+
+.rubrik__zurueckstellen button {
+  font-family: inherit; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--akzent); background: none; border: 0; padding: 0; margin-left: .4rem;
+  cursor: pointer; border-bottom: 1px solid var(--akzent-weich);
+}
+.rubrik__zurueckstellen button:hover { border-bottom-color: var(--akzent); }
+
+/* ── Themenband ──
+   Was der Bestand selbst über sich sagt. Kein Suchfeld: Suchen kann nur,
+   wer den Namen schon kennt — ein Thema antippen setzt nichts voraus. */
+.themen {
+  display: flex; flex-wrap: wrap; gap: .45rem;
+  padding-bottom: 2.6rem; margin-bottom: 3.4rem;
+  border-bottom: 1px solid var(--linie);
+}
+.thema {
+  font-family: -apple-system, "Inter", sans-serif; font-size: .76rem;
+  color: var(--tinte-leise); background: var(--papier);
+  border: 1px solid var(--linie); border-radius: 100px;
+  padding: .3rem .55rem .3rem .78rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: .42rem;
+  transition: color .2s, border-color .2s, background .2s;
+}
+.thema i {
+  font-style: normal; font-size: .68rem; color: var(--tinte-fern);
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid var(--linie); padding-left: .42rem;
+}
+.thema:hover { color: var(--akzent); border-color: var(--akzent-weich); }
+.thema.ist {
+  color: var(--papier); background: var(--akzent); border-color: var(--akzent);
+}
+.thema.ist i { color: var(--papier); opacity: .7; border-left-color: color-mix(in oklab, var(--papier) 40%, transparent); }
+
+/* ── Bänder ──
+   Der Monat (oder der Buchstabe) steht am linken Rand der Zeile, nicht
+   über ihr: eine Marke, die den Stapel gliedert, ohne ihn zu zerteilen. */
+.band { margin-bottom: 3.4rem; }
+
+.band__marke {
+  display: flex; align-items: center; gap: 1.2rem;
+  margin: 0 0 1.6rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
+  color: var(--tinte-fern);
+}
+.band__marke::after { content: ""; flex: 1; height: 1px; background: var(--linie); }
+
+/* ── Ein Posten ──
+   Zeile, nicht Kachel. Nur 148 der 748 Notes tragen einen Teaser und
+   knapp jede zweite ein Banner; ein Kachelraster stellte damit vor allem
+   seine Löcher aus. Die Zeile trägt beides, wenn es da ist, und sieht
+   ohne genauso ganz aus. */
+.stapel { list-style: none; margin: 0; padding: 0; }
+
+.posten + .posten { border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent); }
+
+.posten > a {
+  display: flex; gap: 1.4rem; align-items: flex-start;
+  padding: 1.05rem .7rem 1.05rem .55rem; margin: 0 -.7rem 0 -.55rem;
+  border-radius: 4px; text-decoration: none; color: inherit;
+  border: 0 !important; transition: background .25s;
+}
+.posten > a:hover { background: var(--papier-tief); }
+
+.posten__bild {
+  flex: 0 0 auto; display: block; width: 138px; height: 58px;
+  object-fit: cover; border-radius: 3px; margin-top: .18rem;
+  background: var(--papier-tief);
+  filter: saturate(.88); opacity: .9;
+  transition: opacity .3s, filter .3s;
+}
+.posten > a:hover .posten__bild { opacity: 1; filter: saturate(1); }
+
+/* Wo kein Banner ist, steht kein grauer Kasten.
+   Bei Zeitgeist tragen nur 85 von 276 eins — ein Platzhalter mit Rahmen
+   ergäbe seitenweise Fehlanzeigen und stellte damit aus, was fehlt,
+   statt zu zeigen, was da ist. Der Platz bleibt (die Titel sollen auf
+   einer Kante stehen), aber leer bis auf einen Strich in der Farbe der
+   Rubrik: eine Marke, kein Loch. */
+.posten__bild--leer {
+  background: none; position: relative;
+  border-left: 2px solid var(--marke, var(--linie));
+  border-radius: 0; opacity: .5;
+}
+.posten > a:hover .posten__bild--leer { opacity: .9; }
+.posten__bild--zeitgeist    { --marke: var(--r-zeitgeist); }
+.posten__bild--denker       { --marke: var(--r-denker); }
+.posten__bild--denkervita   { --marke: var(--r-denkervita); }
+.posten__bild--geistesblitz { --marke: var(--r-geistesblitz); }
+.posten__bild--kultur       { --marke: var(--r-kultur); }
+.posten__bild--panorama     { --marke: var(--r-panorama); }
+.posten__bild--gedanken     { --marke: var(--r-gedanken); }
+.posten__bild--spuren       { --marke: var(--r-spuren); }
+.posten__bild--goodnews     { --marke: var(--r-goodnews); }
+.posten__bild--vipassana    { --marke: var(--r-vipassana); }
+
+.posten__text { display: block; min-width: 0; }
+
+.posten__datum {
+  display: block; margin-bottom: .3rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10px;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.posten__titel {
+  display: block; font-size: 1.16rem; line-height: 1.32; font-weight: 600;
+  letter-spacing: -.008em; text-wrap: pretty; transition: color .2s;
+}
+.posten > a:hover .posten__titel { color: var(--akzent); }
+
+.posten__teaser {
+  display: block; margin-top: .42rem; max-width: 40rem;
+  font-size: .95rem; line-height: 1.52; color: var(--tinte-leise);
+  text-wrap: pretty;
+}
+
+/* Das Register (DenkerVita) trägt nur Namen — 263 einzeilige Posten
+   untereinander wären eine Rolle Papier. Zwei Spalten, engere Zeile. */
+.stapel--register {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2.4rem;
+}
+.stapel--register .posten__bild { width: 92px; height: 40px; }
+.stapel--register .posten > a { padding-top: .7rem; padding-bottom: .7rem; gap: 1rem; }
+.stapel--register .posten__titel { font-size: 1.04rem; }
+/* Zwei der 263 Vitas tragen einen Teaser. Ungekürzt reißt so ein Absatz
+   eine Rasterzeile auf und lässt daneben ein Loch — also zwei Zeilen und
+   nicht mehr. */
+.stapel--register .posten__teaser {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; font-size: .88rem;
+}
+/* Der Strich trennt innerhalb einer Spalte — die erste Zeile der zweiten
+   Spalte steht oben und braucht keinen. */
+.stapel--register .posten:nth-child(-n+2) { border-top: 0; }
+
+.rubrik__leer {
+  margin: 2rem 0 4rem; font-style: italic; color: var(--tinte-leise);
+}
+
+/* ── Weiter ──
+   Eine Rubrikseite, die nur nach unten in Notes führt, ist eine Sackgasse
+   mit besserer Aussicht. Hier geht es quer weiter. */
+.weiter { margin-top: 7rem; padding-top: 2.4rem; border-top: 1px solid var(--linie); }
+.weiter h2 {
+  margin: 0 0 1.6rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
+  color: var(--tinte-fern);
+}
+.weiter ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem .55rem; }
+.weiter a {
+  display: inline-flex; align-items: center; gap: .55rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: .8rem;
+  color: var(--tinte-leise); text-decoration: none;
+  border: 1px solid var(--linie); border-radius: 100px;
+  padding: .38rem .8rem .38rem .7rem; transition: color .2s, border-color .2s;
+}
+.weiter a:hover { color: var(--akzent); border-color: var(--akzent-weich); }
+.weiter i {
+  font-style: normal; font-size: .7rem; color: var(--tinte-fern);
+  font-variant-numeric: tabular-nums;
+}

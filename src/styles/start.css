@@ -144,6 +144,7 @@
 }
 .regal__kopf {
   display: flex; align-items: center; gap: .6rem;
+  text-decoration: none; transition: color .2s, border-color .2s;
   font-family: -apple-system, "Inter", sans-serif; font-size: 11.5px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte);
   padding-bottom: .8rem; border-bottom: 1px solid var(--linie); margin-bottom: .9rem;
@@ -152,17 +153,8 @@
   margin-left: auto; font-style: normal; color: var(--tinte-fern);
   font-variant-numeric: tabular-nums; letter-spacing: .04em;
 }
-.regal__punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--tinte-fern); flex: 0 0 auto; }
-.regal__punkt--zeitgeist    { background: var(--r-zeitgeist); }
-.regal__punkt--denker       { background: var(--r-denker); }
-.regal__punkt--denkervita   { background: var(--r-denkervita); }
-.regal__punkt--panorama     { background: var(--r-panorama); }
-.regal__punkt--gedanken     { background: var(--r-gedanken); }
-.regal__punkt--geistesblitz { background: var(--r-geistesblitz); }
-.regal__punkt--kultur       { background: var(--r-kultur); }
-.regal__punkt--goodnews     { background: var(--r-goodnews); }
-.regal__punkt--spuren       { background: var(--r-spuren); }
-.regal__punkt--vipassana    { background: var(--r-vipassana); }
+.regal__kopf:hover { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
+.regal__kopf:hover i { color: var(--akzent); }
 
 /* Die Karte im Regal — hier darf es ein Raster sein. Unten, als Übersicht
    über die Breite, ist die Kachel genau richtig; falsch war sie nur als

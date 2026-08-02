@@ -3,34 +3,8 @@
    Zwei Kantenarten: gedacht (durchgezogen) · geteilt (gestrichelt)
    ══════════════════════════════════════════════════════════════════ */
 
-/* Die Rubrikfarben der Startseite, aufs Papier übersetzt. Der Farbton
-   bleibt — Zeitgeist ist weiter violett, Spuren weiter rosé —, aber die
-   Neonsättigung, die auf schwarzem Grund funktioniert, würde einer warmen
-   Seite die Ruhe nehmen. */
-:root {
-  --r-zeitgeist:   #7c6bb0;
-  --r-denker:      #5a5da8;
-  --r-denkervita:  #a3764a;
-  --r-panorama:    #3d9b8e;
-  --r-gedanken:    #b8801f;
-  --r-geistesblitz:#a58a17;
-  --r-kultur:      #2f8a89;
-  --r-goodnews:    #4a8f57;
-  --r-spuren:      #b85a68;
-  --r-vipassana:   #8a7f6a;
-}
-[data-theme="dunkel"] {
-  --r-zeitgeist:   #b9a6f0;
-  --r-denker:      #9296ee;
-  --r-denkervita:  #d0a377;
-  --r-panorama:    #6fd3c4;
-  --r-gedanken:    #e0aa4a;
-  --r-geistesblitz:#dcbb45;
-  --r-kultur:      #62c2c0;
-  --r-goodnews:    #7cc78c;
-  --r-spuren:      #ec8b96;
-  --r-vipassana:   #a89d88;
-}
+/* Die Rubrikfarben stehen in `note.css` — sie gehören inzwischen drei
+   Seiten (Stern, Startseite, Rubrik) und damit ins Grundblatt. */
 
 .stern {
   width: calc(var(--marge) + var(--spalte) + var(--neben) + 2 * var(--luft));

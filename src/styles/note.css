@@ -21,6 +21,22 @@
   --marge:   9.5rem;
   --neben:   16rem;
   --luft:    2.75rem;
+
+  /* Die Rubrikfarben, aufs Papier übersetzt. Der Farbton bleibt —
+     Zeitgeist ist violett, Spuren rosé —, aber die Neonsättigung, die auf
+     schwarzem Grund funktioniert, nähme einer warmen Seite die Ruhe.
+     Stehen hier und nicht bei einer Seite: Stern, Startseite und
+     Rubrikseite sprechen dieselbe Farbe. */
+  --r-zeitgeist:   #7c6bb0;
+  --r-denker:      #5a5da8;
+  --r-denkervita:  #a3764a;
+  --r-panorama:    #3d9b8e;
+  --r-gedanken:    #b8801f;
+  --r-geistesblitz:#a58a17;
+  --r-kultur:      #2f8a89;
+  --r-goodnews:    #4a8f57;
+  --r-spuren:      #b85a68;
+  --r-vipassana:   #8a7f6a;
 }
 
 [data-theme="dunkel"] {
@@ -36,6 +52,17 @@
   --gelb:        #d9b45c;
   --rot:         #e0796b;
   --schatten:    0 8px 34px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35);
+
+  --r-zeitgeist:   #b9a6f0;
+  --r-denker:      #9296ee;
+  --r-denkervita:  #d0a377;
+  --r-panorama:    #6fd3c4;
+  --r-gedanken:    #e0aa4a;
+  --r-geistesblitz:#dcbb45;
+  --r-kultur:      #62c2c0;
+  --r-goodnews:    #7cc78c;
+  --r-spuren:      #ec8b96;
+  --r-vipassana:   #a89d88;
 }
 
 * { box-sizing: border-box; }
@@ -110,6 +137,11 @@ body {
 }
 .kennung b { color: var(--akzent); font-weight: 600; }
 .kennung i { color: var(--linie); font-style: normal; }
+.kennung__rubrik {
+  color: inherit; text-decoration: none;
+  border-bottom: 1px solid transparent; transition: border-color .2s;
+}
+.kennung__rubrik:hover { border-bottom-color: var(--akzent); }
 
 h1 {
   font-size: 3.05rem; line-height: 1.1; letter-spacing: -.021em;
@@ -309,12 +341,15 @@ h1 {
 
 /* ── Fuß ── */
 .marken-zeile { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 3.5rem; }
-.marken-zeile a {
+.marken-zeile a, .marken-zeile span {
   font-family: -apple-system, "Inter", sans-serif; font-size: .74rem;
   color: var(--tinte-leise); text-decoration: none; border: 1px solid var(--linie);
   padding: .28rem .7rem; border-radius: 100px; transition: all .2s;
 }
 .marken-zeile a:hover { color: var(--akzent); border-color: var(--akzent); }
+/* Eine Marke, die in ihrer Rubrik nichts trennt, führt nirgendwohin —
+   und sieht auch nicht so aus, als täte sie es. */
+.marken-zeile span { color: var(--tinte-fern); border-style: dotted; }
 
 /* ── Begleiter ── */
 .begleiter {
@@ -366,6 +401,19 @@ h1 {
   padding: .42rem .95rem; cursor: pointer; text-decoration: none; transition: all .2s;
 }
 .schalter button:hover, .schalter a:hover { color: var(--akzent); border-color: var(--akzent); }
+
+/* Die Rubrikmarke als Punkt — Startseite, Rubrikseite, Fußnavigation. */
+.regal__punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--tinte-fern); flex: 0 0 auto; }
+.regal__punkt--zeitgeist    { background: var(--r-zeitgeist); }
+.regal__punkt--denker       { background: var(--r-denker); }
+.regal__punkt--denkervita   { background: var(--r-denkervita); }
+.regal__punkt--panorama     { background: var(--r-panorama); }
+.regal__punkt--gedanken     { background: var(--r-gedanken); }
+.regal__punkt--geistesblitz { background: var(--r-geistesblitz); }
+.regal__punkt--kultur       { background: var(--r-kultur); }
+.regal__punkt--goodnews     { background: var(--r-goodnews); }
+.regal__punkt--spuren       { background: var(--r-spuren); }
+.regal__punkt--vipassana    { background: var(--r-vipassana); }
 
 /* ── Notdurft für schmale Fenster (keine Mobilversion) ── */
 .zu-schmal { display: none; }

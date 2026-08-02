@@ -18,7 +18,10 @@ const faeden = alleFaeden(7);
 const idx = ladeIndex();
 const g = ladeGraph();
 
-const notes = idx.alle.filter((n) => !g.katalog.has(n.id));
+/* Ohne die Kataloge und ohne die beiden alten Quartz-Deckblätter
+   (`Zeitgeist/index`, `GoodNews/index`) — sonst zählte das Regal einen
+   Bestand, den die Rubrikseite daneben anders zählt. */
+const notes = idx.alle.filter((n) => !g.katalog.has(n.id) && n.basis.toLowerCase() !== "index");
 const datiert = notes.map((n) => n.datum).filter(Boolean).sort();
 const [erstesDatum, letztesDatum] = [datiert[0], datiert[datiert.length - 1]];
 
@@ -162,11 +165,14 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
     <div class="bestand__gitter">
       {rubriken.map((r) => (
         <div class="regal">
-          <div class="regal__kopf">
+          {/* Der Regalkopf führt in die Rubrik. Vorher zeigte er drei
+              Titel und endete dort — die Zahl daneben nannte einen
+              Bestand, den man nicht sehen konnte. */}
+          <a class="regal__kopf" href={`/${r.name}`}>
             <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
             {r.name}
             <i>{r.anzahl}</i>
-          </div>
+          </a>
 
           <a class="karte" href={r.kopf.url}>
             {r.kopf.vorschau

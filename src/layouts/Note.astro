@@ -2,6 +2,7 @@
 import "../styles/note.css";
 import "../styles/stern.css";
 import Stern from "../components/Stern.astro";
+import { filterbareThemen } from "../lib/rubriken.mjs";
 
 const { note, kopf } = Astro.props;
 const d = note.data;
@@ -19,6 +20,11 @@ const datum = d.aktualisiert instanceof Date
   : d.aktualisiert ?? null;
 
 const rubrik = note.id.split("/")[0];
+/* Die Marken unter dem Text zeigten bisher auf `/tags/…` — eine Seite,
+   die es nie gab. Jetzt führen sie in die eigene Rubrik, auf dieses Thema
+   gefiltert. Was dort nichts trennt (der Typ-Tag, das Jahr, der Autor),
+   bleibt stehen, wird aber nicht zum Link. */
+const filterbar = filterbareThemen(rubrik);
 ---
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
@@ -53,7 +59,10 @@ const rubrik = note.id.split("/")[0];
     {kopf.banner && <img class="banner" src={kopf.banner} alt="">}
 
     <div class="kennung">
-      <b>{rubrik}</b>
+      {/* Die Rubrikmarke ist die einzige Navigation im Kopf der Note —
+          von hier führt sie jetzt in die Rubrik statt nur zu sagen, in
+          welcher man ist. */}
+      <b><a class="kennung__rubrik" href={`/${rubrik}`}>{rubrik}</a></b>
       {datum && <><i>·</i>{datum}</>}
       {dauer > 0 && <><i>·</i>{hm(dauer)} h</>}
       {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
@@ -68,7 +77,9 @@ const rubrik = note.id.split("/")[0];
 
     {d.tags?.length > 0 && (
       <div class="marken-zeile">
-        {d.tags.map((t) => <a href={`/tags/${t}`}>{t}</a>)}
+        {d.tags.map((t) => filterbar.has(t)
+          ? <a href={`/${rubrik}?thema=${encodeURIComponent(t)}`}>{t}</a>
+          : <span>{t}</span>)}
       </div>
     )}
   </div>

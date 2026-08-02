@@ -1,0 +1,295 @@
+---
+/**
+ * Eine Rubrik in ganzer Breite.
+ *
+ * Der Faden auf der Startseite führt — er zeigt sieben Notes und lässt
+ * 741 liegen. Das ist seine Stärke und zugleich der Punkt, an dem er
+ * endet: Wer bei „Zeitgeist, 277" ankommt, will irgendwann nicht mehr
+ * geführt werden, sondern *sehen*, was da ist. Diese Seite legt aus,
+ * statt zu führen.
+ *
+ * Zwei Zugänge, weil der Bestand zwei Fragen kennt. **Wann** — die
+ * Bänder nach Monaten, die Zeitleiste am Rand zeigt die Tiefe. Und
+ * **worum** — das Themenband über der Liste, aus den Tags der Rubrik
+ * selbst gebaut. Beides ohne Suchfeld: Suchen kann nur, wer den Namen
+ * schon kennt.
+ */
+import "../styles/note.css";
+import "../styles/rubrik.css";
+import { RUBRIKEN_INFO, rubrikBestand, alleRubriken, langDatum, monatJahr } from "../lib/rubriken.mjs";
+
+export function getStaticPaths() {
+  return Object.keys(RUBRIKEN_INFO).map((rubrik) => ({ params: { rubrik } }));
+}
+
+const { rubrik } = Astro.params;
+const b = rubrikBestand(rubrik);
+const andere = alleRubriken().filter((r) => r.name !== rubrik);
+
+/* Wo ein Band auf der Zeitleiste sitzt. Bei der zeitlichen Ordnung nach
+   dem echten Datum — dann steht die dichte Woche auch als dichte Gruppe
+   von Strichen da, und man sieht die Arbeitsschübe. Beim Register zählt
+   nur die Reihenfolge: Zwischen H und I liegt keine Strecke. */
+const spanne = (b.von && b.bis) ? Date.parse(b.bis) - Date.parse(b.von) || 1 : 1;
+const tiefeVon = (band, i) => b.ordnung === "abc"
+  ? (b.baender.length > 1 ? i / (b.baender.length - 1) : 0)
+  : (band.posten[0]?.datum ? (Date.parse(b.bis) - Date.parse(band.posten[0].datum)) / spanne : 0);
+
+const kopfMarke = b.ordnung === "abc"
+  ? (b.baender[0]?.marke ?? "A")
+  : (b.bis ? monatJahr(b.bis) : "");
+const fussMarke = b.ordnung === "abc"
+  ? (b.baender[b.baender.length - 1]?.marke ?? "Z")
+  : (b.von ? monatJahr(b.von) : "");
+
+/* Nur bei zeitlicher Ordnung. Ein Register ist kein Zeitraum: Wann die
+   Vita zu Hannah Arendt geschrieben wurde, sagt über das Register nichts
+   und über Hannah Arendt gar nichts. */
+const zeitraum = b.ordnung !== "abc" && b.von && b.bis
+  ? (b.von.slice(0, 7) === b.bis.slice(0, 7) ? monatJahr(b.bis) : `${monatJahr(b.von)} bis ${monatJahr(b.bis)}`)
+  : null;
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{rubrik} · Gedankenwelten</title>
+  <meta name="description" content={b.satz}>
+  <meta name="robots" content="noindex, follow">
+</head>
+<body class="ist-rubrik">
+
+<div class="zu-schmal">
+  <p>Diese Fassung ist für den großen Schirm gemacht — sie braucht ihre Ränder.<br><br>
+  <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
+</div>
+
+<div class="schalter">
+  <button id="theme">Dunkel</button>
+</div>
+
+{/* Die Leiste zeigt, wo man in der Rubrik steht. Bei einem einzigen Band
+    stünde oben und unten dasselbe Wort und der Zeiger bewegte sich nie —
+    eine Auskunft, die keine ist. */}
+{b.baender.length > 1 && (
+  <div class="rail" id="rail">
+    <div class="rail__cap rail__cap--oben">{kopfMarke}</div>
+    <div class="rail__line"></div>
+    <div class="rail__cap rail__cap--unten">{fussMarke}</div>
+  </div>
+)}
+
+{/* Kein `blatt`: Das Blatt ist die Breite der Note, mit ihrer Marge für
+    die Zeitstempel. Hier gibt es keine Marginalien — die Seite setzt ihre
+    Breite selbst. */}
+<main class="rubrik">
+
+  <header class="rubrik__kopf">
+    <p class="rubrik__zurueck"><a href="/">Gedankenwelten</a></p>
+
+    <h1 class="rubrik__name">{rubrik}</h1>
+    <p class="rubrik__satz">{b.satz}</p>
+
+    <div class="kennung rubrik__zahlen">
+      <b id="sichtbar">{b.anzahl}</b>
+      <span id="sichtbarWort">{b.anzahl === 1 ? "Note" : "Notes"}</span>
+      {zeitraum && <><i>·</i><span id="zeitraum">{zeitraum}</span></>}
+      <span class="rubrik__gewaehlt" id="gewaehlt" hidden></span>
+      <span class="rubrik__zurueckstellen" id="zurueckstellen" hidden>
+        <button type="button">alle zeigen</button>
+      </span>
+    </div>
+  </header>
+
+  {b.themen.length > 1 && (
+    <nav class="themen" aria-label="Themen">
+      {b.themen.map((t) => (
+        <button class="thema" type="button" data-thema={t.name}>
+          {t.name}<i>{t.anzahl}</i>
+        </button>
+      ))}
+    </nav>
+  )}
+
+  <div class="baender">
+    {b.baender.map((band, i) => (
+      <section class="band" data-tiefe={tiefeVon(band, i).toFixed(4)} data-marke={band.marke}>
+        <h2 class="band__marke"><span>{band.marke}</span></h2>
+
+        <ol class={`stapel${b.ordnung === "abc" ? " stapel--register" : ""}`}>
+          {band.posten.map((p) => (
+            <li class="posten" data-themen={p.themen.join(" ")}>
+              <a href={p.url}>
+                {p.bild
+                  ? <img class="posten__bild" src={p.bild} alt="" width="1200" height="500" loading="lazy" decoding="async">
+                  : <span class={`posten__bild posten__bild--leer posten__bild--${rubrik.toLowerCase()}`}></span>}
+
+                <span class="posten__text">
+                  {b.ordnung !== "abc" && p.datum && <span class="posten__datum">{langDatum(p.datum)}</span>}
+                  <b class="posten__titel">{p.titel}</b>
+                  {p.teaser && <span class="posten__teaser">{p.teaser}</span>}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+
+  <p class="rubrik__leer" id="leer" hidden>Zu diesem Thema steht hier nichts.</p>
+
+  {/* Eine Rubrikseite, die nur in Notes hineinführt, ist eine Sackgasse
+      mit besserer Aussicht. Unten geht es darum quer weiter. */}
+  <nav class="weiter" aria-label="Andere Rubriken">
+    <h2>Weiter im Bestand</h2>
+    <ul>
+      {andere.map((r) => (
+        <li>
+          <a href={`/${r.name}`}>
+            <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
+            {r.name}<i>{r.anzahl}</i>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+</main>
+
+<script>
+  /* ── Die Zeitleiste ──
+     Dieselbe Leiste wie auf der Note (Ort im Gespräch) und auf der
+     Startseite (Ort im Bestand), hier: Ort in der Rubrik. Ein Strich je
+     Band, der Zeiger folgt dem Scrollen. Beim Filtern wird sie neu
+     gesetzt — sonst zeigte sie eine Tiefe an, die gerade niemand sieht. */
+  const rail = document.getElementById("rail");
+  const OBEN = 116, UNTEN = 108;
+  const yVon = (p) => `calc(${OBEN}px + (100% - ${OBEN + UNTEN}px) * ${p})`;
+
+  let zeiger = null, marken = [], aktiv = null;
+
+  function leisteBauen() {
+    if (!rail) return;
+    for (const m of marken) m.remove();
+    marken = [];
+    for (const band of document.querySelectorAll(".band:not([hidden])")) {
+      const m = document.createElement("div");
+      m.className = "mark";
+      m.style.top = yVon(+band.dataset.tiefe);
+      m.title = band.dataset.marke;
+      m.onclick = () => band.scrollIntoView({ block: "start", behavior: "smooth" });
+      rail.appendChild(m);
+      marken.push(m);
+      band._marke = m;
+    }
+    if (!zeiger) {
+      zeiger = document.createElement("div");
+      zeiger.className = "zeiger";
+      zeiger.innerHTML = '<span class="zeiger__zeit"></span>';
+      rail.appendChild(zeiger);
+    }
+    aktiv = null;
+    verfolgen();
+  }
+
+  function verfolgen() {
+    if (!zeiger) return;
+    const mitte = innerHeight * 0.34;
+    let beste = null, dist = Infinity;
+    for (const band of document.querySelectorAll(".band:not([hidden])")) {
+      const r = band.getBoundingClientRect();
+      if (r.top > innerHeight || r.bottom < 0) continue;
+      const d = Math.abs(r.top - mitte);
+      if (d < dist) { dist = d; beste = band; }
+    }
+    if (!beste || beste === aktiv) return;
+    aktiv?._marke?.classList.remove("ist");
+    aktiv = beste;
+    beste._marke?.classList.add("ist");
+    zeiger.style.top = yVon(+beste.dataset.tiefe);
+    zeiger.querySelector(".zeiger__zeit").textContent = beste.dataset.marke;
+  }
+
+  addEventListener("scroll", verfolgen, { passive: true });
+  addEventListener("resize", verfolgen);
+
+  /* ── Das Themenband ──
+     Kein Suchfeld: Wer sucht, muss den Namen schon kennen. Ein Thema
+     anzutippen setzt dagegen keine Kenntnis voraus — es zeigt nur, was
+     der Bestand selbst über sich sagt. Gefiltert wird im Browser; die
+     Notes liegen ohnehin alle im Dokument, und ein zweiter Satz Seiten
+     je Tag wäre für eine Geste, die man dreimal macht, zu viel. */
+  const posten = [...document.querySelectorAll(".posten")];
+  const baender = [...document.querySelectorAll(".band")];
+  const knoepfe = [...document.querySelectorAll(".thema")];
+  const zaehler = document.getElementById("sichtbar");
+  const zaehlerWort = document.getElementById("sichtbarWort");
+  const zurueck = document.getElementById("zurueckstellen");
+  const gewaehltMarke = document.getElementById("gewaehlt");
+  const zeitraumFeld = document.getElementById("zeitraum");
+  const leer = document.getElementById("leer");
+  let gewaehlt = null;
+
+  function filtern(thema, springen = true) {
+    gewaehlt = thema;
+    let sichtbar = 0;
+
+    for (const p of posten) {
+      const passt = !thema || p.dataset.themen.split(" ").includes(thema);
+      p.hidden = !passt;
+      if (passt) sichtbar++;
+    }
+    for (const band of baender) {
+      band.hidden = !band.querySelector(".posten:not([hidden])");
+    }
+
+    for (const k of knoepfe) k.classList.toggle("ist", k.dataset.thema === thema);
+    zaehler.textContent = String(sichtbar);
+    zaehlerWort.textContent = sichtbar === 1 ? "Note" : "Notes";
+    zurueck.hidden = !thema;
+    leer.hidden = sichtbar > 0;
+
+    /* Nicht jedes Thema hat einen Knopf — im Band stehen die 26
+       häufigsten, aus einer Note kommt man auch mit einem seltenen
+       hierher. Dann sagt es wenigstens die Kopfzeile. */
+    gewaehltMarke.hidden = !thema;
+    gewaehltMarke.textContent = thema ?? "";
+
+    /* Der Zeitraum daneben muss mitgehen: „5 Notes, April bis Juli"
+       stimmt nach dem Filtern selten noch, und eine Zahl neben einer
+       falschen Spanne ist schlechter als keine. Die sichtbaren Bänder
+       sagen es genau. */
+    if (zeitraumFeld) {
+      const sichtbareBaender = [...document.querySelectorAll(".band:not([hidden])")];
+      const erst = sichtbareBaender[0]?.dataset.marke;
+      const letzt = sichtbareBaender[sichtbareBaender.length - 1]?.dataset.marke;
+      zeitraumFeld.textContent = !erst ? "" : erst === letzt ? erst : `${letzt} bis ${erst}`;
+    }
+
+    /* Der Filter gehört in die Adresse: Die Marken unter einer Note
+       führen so hierher, und ein geteilter Link zeigt, was er zeigte. */
+    const ziel = thema ? `?thema=${encodeURIComponent(thema)}` : location.pathname;
+    history.replaceState(null, "", ziel);
+
+    leisteBauen();
+    /* Wer ein Thema wählt, hat den Kopf der Seite meist schon verlassen.
+       Ohne diesen Sprung ändert sich weit oben eine Zahl und weit unten
+       eine Liste, die man gerade nicht ansieht. */
+    if (springen) document.querySelector(".baender").scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  for (const k of knoepfe) {
+    k.addEventListener("click", () => filtern(k.dataset.thema === gewaehlt ? null : k.dataset.thema));
+  }
+  zurueck?.querySelector("button")?.addEventListener("click", () => filtern(null));
+
+  const ausDerAdresse = new URLSearchParams(location.search).get("thema");
+  if (ausDerAdresse) filtern(ausDerAdresse, false);
+  else leisteBauen();
+</script>
+
+<script src="/leser.js" is:inline></script>
+</body>
+</html>
