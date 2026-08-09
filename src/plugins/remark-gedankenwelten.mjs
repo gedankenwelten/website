@@ -58,8 +58,13 @@ export default function remarkGedankenwelten() {
       if (id) fm.video = id[1];
     });
 
-    /* ── 1. Zeitstempel in den Rand ─────────────────────────────────── */
-    visit(tree, "paragraph", (absatz) => {
+    /* ── 1. Zeitstempel in den Rand ─────────────────────────────────
+       Auch aus Überschriften, nicht nur aus Absätzen: Im Bestand stehen
+       elf verlinkte und einundfünfzig unverlinkte Zeitstempel in einer
+       Überschrift. Blieben sie dort, hieße ein Abschnitt „Einleitung und
+       Grundsatzkritik [▶ 0:00]" — die Marke gehört in den Rand, auch wenn
+       sie neben einer Überschrift steht. */
+    visit(tree, ["paragraph", "heading"], (absatz) => {
       let n = 0;
       visit(absatz, "link", (node) => {
         const erstes = node.children?.[0];
@@ -77,6 +82,47 @@ export default function remarkGedankenwelten() {
         node.children = [{ type: "text", value: erstes.value.replace("▶", "").trim() }];
         delete node.url;
         n++;
+      });
+    });
+
+    /* ── 1b. Zeitstempel ohne Ziel ──────────────────────────────────
+       Podcast-Notes tragen `[▶ 12:34]` ohne Link. Das ist kein Fehler,
+       sondern der Normalfall dort: Die Folge liegt hinter einer
+       Steady-Schranke, es gibt keine Adresse, auf die man zeigen könnte —
+       `vtt_to_txt.py` schreibt für Podcasts darum nur die Marke.
+
+       Ohne diesen Schritt blieben sie als rohe Klammern mitten im Satz
+       stehen (275 Stück in zehn Notes), während ihre verlinkten
+       Geschwister in den Rand wandern. Sie bekommen dieselbe Form, nur
+       ohne Klick: Wo eine Passage im Gespräch sitzt, ist auch ohne Ziel
+       eine Auskunft — und die Zeitleiste am linken Rand lebt davon. */
+    const OHNE_ZIEL = /\[▶\s*(\d{1,3}):(\d{2})(?::(\d{2}))?\]/g;
+    visit(tree, ["paragraph", "heading"], (absatz) => {
+      let n = 0;
+      visit(absatz, "text", (node, i, eltern) => {
+        if (!eltern || !node.value.includes("▶")) return;
+        const teile = [];
+        let rest = 0, m;
+        OHNE_ZIEL.lastIndex = 0;
+        while ((m = OHNE_ZIEL.exec(node.value))) {
+          if (m.index > rest) teile.push({ type: "text", value: node.value.slice(rest, m.index) });
+          const [, a, b, c] = m;
+          // `12:34` sind Minuten und Sekunden, `1:02:03` Stunden dazu.
+          const t = c ? +a * 3600 + +b * 60 + +c : +a * 60 + +b;
+          const eigen = { className: ["ts", "ts--stumm"], "data-t": String(t) };
+          if (n > 0) eigen.style = `top:calc(.5em + ${(n * 1.55).toFixed(2)}em)`;
+          teile.push({
+            type: "emphasis",
+            data: { hName: "span", hProperties: eigen },
+            children: [{ type: "text", value: m[0].slice(1, -1).replace("▶", "").trim() }],
+          });
+          n++;
+          rest = m.index + m[0].length;
+        }
+        if (!teile.length) return;
+        if (rest < node.value.length) teile.push({ type: "text", value: node.value.slice(rest) });
+        eltern.children.splice(i, 1, ...teile);
+        return i + teile.length;
       });
     });
 

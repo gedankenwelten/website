@@ -217,6 +217,10 @@ h1 {
 .strang h4 { font-size: 1.15rem; margin: 3rem 0 1rem; font-weight: 600; }
 
 .strang p { margin: 0 0 1.5rem; position: relative; text-wrap: pretty; }
+/* Auch die Überschriften tragen Randanker — der Anker sitzt absolut
+   und braucht seinen Bezug im Block, sonst rutschte er an den Kopf
+   des ganzen Textes statt neben seine Zeile. */
+.strang h2, .strang h3, .strang h4 { position: relative; }
 .strang hr { border: 0; height: 3rem; }
 .strang ul, .strang ol { margin: 0 0 1.5rem; padding-left: 1.4rem; }
 .strang li { margin-bottom: .5rem; }
@@ -388,11 +392,25 @@ h1 {
   letter-spacing: .06em;
 }
 
+/* Jeder Eintrag ist ein Kästchen mit Polster ringsum, nach außen wieder
+   herausgezogen — so steht der Text bündig in der Spalte, aber die
+   Tönung beim Berühren umschließt ihn, statt an ihm zu kleben.
+   Die Trennlinie ist ein Pseudo-Element auf Textbreite und kein Rahmen
+   am Kästchen: Ein Rahmen liefe durch die Tönung hindurch. */
 .verwandt__liste { list-style: none; margin: 0; padding: 0; }
-.verwandt__liste li + li {
-  margin-top: 1.15rem; padding-top: 1.15rem;
-  border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent);
+.verwandt__liste li {
+  position: relative; padding: .9rem 1rem; margin: 0 -1rem;
+  border-radius: 6px; transition: background .3s ease, box-shadow .3s ease;
 }
+.verwandt__liste li + li::before {
+  content: ""; position: absolute; left: 1rem; right: 1rem; top: 0; height: 1px;
+  background: color-mix(in oklab, var(--linie) 55%, transparent);
+  transition: opacity .3s ease;
+}
+/* Um das getönte Kästchen herum keine Linien — sie führen sonst an ihm
+   entlang und machen aus einem Feld einen Kasten mit Naht. */
+.verwandt__liste li.ist-nah::before,
+.verwandt__liste li.ist-nah + li::before { opacity: 0; }
 .verwandt__liste a {
   display: block; text-decoration: none; color: inherit; border: 0 !important;
 }
@@ -745,20 +763,26 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
   .verwandt__kopf  { font-size: 10px; }
   .verwandt__titel { font-size: 1.05rem; }
   .verwandt__warum { font-size: .92rem; line-height: 1.62; }
-  .verwandt__liste li + li { margin-top: 1.4rem; padding-top: 1.4rem; }
+  .verwandt__liste li { padding: 1.05rem 1.15rem; margin: 0 -1.15rem; }
+  .verwandt__liste li + li::before { left: 1.15rem; right: 1.15rem; }
 }
 
 /* ── Stern ↔ Nachbarschaft ──
    Was im einen berührt wird, leuchtet im anderen auf. Kein neues Element,
    nur eine Marke am Rand: Ein Kasten oder ein Rahmen wäre lauter als die
    Auskunft, die er gibt. */
-/* Eine Tönung, kein Strich am Rand: Der Kasten rollt in sich selbst, und
-   was links über seine Kante ragt, schneidet der Überlauf ab. */
-.verwandt__liste li {
-  border-radius: 4px; padding-left: .7rem; margin-left: -.7rem;
-  transition: background .25s;
-}
+/* Tönung und ein Strich *innen* — außen läge er über der Kante des
+   Kastens, und die schneidet der Überlauf ab. */
 .verwandt__liste li.ist-nah {
-  background: color-mix(in oklab, var(--akzent-weich) 55%, transparent);
+  background: color-mix(in oklab, var(--akzent-weich) 45%, transparent);
+  box-shadow: inset 2px 0 0 var(--akzent);
 }
 .verwandt__liste li.ist-nah .verwandt__titel { color: var(--akzent); }
+
+/* Zeitstempel ohne Ziel (Podcast-Notes): dieselbe Marke am Rand, aber
+   kein Angebot zu klicken — es gibt keinen Begleiter, den sie öffnen
+   könnten. Ein Zeigefinger, der nichts auslöst, ist ein Versprechen,
+   das die Seite nicht hält. */
+.ts--stumm { cursor: default; }
+.ts--stumm::after { content: none; }
+.ts--stumm:hover { color: var(--tinte-fern); }
