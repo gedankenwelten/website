@@ -86,7 +86,6 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       steht außerhalb und bliebe ohnehin draußen; die Marken darunter
       sind Navigation und würden als Treffer nur Wortsalat ergeben.
       Die Rubrik kommt als Filter mit, das Datum zum Sortieren. */}
-  <div class="mitspalte">
   <div class="strang" id="text"
        data-pagefind-body={nichtSuchbar ? undefined : true}
        data-pagefind-ignore={nichtSuchbar ? true : undefined}
@@ -135,7 +134,6 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       </div>
     </aside>
   )}
-  </div>
 
   <Stern id={note.id} />
 </article>

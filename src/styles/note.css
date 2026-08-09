@@ -21,6 +21,11 @@
   --marge:   9.5rem;
   --neben:   16rem;
   --luft:    2.75rem;
+  /* Der Abstand zwischen Text und Verwandtem — eigenes Maß, nicht `--luft`.
+     Die Nachbarschaft soll erkennbar *daneben* stehen und nicht am Satz
+     kleben; die Zeitmarken links dagegen gehören eng an den Text, sie
+     verweisen ja hinein. Zwei Abstände, zwei Aufgaben. */
+  --spalt:   2.75rem;
   --kopf:    3.4rem;   /* Höhe der Kopfleiste — Zeitleiste und Satz weichen ihr aus */
 
   /* Die Rubrikfarben, aufs Papier übersetzt. Der Farbton bleibt —
@@ -77,11 +82,23 @@
    Die Grundwerte bleiben unter 72 rem, damit die Seite über der
    1180-px-Schwelle nicht überläuft; erst darüber wird zugelegt. */
 @media (min-width: 1400px) {
-  :root { --spalte: 44rem; --marge: 11rem; --neben: 20rem; }
+  :root { --spalte: 45rem; --marge: 10.5rem; --neben: 21rem; --spalt: 4rem; }
 }
+/* Auf dem großen Schirm rückt die Note nach links und wird breiter, die
+   Nachbarschaft rutscht mit einem deutlichen Spalt nach rechts. Weil das
+   Blatt mittig steht, tut beides derselbe Handgriff: Es wird breiter, und
+   die Ränder wachsen nach außen.
+
+   Mit der Spalte wächst der Schriftgrad mit. Sonst würde nur die Zeile
+   länger, und Zeilenlänge ohne Schriftgrad ist genau die Verschlechterung,
+   die man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
 @media (min-width: 1700px) {
-  :root { --spalte: 46rem; --marge: 12rem; --neben: 25rem; --luft: 3rem; }
+  :root { --spalte: 50rem; --marge: 10rem; --neben: 32rem; --luft: 3rem; --spalt: 8rem; }
 }
+/* Die Schriftgrade dazu stehen am Dateiende — hier oben würden die
+   Grundregeln weiter unten sie wieder überschreiben (gleiche Spezifität,
+   spätere Zeile gewinnt). Die Maße oben funktionieren, weil sie
+   Eigenschaften auf `:root` setzen und dort niemand mehr nachkommt. */
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -140,8 +157,11 @@ body {
 
 /* ───────────────────────────  Seite  ─────────────────────────── */
 
+/* `relative`, weil die Nachbarschaft rechts daran hängt — sie soll oben
+   neben dem Banner beginnen, nicht erst beim Text. */
 .blatt {
-  width: calc(var(--marge) + var(--spalte) + var(--neben) + 2 * var(--luft));
+  position: relative;
+  width: calc(var(--marge) + var(--luft) + var(--spalte) + var(--spalt) + var(--neben));
   margin: 0 auto; padding: var(--kopf) 0 12rem;
 }
 .strang { width: var(--spalte); margin-left: calc(var(--marge) + var(--luft)); position: relative; }
@@ -334,14 +354,16 @@ h1 {
    Median 275 Zeichen, also ein Absatz. Zweispaltig bekäme jede Zeile
    fünfundzwanzig Zeichen — das schlechteste Maß, das es für Fließtext
    gibt. Einspaltig sind es rund fünfundfünfzig. */
-.mitspalte { position: relative; }
-
+/* Sie hängt am ganzen Blatt, nicht am Textblock — darum beginnt sie oben
+   auf Höhe des Banners und nicht erst, wo der Satz anfängt. Wer die Note
+   aufschlägt, sieht die Nachbarschaft sofort. */
 .verwandt {
-  position: absolute; top: 0; bottom: 0; width: var(--neben);
-  left: calc(var(--marge) + 2 * var(--luft) + var(--spalte));
+  position: absolute; bottom: 0; width: var(--neben);
+  top: calc(var(--kopf) + 3.5rem);
+  left: calc(var(--marge) + var(--luft) + var(--spalte) + var(--spalt));
 }
 /* Der Halt klebt, nicht der Kasten: Der Kasten reicht über die ganze
-   Höhe des Textes, damit der Halt darin wandern kann. */
+   Höhe des Blatts, damit der Halt darin wandern kann. */
 .verwandt__halt {
   position: sticky; top: calc(var(--kopf) + 2.4rem);
   max-height: calc(100vh - var(--kopf) - 5.5rem);
@@ -705,3 +727,23 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 /* Eine reine Nummernspalte („#") soll nicht so breit sein wie ihr Kopf. */
 .tabelle td:first-child:has(+ td) { white-space: normal; }
 .tabelle th:first-child { width: 1%; }
+
+/* ══════════════════════════════════════════════════════════════════
+   Schriftgrade auf dem großen Schirm
+   Muss am Ende stehen: Bei gleicher Spezifität gewinnt die spätere
+   Zeile, und die Grundregeln für `body` und `.verwandt__*` stehen oben.
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1700px) {
+  /* Mit der Spalte wächst der Grad mit. Sonst würde nur die Zeile länger,
+     und Zeilenlänge ohne Schriftgrad ist genau die Verschlechterung, die
+     man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
+  body { font-size: 21.5px; }
+
+  /* Eine 32-rem-Spalte mit 12-px-Schrift ergab fünfundachtzig Zeichen je
+     Zeile. Breiter heißt nicht automatisch besser lesbar; beides muss
+     zusammen wachsen. */
+  .verwandt__kopf  { font-size: 10px; }
+  .verwandt__titel { font-size: 1.05rem; }
+  .verwandt__warum { font-size: .92rem; line-height: 1.62; }
+  .verwandt__liste li + li { margin-top: 1.4rem; padding-top: 1.4rem; }
+}
