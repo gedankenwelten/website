@@ -436,7 +436,7 @@
 .schau__inhalt .banner { margin-top: 0; }
 .schau__inhalt h1 { font-size: 2rem; line-height: 1.14; }
 .schau__inhalt .zeitanker,
-.schau__inhalt .nebenan { display: none; }
+.schau__inhalt .verwandt { display: none; }
 .schau__inhalt > div > :last-child {
   /* Der Anfang bricht mitten im Text ab — das soll man sehen, statt es
      für das Ende zu halten. */

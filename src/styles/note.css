@@ -77,10 +77,10 @@
    Die Grundwerte bleiben unter 72 rem, damit die Seite über der
    1180-px-Schwelle nicht überläuft; erst darüber wird zugelegt. */
 @media (min-width: 1400px) {
-  :root { --spalte: 44rem; --marge: 11rem; --neben: 19rem; }
+  :root { --spalte: 44rem; --marge: 11rem; --neben: 20rem; }
 }
 @media (min-width: 1700px) {
-  :root { --spalte: 46rem; --marge: 12.5rem; --neben: 21rem; --luft: 3.1rem; }
+  :root { --spalte: 46rem; --marge: 12rem; --neben: 25rem; --luft: 3rem; }
 }
 
 * { box-sizing: border-box; }
@@ -319,32 +319,72 @@ h1 {
 .befund--nein .block-label { color: var(--rot); }
 .befund--nein .block-label::before { background: var(--rot); }
 
-/* ── Verwandtes am Rand ── */
-.nebenan {
-  display: block; position: absolute; left: calc(100% + var(--luft)); top: .2em;
-  width: var(--neben); opacity: 0; transform: translateY(14px);
-  transition: opacity .75s ease, transform .75s cubic-bezier(.2,.8,.2,1);
+/* ── Verwandtes: ein fester Kasten rechts ──
+   Vorher standen die Karten einzeln zwischen den Abschnitten verteilt —
+   gleichmäßig, nicht nach Inhalt. Das war ein Entwurfsfehler: Wer eine
+   Karte neben einem Absatz sieht, liest sie als Anmerkung *zu diesem
+   Absatz*. Sie ist aber eine Anmerkung zur ganzen Note. Die Platzierung
+   behauptete eine Nähe, die es nicht gab.
+
+   Jetzt stehen alle beisammen und bleiben beim Scrollen stehen. Damit
+   behauptet die Anordnung nichts mehr — und man sieht die Nachbarschaft
+   als das, was sie ist: eine Liste, die zur Note gehört.
+
+   Einspaltig, obwohl die Spalte für zwei reichte: Eine Begründung ist im
+   Median 275 Zeichen, also ein Absatz. Zweispaltig bekäme jede Zeile
+   fünfundzwanzig Zeichen — das schlechteste Maß, das es für Fließtext
+   gibt. Einspaltig sind es rund fünfundfünfzig. */
+.mitspalte { position: relative; }
+
+.verwandt {
+  position: absolute; top: 0; bottom: 0; width: var(--neben);
+  left: calc(var(--marge) + 2 * var(--luft) + var(--spalte));
 }
-.nebenan.da { opacity: 1; transform: translateY(0); }
-.nebenan a {
-  display: block; text-decoration: none; color: inherit;
-  border-top: 1px solid var(--linie); padding-top: .8rem;
-  transition: border-color .25s;
+/* Der Halt klebt, nicht der Kasten: Der Kasten reicht über die ganze
+   Höhe des Textes, damit der Halt darin wandern kann. */
+.verwandt__halt {
+  position: sticky; top: calc(var(--kopf) + 2.4rem);
+  max-height: calc(100vh - var(--kopf) - 5.5rem);
+  overflow-y: auto; overscroll-behavior: contain;
+  /* Der eigene Rollbalken soll nicht mitreden — er erscheint nur, wenn
+     die Nachbarschaft wirklich länger ist als der Schirm. */
+  scrollbar-width: thin; scrollbar-color: var(--linie) transparent;
 }
-.nebenan a:hover { border-top-color: var(--akzent); }
-.nebenan__label {
+
+.verwandt__kopf {
+  display: flex; align-items: baseline; gap: .55rem; margin: 0 0 1.1rem;
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase;
+  color: var(--tinte-fern);
+  /* Bleibt beim Rollen innerhalb der Spalte oben stehen — sonst weiß man
+     nach drei Einträgen nicht mehr, was man da liest. */
+  position: sticky; top: 0; background: var(--papier);
+  padding-bottom: .7rem; border-bottom: 1px solid var(--linie); z-index: 1;
+}
+.verwandt__kopf i {
+  font-style: normal; color: var(--tinte-fern); font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+
+.verwandt__liste { list-style: none; margin: 0; padding: 0; }
+.verwandt__liste li + li {
+  margin-top: 1.15rem; padding-top: 1.15rem;
+  border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent);
+}
+.verwandt__liste a {
+  display: block; text-decoration: none; color: inherit; border: 0 !important;
+}
+.verwandt__titel {
+  display: block; font-size: .93rem; line-height: 1.32; font-weight: 600;
+  margin-bottom: .4rem; text-wrap: pretty; transition: color .2s;
+}
+.verwandt__liste a:hover .verwandt__titel { color: var(--akzent); }
+/* Der ganze Vergleichssatz, ungekürzt — er ist der eigentliche Wert:
+   Jemand hat aufgeschrieben, *warum* die beiden zusammengehören. */
+.verwandt__warum {
   display: block; font-family: -apple-system, "Inter", sans-serif;
-  font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
-  color: var(--tinte-fern); margin-bottom: .55rem;
-}
-.nebenan__titel {
-  display: block; font-size: .93rem; line-height: 1.35; font-weight: 600;
-  margin-bottom: .45rem; transition: color .25s;
-}
-.nebenan a:hover .nebenan__titel { color: var(--akzent); }
-.nebenan__warum {
-  display: block; font-family: -apple-system, "Inter", sans-serif;
-  font-size: .74rem; line-height: 1.5; color: var(--tinte-leise);
+  font-size: .76rem; line-height: 1.55; color: var(--tinte-leise);
+  text-wrap: pretty;
 }
 
 /* ── Links ── */

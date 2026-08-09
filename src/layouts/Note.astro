@@ -86,6 +86,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       steht außerhalb und bliebe ohnehin draußen; die Marken darunter
       sind Navigation und würden als Treffer nur Wortsalat ergeben.
       Die Rubrik kommt als Filter mit, das Datum zum Sortieren. */}
+  <div class="mitspalte">
   <div class="strang" id="text"
        data-pagefind-body={nichtSuchbar ? undefined : true}
        data-pagefind-ignore={nichtSuchbar ? true : undefined}
@@ -113,6 +114,29 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
     )}
   </div>
 
+  {/* Alle Verbindungen beisammen, an einem festen Platz. Aus dem
+      Suchindex heraus (`data-pagefind-ignore`): Die Begründungen stehen
+      in *ihren* Notes noch einmal, und als Treffer wäre diese hier eine
+      Fundstelle für einen Text, der woanders steht. */}
+  {kopf.verbindungen?.length > 0 && (
+    <aside class="verwandt" data-pagefind-ignore>
+      <div class="verwandt__halt">
+        <h2 class="verwandt__kopf">Verwandt <i>{kopf.verbindungen.length}</i></h2>
+        <ol class="verwandt__liste">
+          {kopf.verbindungen.map((v) => (
+            <li>
+              <a href={v.url ?? "#"}>
+                <span class="verwandt__titel">{v.titel}</span>
+                {v.warum && <span class="verwandt__warum">{v.warum}</span>}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </aside>
+  )}
+  </div>
+
   <Stern id={note.id} />
 </article>
 
@@ -130,37 +154,6 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
     </div>
   </div>
 )}
-
-<script define:vars={{ verbindungen: kopf.verbindungen ?? [] }}>
-/* Rand-Karten aus den geernteten Verbindungen.
-   Welche Verbindung zu welchem Abschnitt gehört, ist ein Urteil — hier
-   verteilen wir sie vorerst gleichmäßig über die Abschnitte. Das richtige
-   Zuordnen ist eine Aufgabe für Montaigne, nicht für ein Build-Skript. */
-const abschnitte = [...document.querySelectorAll("#text h3")];
-verbindungen.slice(0, abschnitte.length).forEach((v, i) => {
-  const ziel = abschnitte[Math.floor((i + 1) * abschnitte.length / (verbindungen.length + 1))]
-            ?? abschnitte[i];
-  const absatz = ziel?.nextElementSibling;
-  if (!absatz || absatz.tagName !== "P") return;
-  const karte = document.createElement("span");
-  karte.className = "nebenan";
-  karte.innerHTML =
-    `<a href="${v.url ?? "#"}">` +
-    `<span class="nebenan__label">Verwandt</span>` +
-    `<span class="nebenan__titel"></span>` +
-    `<span class="nebenan__warum"></span></a>`;
-  karte.querySelector(".nebenan__titel").textContent = v.titel;
-  karte.querySelector(".nebenan__warum").textContent =
-    v.warum.length > 190 ? v.warum.slice(0, 187).replace(/\s\S*$/, "") + " …" : v.warum;
-  absatz.appendChild(karte);
-});
-
-const beobachter = new IntersectionObserver(
-  (e) => e.forEach((x) => x.isIntersecting && x.target.classList.add("da")),
-  { rootMargin: "0px 0px -20% 0px" },
-);
-document.querySelectorAll(".nebenan").forEach((n) => beobachter.observe(n));
-</script>
 
 <Suche />
 
