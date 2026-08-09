@@ -259,6 +259,79 @@ if (knopf) {
   } catch { /* Privater Modus: dann eben ohne Spur. */ }
 }
 
+/* ── Stern und Nachbarschaft sind zwei Ansichten derselben Sache ──
+   Der Stern zeigt das Netz, der Kasten rechts die geschriebenen Gründe.
+   Bisher standen sie unverbunden nebeneinander: Wer im Sternbild einen
+   Namen fand, musste ihn im Kasten von Hand suchen.
+
+   Jetzt zeigt das Berühren des einen auf das andere — und der Kasten
+   rollt die passende Stelle heran. Nur berühren, nicht klicken: Ein
+   Sternknoten ist ein Link, und der soll weiterhin dorthin führen, wohin
+   er zeigt.
+
+   Nicht jeder Knoten hat einen Eintrag. Der Stern kennt auch Nähen, die
+   nie jemand aufgeschrieben hat (geteilte Quellen) — für die gibt es
+   keinen Grund im Kasten, und dann passiert eben nichts. */
+{
+  const halt = document.querySelector(".verwandt__halt");
+  const knoten = [...document.querySelectorAll(".stern a.knoten")];
+
+  if (halt && knoten.length) {
+    const weg = (u) => { try { return new URL(u, location.href).pathname.replace(/\/$/, ""); } catch { return null; } };
+
+    const eintraege = new Map();
+    for (const li of halt.querySelectorAll(".verwandt__liste li")) {
+      const a = li.querySelector("a[href]");
+      const p = a && weg(a.getAttribute("href"));
+      if (p) eintraege.set(p, li);
+    }
+    const sterne = new Map();
+    for (const k of knoten) {
+      const p = weg(k.getAttribute("href"));
+      if (p && !sterne.has(p)) sterne.set(p, k);
+    }
+
+    const kopfHoehe = halt.querySelector(".verwandt__kopf")?.offsetHeight ?? 0;
+    let gemerkt = null;
+
+    function zeigenAuf(pfad) {
+      if (pfad === gemerkt) return;
+      gemerkt = pfad;
+      for (const li of eintraege.values()) li.classList.remove("ist-nah");
+      for (const k of sterne.values()) k.classList.remove("ist-nah");
+      if (!pfad) return;
+
+      eintraege.get(pfad)?.classList.add("ist-nah");
+      sterne.get(pfad)?.classList.add("ist-nah");
+
+      const li = eintraege.get(pfad);
+      if (!li) return;
+      /* Von Hand gerollt statt `scrollIntoView`: Das würde bei Bedarf auch
+         die ganze Seite verschieben, und dann wandert einem der Stern unter
+         dem Zeiger weg. Hier rollt nur der Kasten. */
+      halt.scrollTo({ top: Math.max(0, li.offsetTop - kopfHoehe - 12), behavior: "smooth" });
+    }
+
+    for (const k of knoten) {
+      const p = weg(k.getAttribute("href"));
+      k.addEventListener("pointerenter", () => zeigenAuf(p));
+    }
+    document.querySelector(".stern")?.addEventListener("pointerleave", () => zeigenAuf(null));
+
+    // Andersherum genauso: Wer im Kasten liest, sieht im Bild, wo es steht.
+    for (const [p, li] of eintraege) {
+      li.addEventListener("pointerenter", () => {
+        gemerkt = null;                     // ohne Rollen — man ist ja schon da
+        for (const x of eintraege.values()) x.classList.remove("ist-nah");
+        for (const s of sterne.values()) s.classList.remove("ist-nah");
+        li.classList.add("ist-nah");
+        sterne.get(p)?.classList.add("ist-nah");
+      });
+    }
+    halt.addEventListener("pointerleave", () => zeigenAuf(null));
+  }
+}
+
 /* ── Die Rubrikwahl ──
    Ein Klappmenü und nicht zehn Reiter nebeneinander: Zehn Rubriken im
    Kopf wären eine zweite Zeile, und die Kopfleiste soll eine bleiben. */

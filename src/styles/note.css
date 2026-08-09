@@ -747,3 +747,18 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
   .verwandt__warum { font-size: .92rem; line-height: 1.62; }
   .verwandt__liste li + li { margin-top: 1.4rem; padding-top: 1.4rem; }
 }
+
+/* ── Stern ↔ Nachbarschaft ──
+   Was im einen berührt wird, leuchtet im anderen auf. Kein neues Element,
+   nur eine Marke am Rand: Ein Kasten oder ein Rahmen wäre lauter als die
+   Auskunft, die er gibt. */
+/* Eine Tönung, kein Strich am Rand: Der Kasten rollt in sich selbst, und
+   was links über seine Kante ragt, schneidet der Überlauf ab. */
+.verwandt__liste li {
+  border-radius: 4px; padding-left: .7rem; margin-left: -.7rem;
+  transition: background .25s;
+}
+.verwandt__liste li.ist-nah {
+  background: color-mix(in oklab, var(--akzent-weich) 55%, transparent);
+}
+.verwandt__liste li.ist-nah .verwandt__titel { color: var(--akzent); }

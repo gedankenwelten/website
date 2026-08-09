@@ -6,9 +6,18 @@
 /* Die Rubrikfarben stehen in `note.css` — sie gehören inzwischen drei
    Seiten (Stern, Startseite, Rubrik) und damit ins Grundblatt. */
 
+/* Bündig mit dem Satz, und rechts vor der Nachbarschaft zu Ende.
+   Vorher rechnete der Stern mit der alten Blattbreite und stand mittig —
+   seit die Nachbarschaft oben am Banner beginnt und bis zum Fuß reicht,
+   lief er ihr 472 px weit unter die Füße.
+
+   Er reicht über den Spalt hinweg, statt an der Textkante zu enden: Das
+   Sternbild ist auf eine 1080 px breite Bühne gerechnet, und je schmaler
+   es skaliert, desto kleiner werden auch die Namen darin. Bis an die
+   Nachbarschaft heran bleiben sie lesbar. */
 .stern {
-  width: calc(var(--marge) + var(--spalte) + var(--neben) + 2 * var(--luft));
-  margin: 7rem auto 0;
+  width: calc(var(--spalte) + var(--spalt) - 1.5rem);
+  margin: 7rem 0 0 calc(var(--marge) + var(--luft));
 }
 
 /* Dieselbe leise Rubrikmarke wie im Text — der Stern ist ein Abschnitt
@@ -125,3 +134,9 @@
 }
 .stern.regt.da .stern__kanten { opacity: 1; transition: opacity 1s ease .5s; }
 .stern.regt.da .stern__buehne.hebt .knoten.aus { opacity: .17; }
+
+/* Der Knoten, dessen Begründung rechts gerade angesteuert ist. Dieselbe
+   Sprache wie beim Hovern selbst — nur ausgelöst von der anderen Seite. */
+.knoten.ist-nah .knoten__punkt { r: 5.5; fill: var(--akzent); }
+.knoten.ist-nah .knoten__kopf  { fill: var(--akzent); }
+.knoten.ist-nah .knoten__schwanz { fill: var(--akzent); opacity: .8; }
