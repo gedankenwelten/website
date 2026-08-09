@@ -510,15 +510,12 @@ h1 {
 .kopfleiste__marke-wort { line-height: 1.2; }
 .kopfleiste__marke.hat-bild .kopfleiste__marke-wort { display: none; }
 
-/* Die Wortmarken haben keinen Alphakanal — heller Grund ist fast weiß,
-   dunkler fast schwarz. Statt zwölf Bilder freizustellen, rechnet das
-   Mischen sie ins Papier: `multiply` löscht Weiß, `screen` löscht
-   Schwarz. Der Rest der Malerei bleibt, wie sie ist. */
-.kopfleiste__marke-bild {
-  display: none; width: auto; height: 1.85rem;
-  mix-blend-mode: multiply;
-}
-[data-theme="dunkel"] .kopfleiste__marke-bild { mix-blend-mode: screen; }
+/* Die Wortmarken sind freigestellt (`scripts/wortmarke_freistellen.py`) —
+   sie tragen einen echten Alphakanal und stehen darum auf jedem Untergrund
+   richtig. Vorher rechnete `mix-blend-mode` den gemalten Grund ins Papier,
+   aber nicht ganz: multiply landete sieben Stufen daneben, screen zwölf.
+   Genug für einen sichtbaren Kasten. */
+.kopfleiste__marke-bild { display: none; width: auto; height: 1.85rem; }
 .kopfleiste__marke.hat-bild .kopfleiste__marke-bild { display: block; }
 
 /* Drei Handschriften stehen mit viel Luft um die Schrift — ungetrimmt
