@@ -242,3 +242,27 @@ export function alleFaeden(laenge = 7) {
     .map((n) => spinne(n.id, laenge))
     .filter((f) => f.length >= 3);
 }
+
+/**
+ * Ein Faden ab jeder inhaltlichen Note — einmal gerechnet, zweimal
+ * gebraucht: Die Startseite muss wissen, *ob* eine Karte einen Weg
+ * anbieten kann, der Endpunkt `faeden.json` liefert ihn dann aus. Ohne
+ * diesen Speicher liefe die Suche fünfhundertmal doppelt.
+ *
+ * Wege unter drei Stationen fallen weg. Ein Faden, der nach einem
+ * Schritt endet, ist keiner — dann verspricht die Karte etwas, das der
+ * Bestand nicht hergibt.
+ */
+let wegeSpeicher = null;
+export function alleWege(laenge = 7) {
+  if (wegeSpeicher) return wegeSpeicher;
+  const g = ladeGraph();
+  wegeSpeicher = new Map();
+  for (const n of ladeIndex().alle) {
+    if (g.katalog.has(n.id) || n.basis.toLowerCase() === "index") continue;
+    if (n.rubrik === "DenkerVita") continue;
+    const weg = spinne(n.id, laenge);
+    if (weg.length >= 3) wegeSpeicher.set(n.id, weg);
+  }
+  return wegeSpeicher;
+}

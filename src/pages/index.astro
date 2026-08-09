@@ -17,9 +17,9 @@
 import "../styles/note.css";
 import "../styles/stern.css";
 import "../styles/start.css";
-import { alleFaeden } from "../lib/faden.mjs";
+import { alleFaeden, alleWege } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
-import { ladeGraph } from "../lib/graph.mjs";
+import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken } from "../lib/rubriken.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
@@ -52,6 +52,31 @@ const rubriken = alleRubriken().filter((r) => !OHNE_IM_FELD.has(r.name));
    neu, sie sind nur undatiert. */
 const feld = [...inhaltlich].sort((a, b) =>
   String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
+
+/* ── Die Nachbarschaft jeder Karte ──
+   Für das Aufklappen an Ort und Stelle: Welche Karten treten hervor, wenn
+   man bei einer „Verwandtes" drückt. Als *Platznummern*, nicht als
+   Kennungen — die Karten stehen ja schon alle im Dokument, es geht nur
+   darum, welche gemeint sind. Fünfhundert Ziffernlisten wiegen ein paar
+   Kilobyte; dieselben Verweise als Pfade wären das Zehnfache.
+
+   Nachbarn aus dem Register (DenkerVita) fallen weg: Sie haben im Feld
+   keine Karte, auf die man zeigen könnte. Wer den ganzen Stern will,
+   findet ihn am Fuß der Note. */
+/* Welche Karte überhaupt einen Faden anbieten kann. `alleWege` rechnet
+   das einmal für den ganzen Bestand; `faeden.json` daneben greift auf
+   denselben Speicher zu, statt fünfhundert Wege ein zweites Mal zu suchen. */
+const wege = alleWege(7);
+
+const platz = new Map(feld.map((n, i) => [n.id, i]));
+const nachbarschaft = feld.map((n) => {
+  const stern = sternFuer(n.id, 14);
+  if (!stern) return [];
+  return stern.nodes
+    .filter((k) => !k.mitte)
+    .map((k) => platz.get(k.id))
+    .filter((i) => i !== undefined);
+});
 
 /* Wie viele Karten sichtbar starten. Alle stehen im Dokument — sonst
    könnte der Rubrikfilter nicht sofort antworten, und ein Filter, der
@@ -113,7 +138,7 @@ const kurzMonat = (d) => {
 
 {/* Die Zeitleiste gehört zum Faden — sie zeigt, wie weit man sich beim
     Gehen vom Neuesten entfernt hat. Im Feld hätte sie nichts zu sagen. */}
-<div class="rail" id="rail">
+<div class="rail" id="rail" data-von={erstesDatum} data-bis={letztesDatum}>
   <div class="rail__cap rail__cap--oben">{kurzMonat(letztesDatum)}</div>
   <div class="rail__line"></div>
   <div class="rail__cap rail__cap--unten">{kurzMonat(erstesDatum)}</div>
@@ -162,10 +187,23 @@ const kurzMonat = (d) => {
 
   {/* ── Das Feld ── */}
   <section class="feld" id="feld">
+
+    {/* Steht nur, wenn eine Nachbarschaft aufgeklappt ist. Sagt, wessen
+        Nachbarschaft man gerade sieht — sonst wüsste man nach dem Scrollen
+        nicht mehr, warum diese acht Karten hier stehen. */}
+    <p class="verwandtschaft" id="verwandtschaft" hidden>
+      <span class="verwandtschaft__wort">Verwandt mit</span>
+      <b id="verwandtschaftTitel"></b>
+      <button type="button" id="verwandtZu">Zurück ins Feld</button>
+    </p>
+
     <ol class="feld__gitter" id="gitter">
       {feld.map((n, i) => (
-        <li class="kachel" data-rubrik={n.rubrik} hidden={i >= ERSTE_LADUNG}>
-          <a href={n.url}>
+        <li class="kachel" data-rubrik={n.rubrik} data-platz={i}
+            data-nah={nachbarschaft[i].length ? nachbarschaft[i].join(",") : null}
+            data-titel={n.titel}
+            hidden={i >= ERSTE_LADUNG}>
+          <a class="kachel__weg" href={n.url}>
             <span class="kachel__bild">
               <img src={n.vorschau ?? rubrikBild(n.rubrik)} alt=""
                    width="1200" height="500"
@@ -179,6 +217,39 @@ const kurzMonat = (d) => {
             <span class="kachel__titel">{n.titel}</span>
             {n.beschreibung && <span class="kachel__teaser">{n.beschreibung}</span>}
           </a>
+
+          {/* Die Griffe stehen neben dem Weg, nicht in ihm: Ein Knopf im
+              Innern eines Links ist ungültiges HTML, und der Klick ginge
+              beiden zugleich zu. Sie bleiben leise sichtbar statt sich zu
+              verstecken — wer sie erst durch Hovern findet, findet sie nie. */}
+          <div class="griffe">
+            {wege.has(n.id) && (
+              <button class="griff" type="button" data-faden={n.id}
+                      title={`Einen Faden weben, der bei „${n.titel}" beginnt`}>
+                <svg viewBox="0 0 16 16" aria-hidden="true" class="griff__zeichen">
+                  <path d="M2 12 C 5 12, 5 4, 8 4 S 11 12, 14 12" fill="none"
+                        stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                Faden
+              </button>
+            )}
+            {nachbarschaft[i].length > 0 && (
+              <button class="griff" type="button" data-nah-auf={i}
+                      title={`Zeigen, was mit „${n.titel}" verwandt ist`}>
+                <svg viewBox="0 0 16 16" aria-hidden="true" class="griff__zeichen">
+                  <circle cx="8" cy="8" r="1.9" fill="currentColor"/>
+                  <circle cx="2.6" cy="4" r="1.3" fill="currentColor" opacity=".55"/>
+                  <circle cx="13.4" cy="5" r="1.3" fill="currentColor" opacity=".55"/>
+                  <circle cx="4" cy="13" r="1.3" fill="currentColor" opacity=".55"/>
+                  <circle cx="12.6" cy="12.4" r="1.3" fill="currentColor" opacity=".55"/>
+                  <g stroke="currentColor" stroke-width=".9" opacity=".4">
+                    <path d="M8 8 L2.6 4M8 8 L13.4 5M8 8 L4 13M8 8 L12.6 12.4"/>
+                  </g>
+                </svg>
+                {nachbarschaft[i].length} verwandt
+              </button>
+            )}
+          </div>
         </li>
       ))}
     </ol>
@@ -312,45 +383,45 @@ const kurzMonat = (d) => {
   addEventListener("scroll", verfolgen, { passive: true });
   addEventListener("resize", verfolgen);
 
-  /* ══ Ansicht: Feld oder Faden ══
-     Der Grundzustand ist das Feld. Wer den Faden wählt, bekommt ihn beim
-     nächsten Besuch wieder — die Wahl gehört dem Leser, nicht der Seite. */
-  {
-    const knopf = document.getElementById("ansicht");
-    const setzen = (a, merken) => {
-      wurzel.dataset.ansicht = a;
-      knopf.setAttribute("aria-pressed", String(a === "faden"));
-      if (merken) { try { localStorage.setItem("gw-ansicht", a); } catch {} }
-      if (a === "faden") leisteBauen(sichtbarerFaden());
-    };
-    // Der Kopf hat den gespeicherten Zustand schon gesetzt; hier wird der
-    // Knopf nur noch darauf eingestellt.
-    if (wurzel.dataset.ansicht === "faden") setzen("faden", false);
-
-    knopf.addEventListener("click", () => {
-      setzen(wurzel.dataset.ansicht === "faden" ? "feld" : "faden", true);
-      scrollTo({ top: 0, behavior: "smooth" });
-    });
-  }
-
   /* ══ Das Feld ══ */
   const kacheln = [...document.querySelectorAll(".kachel")];
   const mehr = document.getElementById("mehr");
   const stand = document.getElementById("standAnzeige");
+  const balken = document.getElementById("verwandtschaft");
+  const balkenTitel = document.getElementById("verwandtschaftTitel");
   const PORTION = 48;
   let rubrik = "";      // "" heißt: alles
   let gezeigt = PORTION;
+  let quelle = null;    // Platznummer der Karte, deren Nachbarschaft steht
 
   /* Alle Kacheln stehen im Dokument, sichtbar ist ein Ausschnitt. Der
      Filter rechnet darum nichts nach — er blendet um, und das merkt man
-     nicht. */
+     nicht. Dasselbe gilt für die Nachbarschaft: Die verwandten Karten
+     sind längst da, sie stehen nur woanders. */
   function auslegen() {
+    if (quelle !== null) {
+      const nah = new Set(kacheln[quelle].dataset.nah.split(",").map(Number));
+      kacheln.forEach((k, i) => {
+        k.hidden = !(i === quelle || nah.has(i));
+        // Die Quelle zuerst, dann ihre Nachbarn in der Reihenfolge, in der
+        // der Stern sie gewichtet hat. `order` ordnet das Raster um, ohne
+        // dass eine Karte das Dokument wechseln müsste.
+        k.style.order = i === quelle ? -1 : 0;
+        k.classList.toggle("kachel--quelle", i === quelle);
+      });
+      mehr.hidden = true;
+      stand.textContent = `${nah.size} verwandt`;
+      return;
+    }
+
     let passend = 0, sichtbar = 0;
     for (const k of kacheln) {
       const trifft = !rubrik || k.dataset.rubrik === rubrik;
       if (trifft) passend++;
       const zeigen = trifft && sichtbar < gezeigt;
       k.hidden = !zeigen;
+      k.style.order = "";
+      k.classList.remove("kachel--quelle");
       if (zeigen) sichtbar++;
     }
     mehr.hidden = sichtbar >= passend;
@@ -358,13 +429,65 @@ const kurzMonat = (d) => {
     stand.textContent = sichtbar >= passend ? `alle ${passend}` : `${sichtbar} von ${passend}`;
   }
 
+  /* ── Die Welle ──
+     Kein Morphen: Wenn achtundvierzig Karten auf acht zusammengehen, gibt
+     es nichts, was ineinander überginge. Was stimmt, ist ein Zurücktreten
+     und ein Heraufkommen. Der Versatz läuft in Leserichtung. */
+  const RUHIG = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function welle(umbauen) {
+    if (RUHIG) { umbauen(); return; }
+    const vorher = kacheln.filter((k) => !k.hidden);
+    vorher.forEach((k, n) => {
+      k.style.setProperty("--takt", `${Math.min(n, 14) * 11}ms`);
+      k.classList.add("geht");
+    });
+    setTimeout(() => {
+      for (const k of vorher) { k.classList.remove("geht"); k.style.removeProperty("--takt"); }
+      umbauen();
+      kacheln.filter((k) => !k.hidden)
+        .sort((a, b) => (+a.style.order || 0) - (+b.style.order || 0))
+        .forEach((k, n) => {
+          k.style.setProperty("--takt", `${Math.min(n, 18) * 32}ms`);
+          k.classList.add("kommt");
+          k.addEventListener("animationend", () => {
+            k.classList.remove("kommt");
+            k.style.removeProperty("--takt");
+          }, { once: true });
+        });
+    }, 360);
+  }
+
+  function verwandtesZeigen(i) {
+    welle(() => {
+      quelle = i;
+      balkenTitel.textContent = kacheln[i].dataset.titel;
+      balken.hidden = false;
+      auslegen();
+    });
+    document.getElementById("feld").scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  function zurueckInsFeld() {
+    welle(() => { quelle = null; balken.hidden = true; auslegen(); });
+  }
+
+  document.getElementById("verwandtZu").addEventListener("click", zurueckInsFeld);
+
+  document.getElementById("gitter").addEventListener("click", (e) => {
+    const nahKnopf = e.target.closest("[data-nah-auf]");
+    if (nahKnopf) { verwandtesZeigen(+nahKnopf.dataset.nahAuf); return; }
+    const fadenKnopf = e.target.closest("[data-faden]");
+    if (fadenKnopf) fadenAbHier(fadenKnopf.dataset.faden, fadenKnopf);
+  });
+
   document.getElementById("filter").addEventListener("click", (e) => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
     rubrik = chip.dataset.rubrik;
     gezeigt = PORTION;
     for (const c of document.querySelectorAll(".chip")) c.classList.toggle("ist-gewaehlt", c === chip);
-    auslegen();
+    // Eine Rubrik zu wählen heißt, das Feld wieder sehen zu wollen.
+    welle(() => { quelle = null; balken.hidden = true; auslegen(); });
   });
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
@@ -392,6 +515,107 @@ const kurzMonat = (d) => {
     nr.textContent = String(i + 1);
     leisteBauen(alleFadenTeile[i]);
     alleFadenTeile[i].scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+
+  /* ══ Ein Faden ab dieser Karte ══
+     Die neun fertigen Wege beginnen bei der jüngsten Note jeder Rubrik.
+     Wer bei einer bestimmten anfangen will, bekommt seinen eigenen — die
+     Wege für alle Notes liegen in `faeden.json` und werden beim ersten
+     Klick geholt, nicht beim Laden der Seite. */
+  const MONATE = ["Januar","Februar","März","April","Mai","Juni","Juli",
+                  "August","September","Oktober","November","Dezember"];
+  const monatJahr = (d) => { const [j, m] = d.split("-"); return `${MONATE[+m - 1]} ${j}`; };
+  const langDatum = (d) => {
+    if (!d) return null;
+    const [j, m, t] = d.split("-");
+    return `${+t}. ${MONATE[+m - 1]} ${j}`;
+  };
+  const VON = Date.parse(rail.dataset.von), BIS = Date.parse(rail.dataset.bis);
+  const tiefe = (d) => (d ? (BIS - Date.parse(d)) / (BIS - VON || 1) : 0);
+
+  let wegeDaten = null;
+  const nochmalBlock = document.getElementById("nochmal").parentElement;
+
+  async function fadenAbHier(id, knopf) {
+    if (!wegeDaten) {
+      knopf.classList.add("griff--laedt");
+      try {
+        wegeDaten = await (await fetch("/faeden.json")).json();
+      } catch {
+        // Ehrlich sagen, dass es nicht ging, statt stumm nichts zu tun.
+        knopf.classList.remove("griff--laedt");
+        knopf.lastChild.textContent = " nicht erreichbar";
+        return;
+      }
+      knopf.classList.remove("griff--laedt");
+    }
+    const weg = wegeDaten.f[id];
+    if (!weg) return;
+
+    // Die neun stehenden Wege treten beiseite, der eigene tritt an ihre
+    // Stelle — und mit ihnen der Zähler, der nur für sie gilt.
+    for (const f of alleFadenTeile) f.hidden = true;
+    nochmalBlock.hidden = true;
+    document.getElementById("eigenerFaden")?.remove();
+
+    const teil = document.createElement("section");
+    teil.className = "faden";
+    teil.id = "eigenerFaden";
+    teil.innerHTML = `<ol class="faden__weg">${weg.map(([nr, grund, fund], s) => {
+      const n = wegeDaten.n[nr];
+      const bild = n.b
+        ? `<img class="station__bild${n.e ? "" : " station__bild--rubrik"}" src="${n.b}"
+                alt="" width="1200" height="500" loading="lazy" decoding="async">` : "";
+      const schritt = grund
+        ? `<p class="schritt${fund ? " schritt--fund" : ""}">${
+             fund ? '<span class="schritt__marke">im Bestand gefunden</span>' : ""}${grund}</p>`
+        : "";
+      return `<li class="station${s === 0 ? " station--auftakt" : ""}"
+                  data-tiefe="${tiefe(n.d).toFixed(4)}" data-monat="${n.d ? monatJahr(n.d) : ""}">
+        <a class="station__karte" href="${n.u}">${bild}
+          <div class="kennung"><b>${n.r}</b>${n.d ? `<i>·</i>${langDatum(n.d)}` : ""}</div>
+          <h2 class="station__titel">${n.t}</h2>
+          ${n.x ? `<p class="station__teaser">${n.x}</p>` : ""}
+          ${schritt}
+        </a></li>`;
+    }).join("")}</ol>
+    <p class="faden__fuss"><span>${weg.length} Stationen ab dieser Note</span></p>`;
+
+    document.getElementById("faeden").prepend(teil);
+    ansichtSetzen("faden", false);   // nicht merken: das war ein Ausflug, keine Wahl
+    scrollTo({ top: 0, behavior: "smooth" });
+    leisteBauen(teil);
+  }
+
+  /* ══ Ansicht: Feld oder Faden ══
+     Der Grundzustand ist das Feld. Wer den Faden wählt, bekommt ihn beim
+     nächsten Besuch wieder — die Wahl gehört dem Leser, nicht der Seite.
+     Steht am Ende, weil das Aufräumen alles kennen muss, was oben entsteht. */
+  const ansichtKnopf = document.getElementById("ansicht");
+
+  function ansichtSetzen(a, merken) {
+    wurzel.dataset.ansicht = a;
+    ansichtKnopf.setAttribute("aria-pressed", String(a === "faden"));
+    if (merken) { try { localStorage.setItem("gw-ansicht", a); } catch {} }
+    if (a === "faden") {
+      leisteBauen(sichtbarerFaden());
+    } else {
+      // Ein eigener Faden gehört zu dem Klick, der ihn gewebt hat. Bliebe
+      // er liegen, fände man beim nächsten Aufschlagen einen Weg vor, den
+      // man nicht mehr angefordert hat.
+      document.getElementById("eigenerFaden")?.remove();
+      nochmalBlock.hidden = false;
+      alleFadenTeile.forEach((f, n) => { f.hidden = n !== i; });
+    }
+  }
+
+  // Der Kopf hat den gespeicherten Zustand schon gesetzt; hier wird der
+  // Knopf nur noch darauf eingestellt.
+  if (wurzel.dataset.ansicht === "faden") ansichtSetzen("faden", false);
+
+  ansichtKnopf.addEventListener("click", () => {
+    ansichtSetzen(wurzel.dataset.ansicht === "faden" ? "feld" : "faden", true);
+    scrollTo({ top: 0, behavior: "smooth" });
   });
 </script>
 

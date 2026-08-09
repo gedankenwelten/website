@@ -93,6 +93,11 @@
 .lenkung__knopf--wechsel { color: var(--tinte); border-color: var(--tinte-fern); }
 
 /* ══════════════  Das Feld  ══════════════ */
+/* Die Kopfleiste liegt fest über der Seite — ohne diesen Abstand
+   scrollte `scrollIntoView` das Feld genau darunter, und die Zeile, die
+   sagt wessen Nachbarschaft man sieht, stünde hinter der Marke. */
+.feld { scroll-margin-top: calc(var(--kopf) + 1.4rem); }
+
 .feld__gitter {
   list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr));
@@ -101,8 +106,12 @@
   column-gap: 1.9rem; row-gap: 2.9rem;
 }
 .kachel[hidden] { display: none; }
+/* Die Karte füllt ihre Zeile aus, damit die Griffe unten alle auf einer
+   Linie sitzen. Bei ungleich langen Teasern — und 269 Notes haben gar
+   keinen — hingen sie sonst auf sechs verschiedenen Höhen. */
+.kachel { display: flex; flex-direction: column; }
 
-.kachel a {
+.kachel__weg {
   display: flex; flex-direction: column;
   text-decoration: none; color: inherit; border: 0 !important;
 }
@@ -117,7 +126,7 @@
   filter: saturate(.9); opacity: .93;
   transition: opacity .35s ease, filter .35s ease, transform .5s cubic-bezier(.2,.8,.2,1);
 }
-.kachel a:hover .kachel__bild img { opacity: 1; filter: saturate(1); transform: scale(1.035); }
+.kachel__weg:hover .kachel__bild img { opacity: 1; filter: saturate(1); transform: scale(1.035); }
 
 .kachel__kennung {
   display: flex; align-items: center; gap: .45rem;
@@ -134,7 +143,7 @@
   display: block; font-size: 1.06rem; line-height: 1.26; font-weight: 600;
   letter-spacing: -.01em; text-wrap: pretty; transition: color .2s;
 }
-.kachel a:hover .kachel__titel { color: var(--akzent); }
+.kachel__weg:hover .kachel__titel { color: var(--akzent); }
 
 .kachel__teaser {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
@@ -142,6 +151,77 @@
   margin-top: .4rem; font-size: .89rem; line-height: 1.45;
   color: var(--tinte-leise); text-wrap: pretty;
 }
+
+/* ── Die Griffe an der Karte ──
+   Zwei Angebote je Note: einen Weg ab hier weben, oder die Nachbarschaft
+   an Ort und Stelle hervorholen. Sie liegen unten und sind leise — aber
+   sie sind *da*. Erst beim Hovern zu erscheinen hieße, dass sie niemand
+   findet, der nicht schon weiß, dass es sie gibt. `margin-top: auto`
+   drückt sie an den Kartenfuß, das gibt dem Raster eine Grundlinie. */
+.griffe {
+  display: flex; gap: .3rem; margin-top: auto; padding-top: .85rem;
+}
+.griff {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  letter-spacing: .11em; text-transform: uppercase;
+  color: var(--tinte-fern); background: none;
+  border: 1px solid transparent; border-radius: 100px;
+  padding: .25rem .55rem; cursor: pointer; transition: all .18s;
+}
+.griff:hover, .griff:focus-visible {
+  color: var(--akzent); border-color: var(--akzent-weich);
+  background: color-mix(in oklab, var(--akzent-weich) 35%, transparent);
+}
+.griff__zeichen { width: 11px; height: 11px; flex: 0 0 auto; }
+
+/* Die Karte, deren Nachbarschaft gerade steht: Sie ist der Grund, warum
+   die anderen hier sind — also bekommt sie eine Kante in der Akzentfarbe
+   statt bloß den ersten Platz. */
+.kachel--quelle .kachel__bild {
+  outline: 2px solid var(--akzent); outline-offset: 3px;
+}
+.kachel--quelle .kachel__titel { color: var(--akzent); }
+
+/* ── Die Bewegung ──
+   Kein Morphen von Karte zu Karte: Wenn achtundvierzig auf acht
+   zusammengehen, gibt es nichts, was ineinander überginge. Was stimmt,
+   ist eine Welle — das Feld tritt zurück, die Nachbarschaft kommt
+   herauf. Der Versatz läuft in Leserichtung und ist gedeckelt; über ein
+   Dutzend Karten hinaus wird aus Rhythmus Warten. */
+@keyframes kachel-geht {
+  to { opacity: 0; transform: translateY(9px) scale(.985); }
+}
+@keyframes kachel-kommt {
+  from { opacity: 0; transform: translateY(24px) scale(.965); }
+}
+.kachel.geht  { animation: kachel-geht .2s ease forwards; animation-delay: var(--takt, 0ms); }
+.kachel.kommt { animation: kachel-kommt .44s cubic-bezier(.2,.85,.25,1) backwards; animation-delay: var(--takt, 0ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kachel.geht, .kachel.kommt { animation: none; }
+  .kachel__weg:hover .kachel__bild img { transform: none; }
+}
+
+/* ── Die Leiste über der Nachbarschaft ── */
+.verwandtschaft {
+  display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap;
+  margin: -.7rem 0 2rem;
+}
+.verwandtschaft[hidden] { display: none; }
+.verwandtschaft__wort {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--akzent);
+}
+.verwandtschaft b { font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
+.verwandtschaft button {
+  margin-left: auto;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .42rem 1rem; cursor: pointer; transition: all .2s;
+}
+.verwandtschaft button:hover { color: var(--akzent); border-color: var(--akzent); }
 
 .feld__fuss {
   display: flex; align-items: center; justify-content: center; gap: 1.1rem;
