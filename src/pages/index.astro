@@ -215,14 +215,28 @@ const kurzMonat = (d) => {
               {n.datum && <em>{kurzDatum(n.datum)}</em>}
             </span>
             <span class="kachel__titel">{n.titel}</span>
-            {n.beschreibung && <span class="kachel__teaser">{n.beschreibung}</span>}
           </a>
+
+          {/* Der Teaser steht außerhalb des Wegs, damit ein Klick auf ihn
+              aufklappen kann statt zu navigieren. Bei den meisten Notes
+              passt er ganz in die fünf Zeilen; wo nicht, merkt das Skript
+              es und macht ihn anfassbar. */}
+          {n.beschreibung && <p class="kachel__teaser" title="">{n.beschreibung}</p>}
 
           {/* Die Griffe stehen neben dem Weg, nicht in ihm: Ein Knopf im
               Innern eines Links ist ungültiges HTML, und der Klick ginge
               beiden zugleich zu. Sie bleiben leise sichtbar statt sich zu
               verstecken — wer sie erst durch Hovern findet, findet sie nie. */}
           <div class="griffe">
+            <button class="griff" type="button" data-schau={n.url}
+                    title={`Den Anfang von „${n.titel}" lesen, ohne die Seite zu verlassen`}>
+              <svg viewBox="0 0 16 16" aria-hidden="true" class="griff__zeichen">
+                <path d="M8 3.4C5.4 3.4 3.2 5 2 8c1.2 3 3.4 4.6 6 4.6S12.8 11 14 8c-1.2-3-3.4-4.6-6-4.6Z"
+                      fill="none" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="8" cy="8" r="1.7" fill="currentColor"/>
+              </svg>
+              Vorschau
+            </button>
             {wege.has(n.id) && (
               <button class="griff" type="button" data-faden={n.id}
                       title={`Einen Faden weben, der bei „${n.titel}" beginnt`}>
@@ -411,6 +425,7 @@ const kurzMonat = (d) => {
       });
       mehr.hidden = true;
       stand.textContent = `${nah.size} verwandt`;
+      kappungPruefen();
       return;
     }
 
@@ -427,6 +442,7 @@ const kurzMonat = (d) => {
     mehr.hidden = sichtbar >= passend;
     // Zählt, was die Auswahl übriglässt — nicht, wie groß das Regal ist.
     stand.textContent = sichtbar >= passend ? `alle ${passend}` : `${sichtbar} von ${passend}`;
+    kappungPruefen();
   }
 
   /* ── Die Welle ──
@@ -473,7 +489,31 @@ const kurzMonat = (d) => {
 
   document.getElementById("verwandtZu").addEventListener("click", zurueckInsFeld);
 
+  /* ── Abgeschnittene Teaser anfassbar machen ──
+     Bei drei Karten je Zeile passen die meisten „Worum es geht" ganz in
+     die fünf Zeilen. Nur die wirklich gekappten bekommen den Zeigefinger
+     — bei allen anderen verspräche er etwas, das nicht passiert.
+     Muss nach jedem Umblenden neu laufen: Eine versteckte Karte hat kein
+     Layout, also auch keine messbare Höhe. */
+  function kappungPruefen() {
+    for (const t of document.querySelectorAll(".kachel:not([hidden]) .kachel__teaser")) {
+      if (t.classList.contains("ist-offen")) continue;
+      const gekappt = t.scrollHeight - t.clientHeight > 4;
+      t.classList.toggle("ist-gekappt", gekappt);
+      t.title = gekappt ? "Ganz anzeigen" : "";
+    }
+  }
+
   document.getElementById("gitter").addEventListener("click", (e) => {
+    const teaser = e.target.closest(".kachel__teaser");
+    if (teaser && (teaser.classList.contains("ist-gekappt") || teaser.classList.contains("ist-offen"))) {
+      const auf = teaser.classList.toggle("ist-offen");
+      teaser.classList.toggle("ist-gekappt", !auf);
+      teaser.title = auf ? "Wieder einklappen" : "Ganz anzeigen";
+      return;
+    }
+    const schauKnopf = e.target.closest("[data-schau]");
+    if (schauKnopf) { schauOeffnen(schauKnopf.dataset.schau); return; }
     const nahKnopf = e.target.closest("[data-nah-auf]");
     if (nahKnopf) { verwandtesZeigen(+nahKnopf.dataset.nahAuf); return; }
     const fadenKnopf = e.target.closest("[data-faden]");
@@ -492,6 +532,71 @@ const kurzMonat = (d) => {
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
   auslegen();
+  kappungPruefen();
+  addEventListener("resize", kappungPruefen);
+
+  /* ══ Die Vorschau ══
+     Die Seite wird geholt und ihr Anfang gezeigt — Kopf, Aufmacher und
+     so viel Text, wie man im Vorbeigehen liest. Wer weiterwill, hat
+     unten den Weg; wer nicht, hat nichts verloren. */
+  const schau = document.getElementById("schau");
+  const schauInhalt = document.getElementById("schauInhalt");
+  const schauWeiter = document.getElementById("schauWeiter");
+  const geholt = new Map();     // schon geholte Anfänge, je Adresse
+  let schauLaeuft = 0;          // gegen überholende Anfragen
+
+  function schauSchliessen() {
+    schau.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  async function schauOeffnen(url) {
+    const lauf = ++schauLaeuft;
+    schau.hidden = false;
+    document.body.style.overflow = "hidden";
+    schauWeiter.href = url;
+    schau.querySelector(".schau__blatt").scrollTop = 0;
+
+    if (geholt.has(url)) { schauInhalt.replaceChildren(geholt.get(url).cloneNode(true)); return; }
+    schauInhalt.innerHTML = '<p class="schau__laedt">wird geholt …</p>';
+
+    let seite;
+    try {
+      seite = new DOMParser().parseFromString(await (await fetch(url)).text(), "text/html");
+    } catch {
+      // Ehrlich sagen, dass es nicht ging — ein leeres Fenster sieht aus
+      // wie eine Note ohne Inhalt.
+      if (lauf === schauLaeuft) {
+        schauInhalt.innerHTML = '<p class="schau__laedt">Der Anfang ließ sich nicht holen.</p>';
+      }
+      return;
+    }
+    if (lauf !== schauLaeuft) return;    // inzwischen wurde eine andere geöffnet
+
+    const stueck = document.createElement("div");
+    const kopf = seite.querySelector(".blatt > header");
+    if (kopf) stueck.append(kopf);
+
+    /* So viel Text, wie man im Vorbeigehen liest. Nicht nach Absätzen
+       gezählt, sondern nach Zeichen — ein Aufmacher-Callout wiegt so viel
+       wie fünf kurze Zwischenüberschriften. */
+    let last = 0;
+    for (const kind of [...(seite.getElementById("text")?.children ?? [])]) {
+      if (last > 1600) break;
+      // Das 🎨-Osterei ist ein Bildnachweis, keine Lektüre.
+      if (kind.tagName === "DETAILS" || kind.classList.contains("marken-zeile")) continue;
+      last += kind.textContent.length;
+      stueck.append(kind);
+    }
+
+    geholt.set(url, stueck);
+    if (lauf === schauLaeuft) schauInhalt.replaceChildren(stueck.cloneNode(true));
+  }
+
+  for (const el of schau.querySelectorAll("[data-schau-zu]")) {
+    el.addEventListener("click", schauSchliessen);
+  }
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !schau.hidden) schauSchliessen(); });
 
   /* Aufs Geratewohl — aus dem, was gerade gefiltert ist. Sonst führte der
      Würfel aus einer Rubrik hinaus, die man ausdrücklich gewählt hat. */
@@ -618,6 +723,22 @@ const kurzMonat = (d) => {
     scrollTo({ top: 0, behavior: "smooth" });
   });
 </script>
+
+{/* ── Die Vorschau ──
+    Wie das Popover der Quartz-Fassung, nur auf Klick und als Schicht:
+    Die Seite wird geholt, ihr Anfang gezeigt. Nichts davon liegt im
+    Voraus bereit — 492 Anfänge im Dokument wären ein Vielfaches der
+    Startseite für etwas, das man einmal aufschlägt. */}
+<div class="schau" id="schau" hidden>
+  <div class="schau__grund" data-schau-zu></div>
+  <div class="schau__blatt" role="dialog" aria-modal="true" aria-label="Vorschau">
+    <button class="schau__zu" type="button" data-schau-zu aria-label="Schließen">esc</button>
+    <div class="schau__inhalt" id="schauInhalt"></div>
+    <p class="schau__fuss">
+      <a id="schauWeiter" href="#">Ganz lesen →</a>
+    </p>
+  </div>
+</div>
 
 <Suche />
 

@@ -98,12 +98,16 @@
    sagt wessen Nachbarschaft man sieht, stünde hinter der Marke. */
 .feld { scroll-margin-top: calc(var(--kopf) + 1.4rem); }
 
+/* Drei je Zeile, fest. Vier hatten mehr Bestand auf einen Blick, aber die
+   Karte war dann zu schmal für das, worauf es ankommt: „Worum es geht"
+   blieb ein Anriss. Bei dreien passt der Satz fast immer ganz hinein —
+   man liest schon auf der Startseite, statt nur Titel zu überfliegen. */
 .feld__gitter {
   list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr));
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   /* Zwischen den Spalten enger als zwischen den Zeilen: Waagerecht
      trennt schon die Kante des Bildes, senkrecht nur die Luft. */
-  column-gap: 1.9rem; row-gap: 2.9rem;
+  column-gap: 2.2rem; row-gap: 3.2rem;
 }
 .kachel[hidden] { display: none; }
 /* Die Karte füllt ihre Zeile aus, damit die Griffe unten alle auf einer
@@ -120,7 +124,7 @@
   box-shadow: var(--schatten); margin-bottom: .8rem;
 }
 .kachel__bild img {
-  display: block; width: 100%; height: 9.6rem; object-fit: cover;
+  display: block; width: 100%; height: 12.4rem; object-fit: cover;
   /* Das Bild ist die Begleitung, nicht die Aussage — es tritt beim
      Berühren erst ganz hervor. */
   filter: saturate(.9); opacity: .93;
@@ -140,16 +144,29 @@
 }
 
 .kachel__titel {
-  display: block; font-size: 1.06rem; line-height: 1.26; font-weight: 600;
-  letter-spacing: -.01em; text-wrap: pretty; transition: color .2s;
+  display: block; font-size: 1.2rem; line-height: 1.24; font-weight: 600;
+  letter-spacing: -.012em; text-wrap: pretty; transition: color .2s;
 }
 .kachel__weg:hover .kachel__titel { color: var(--akzent); }
 
+/* Fünf Zeilen statt drei: Bei drei Karten je Zeile fasst das die meisten
+   „Worum es geht" ganz. Wo doch etwas fehlt, klappt ein Klick den Rest
+   auf — der Teaser steht darum außerhalb des Links, sonst navigierte der
+   Klick, statt zu öffnen. */
 .kachel__teaser {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5;
   overflow: hidden;
-  margin-top: .4rem; font-size: .89rem; line-height: 1.45;
+  margin: .5rem 0 0; font-size: .93rem; line-height: 1.5;
   color: var(--tinte-leise); text-wrap: pretty;
+  transition: color .2s;
+}
+/* Nur was wirklich abgeschnitten ist, gibt sich als anfassbar zu
+   erkennen. Sonst verspräche der Zeigefinger etwas, das nicht kommt. */
+.kachel__teaser.ist-gekappt { cursor: pointer; }
+.kachel__teaser.ist-gekappt:hover { color: var(--tinte); }
+.kachel__teaser.ist-offen {
+  -webkit-line-clamp: unset; cursor: pointer;
+  color: var(--tinte);
 }
 
 /* ── Die Griffe an der Karte ──
@@ -368,3 +385,75 @@
   font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
   letter-spacing: .1em; color: var(--tinte-fern); font-variant-numeric: tabular-nums;
 }
+
+/* ══════════════  Die Vorschau  ══════════════
+   Wie das Popover der Quartz-Fassung, nur auf Klick und als Schicht über
+   der Seite: Man liest den Anfang, ohne das Feld zu verlassen — und
+   verliert seinen Platz darin nicht. Der Inhalt wird aus der fertigen
+   Note geholt und bringt ihre eigenen Klassen mit; hier steht nur, was
+   im engeren Fenster anders sein muss. */
+.schau { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; }
+.schau[hidden] { display: none; }
+.schau__grund {
+  position: absolute; inset: 0;
+  background: color-mix(in oklab, var(--tinte) 42%, transparent);
+  backdrop-filter: blur(2px);
+  animation: schau-grund .25s ease;
+}
+@keyframes schau-grund { from { opacity: 0; } }
+
+.schau__blatt {
+  position: relative; z-index: 1;
+  width: min(92vw, 46rem); max-height: 84vh; overflow-y: auto;
+  /* Unten kein Polster: Der Fuß klebt dort und muss bis an die Kante
+     decken, sonst scrollt Text in den Spalt darunter. */
+  padding: 2.6rem 3rem 0;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: 0 24px 70px rgba(30, 22, 14, .32);
+  animation: schau-auf .32s cubic-bezier(.2,.85,.25,1);
+}
+@keyframes schau-auf { from { opacity: 0; transform: translateY(18px) scale(.985); } }
+
+.schau__zu {
+  position: sticky; top: 0; float: right; margin: -1.4rem -1.6rem 0 0;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .3rem .7rem; cursor: pointer; transition: all .2s; z-index: 2;
+}
+.schau__zu:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.schau__laedt {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  text-align: center; padding: 3rem 0;
+}
+
+/* Der geholte Anfang trägt das Note-Layout in sich — und das rechnet mit
+   Rändern, die es hier nicht gibt. Also die Spaltenbreite lösen und alles
+   einsammeln, was sonst in die Marginalien ausbrechen würde. */
+.schau__inhalt .strang { width: auto; margin-left: 0; }
+.schau__inhalt .banner { margin-top: 0; }
+.schau__inhalt h1 { font-size: 2rem; line-height: 1.14; }
+.schau__inhalt .zeitanker,
+.schau__inhalt .nebenan { display: none; }
+.schau__inhalt > div > :last-child {
+  /* Der Anfang bricht mitten im Text ab — das soll man sehen, statt es
+     für das Ende zu halten. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.schau__fuss {
+  position: sticky; bottom: 0; margin: 0; padding: 1.8rem 0 1.6rem;
+  background: linear-gradient(to bottom, transparent, var(--papier) 42%, var(--papier));
+  text-align: center;
+}
+.schau__fuss a {
+  display: inline-block;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .58rem 1.5rem; text-decoration: none; transition: all .2s;
+}
+.schau__fuss a:hover { color: var(--akzent); border-color: var(--akzent); }
