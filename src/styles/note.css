@@ -66,6 +66,23 @@
   --r-vipassana:   #a89d88;
 }
 
+/* Die Note wächst mit dem Schirm — aber nicht beliebig.
+   Die Lesespalte ist das eine Maß, das nicht frei ist: Bei 20,5 px Serife
+   fasst sie bei 41 rem rund achtundsechzig Zeichen, und irgendwo um die
+   achtzig herum verliert das Auge beim Zeilensprung den Anschluss. Also
+   wächst sie nur bis 46 rem mit, und die *Ränder* nehmen den Rest der
+   Breite auf — sie tragen ja auch etwas (links die Zeitmarken, rechts die
+   Rand-Karten), und ein großzügiger Rand ist keine verschenkte Fläche.
+
+   Die Grundwerte bleiben unter 72 rem, damit die Seite über der
+   1180-px-Schwelle nicht überläuft; erst darüber wird zugelegt. */
+@media (min-width: 1400px) {
+  :root { --spalte: 44rem; --marge: 11rem; --neben: 19rem; }
+}
+@media (min-width: 1700px) {
+  :root { --spalte: 46rem; --marge: 12.5rem; --neben: 21rem; --luft: 3.1rem; }
+}
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
