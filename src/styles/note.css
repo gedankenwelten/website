@@ -528,11 +528,6 @@ h1 {
 .kopfleiste__marke-bild[data-stil="aquarell"] { height: 2.25rem; }
 .kopfleiste__marke-bild[data-stil="aether"]   { height: 2.05rem; }
 
-/* Auf der Startseite steht die Wortmarke schon groß im Satz — zweimal
-   übereinander wäre sie ein Echo. Sie kommt erst, wenn die große weg ist. */
-.kopfleiste__marke[data-heim="still"] { opacity: 0; pointer-events: none; }
-.ist-gescrollt .kopfleiste__marke[data-heim="still"] { opacity: 1; pointer-events: auto; }
-
 .kopfleiste__trenner { color: var(--tinte-fern); font-style: normal; flex: 0 0 auto; }
 
 .kopfleiste__rubrik, .kopfleiste__spur {

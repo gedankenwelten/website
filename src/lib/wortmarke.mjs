@@ -12,15 +12,20 @@
 export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur"];
 
 /**
- * Welche Marke an einem Tag gilt. Über die laufende Tageszahl seit der
- * Epoche und nicht über den Tag im Jahr — sonst stünde am Jahreswechsel
- * zweimal hintereinander dieselbe.
+ * Welche Marke an einem Tag gilt — dieselbe Rechnung wie in der
+ * Quartz-Fassung (`quartz/components/scripts/pageTitle.inline.ts`):
+ * Tag im Monat, minus eins, modulo Poolgröße.
  *
- * Dieselbe Rechnung läuft im Build (für das erste Bild) und im Browser
- * (für den Tag des Lesers). Sie muss darum an beiden Orten identisch
- * sein — die Fassung im Browser steht in `public/wortmarke.js`.
+ * Absichtlich nicht „besser": So zeigen beide Fassungen am selben Tag
+ * dieselbe Hand. Der Preis ist bekannt und in Kauf genommen — am 31. fällt
+ * es auf Platz 0 zurück, und der 1. des Folgemonats liegt auch dort. In
+ * sieben Monaten im Jahr steht die Marke also zwei Tage hintereinander.
+ * Eine Rechnung über die Tage seit der Epoche hätte das nicht, aber dann
+ * liefen die beiden Seiten auseinander.
+ *
+ * Läuft im Build (für das erste Bild) und im Browser (für den Tag des
+ * Lesers) — die Fassung im Browser steht in `components/Vorspann.astro`.
  */
 export function wortmarkeDesTages(datum = new Date()) {
-  const tage = Math.floor(datum.getTime() / 86_400_000);
-  return WORTMARKEN[tage % WORTMARKEN.length];
+  return WORTMARKEN[(datum.getDate() - 1) % WORTMARKEN.length];
 }

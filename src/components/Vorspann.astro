@@ -23,6 +23,7 @@ import { WORTMARKEN } from "../lib/wortmarke.mjs";
     const t = localStorage.getItem("gw-theme");
     if (t) w.dataset.theme = t;
   } catch {}
-  // Dieselbe Rechnung wie `wortmarkeDesTages()` in src/lib/wortmarke.mjs.
-  w.dataset.wm = WORTMARKEN[Math.floor(Date.now() / 86400000) % WORTMARKEN.length];
+  // Dieselbe Rechnung wie `wortmarkeDesTages()` in src/lib/wortmarke.mjs
+  // und wie in der Quartz-Fassung: Tag im Monat, minus eins, modulo Pool.
+  w.dataset.wm = WORTMARKEN[(new Date().getDate() - 1) % WORTMARKEN.length];
 </script>

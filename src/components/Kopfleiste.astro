@@ -16,14 +16,13 @@
  */
 import { alleRubriken } from "../lib/rubriken.mjs";
 
-const { rubrik = null, heim = true } = Astro.props;
+const { rubrik = null } = Astro.props;
 const rubriken = alleRubriken();
 ---
 <header class="kopfleiste" id="kopfleiste">
 
   <nav class="kopfleiste__weg" aria-label="Hauptnavigation">
-    <a class="kopfleiste__marke" href="/" aria-label="Gedankenwelten — zur Startseite"
-       data-heim={heim ? null : "still"}>
+    <a class="kopfleiste__marke" href="/" aria-label="Gedankenwelten — zur Startseite">
       {/* Der Name als Text trägt, wenn das Bild nicht kommt — ohne
           Javascript bleibt er stehen, das ist der ehrliche Rückfall. */}
       <span class="kopfleiste__marke-wort">Gedanken&shy;welten</span>
