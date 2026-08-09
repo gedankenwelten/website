@@ -239,11 +239,14 @@ if (knopf) {
 
     const vorher = spur[spur.length - 1];
     const pille = document.getElementById("kopfleisteSpur");
-    // Auf „/" führt schon die Wortmarke daneben — zweimal derselbe Weg
-    // wäre keine zweite Auskunft.
-    if (pille && vorher && vorher.url !== "/") {
+    if (pille && vorher) {
       pille.href = vorher.url;
-      pille.textContent = `← ${vorher.titel}`;
+      /* Zur Startseite führt die Wortmarke daneben auch — aber sie sagt
+         nicht, dass es ein *Zurück* ist. Und darauf kommt es an: Das Feld
+         merkt sich, wo man stand, also kommt man nicht auf eine Startseite,
+         sondern an seinen Platz. Der Titel wäre hier keine Auskunft, das
+         Wort „zurück" ist eine. */
+      pille.textContent = vorher.url === "/" ? "← Zurück ins Feld" : `← ${vorher.titel}`;
       pille.hidden = false;
     }
 

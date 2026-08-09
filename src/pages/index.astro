@@ -531,9 +531,61 @@ const kurzMonat = (d) => {
   });
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
+
+  /* ══ Den Platz im Feld behalten ══
+     Wer sich durch dreihundert Karten gescrollt hat, eine Note öffnet und
+     zurückkommt, soll dort stehen, wo er war — und nicht wieder oben.
+
+     Das ist nicht nur Bequemlichkeit: Ohne das taugt auch der
+     Browser-Zurück-Knopf nichts. Er stellt die Scrollhöhe wieder her, aber
+     das Feld baut sich mit achtundvierzig Karten neu auf — die Höhe zeigt
+     dann irgendwohin. Also merken wir uns den *Zustand* und stellen die
+     Höhe selbst wieder ein.
+
+     Im sessionStorage, nicht im localStorage: Der Platz gehört zu diesem
+     Besuch. Morgen fängt man neu an. */
+  const PLATZ = "gw-feld";
+
+  function platzSichern() {
+    try {
+      sessionStorage.setItem(PLATZ, JSON.stringify({ rubrik, gezeigt, quelle, y: Math.round(scrollY) }));
+    } catch {}
+  }
+  // `pagehide` und nicht `beforeunload`: Letzteres verhindert, dass die
+  // Seite in den Zurück-Zwischenspeicher darf.
+  addEventListener("pagehide", platzSichern);
+
+  let zurueckAuf = null;
+  try {
+    const p = JSON.parse(sessionStorage.getItem(PLATZ) || "null");
+    if (p) {
+      rubrik = p.rubrik ?? "";
+      gezeigt = Math.max(PORTION, p.gezeigt ?? PORTION);
+      quelle = Number.isInteger(p.quelle) ? p.quelle : null;
+      zurueckAuf = p.y || 0;
+      for (const c of document.querySelectorAll(".chip")) {
+        c.classList.toggle("ist-gewaehlt", c.dataset.rubrik === rubrik);
+      }
+      if (quelle !== null && kacheln[quelle]?.dataset.nah) {
+        balkenTitel.textContent = kacheln[quelle].dataset.titel;
+        balken.hidden = false;
+      } else {
+        quelle = null;
+      }
+    }
+  } catch {}
+
   auslegen();
   kappungPruefen();
   addEventListener("resize", kappungPruefen);
+
+  /* Die Höhe erst, wenn die Karten stehen. Sie brauchen ihre Bilder nicht
+     abzuwarten — `width`/`height` an jedem `img` halten den Platz frei,
+     das Layout steht also schon vor dem ersten Byte Bild. */
+  if (zurueckAuf) {
+    history.scrollRestoration = "manual";   // sonst zöge der Browser dagegen
+    scrollTo({ top: zurueckAuf, behavior: "instant" });
+  }
 
   /* ══ Die Vorschau ══
      Die Seite wird geholt und ihr Anfang gezeigt — Kopf, Aufmacher und
