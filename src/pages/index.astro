@@ -36,11 +36,21 @@ const notes = idx.alle.filter((n) => !g.katalog.has(n.id) && n.basis.toLowerCase
 const datiert = notes.map((n) => n.datum).filter(Boolean).sort();
 const [erstesDatum, letztesDatum] = [datiert[0], datiert[datiert.length - 1]];
 
-const rubriken = alleRubriken();
+/* Das Feld zeigt, was gedacht wurde — nicht, wer gedacht hat.
+   Die 269 DenkerVitas sind ein Register: Herkunft, Werk, Kernthesen zu
+   einer Person. Als Karte neben einer Note stehen sie im falschen Rang,
+   und sie sind ein gutes Drittel des Bestands — sie würden das Feld
+   fluten. Erreichbar bleiben sie über die Rubrikwahl im Kopf, über die
+   Suche und über jede Note, die auf ihren Menschen verweist. */
+const OHNE_IM_FELD = new Set(["DenkerVita"]);
+const inhaltlich = notes.filter((n) => !OHNE_IM_FELD.has(n.rubrik));
+const vitaZahl = notes.length - inhaltlich.length;
 
-/* Das Feld: alles, neueste zuerst. Notes ohne Datum ganz nach hinten —
-   sie sind nicht neu, sie sind nur undatiert. */
-const feld = [...notes].sort((a, b) =>
+const rubriken = alleRubriken().filter((r) => !OHNE_IM_FELD.has(r.name));
+
+/* Neueste zuerst. Notes ohne Datum ganz nach hinten — sie sind nicht
+   neu, sie sind nur undatiert. */
+const feld = [...inhaltlich].sort((a, b) =>
   String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
 
 /* Wie viele Karten sichtbar starten. Alle stehen im Dokument — sonst
@@ -113,8 +123,11 @@ const kurzMonat = (d) => {
 
   <header class="start__kopf">
     <h1 class="wortmarke">Gedanken&shy;welten</h1>
+    {/* Die Vitas werden genannt, nicht verschwiegen: Sie fehlen im Feld,
+        weil sie ein Register sind — nicht, weil es sie nicht gäbe. */}
     <p class="start__satz">
-      {notes.length} Notes, gelesen und verbunden seit {monatJahr(erstesDatum)}.
+      {`${inhaltlich.length} Notes, gelesen und verbunden seit ${monatJahr(erstesDatum)} — dazu `}
+      <a href="/DenkerVita">{vitaZahl} Vitas</a>{" der Menschen dahinter."}
     </p>
   </header>
 
@@ -122,7 +135,7 @@ const kurzMonat = (d) => {
   <div class="lenkung">
     <div class="lenkung__rubriken" id="filter">
       <button class="chip ist-gewaehlt" type="button" data-rubrik="">
-        Alles <i>{notes.length}</i>
+        Alles <i>{inhaltlich.length}</i>
       </button>
       {rubriken.map((r) => (
         <button class="chip" type="button" data-rubrik={r.name}>
