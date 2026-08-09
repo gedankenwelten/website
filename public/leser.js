@@ -197,20 +197,98 @@ document.getElementById("zu")?.addEventListener("click", (e) => {
   document.querySelectorAll(".klingt").forEach((el) => el.classList.remove("klingt"));
 });
 
-/* ── Hell / Dunkel ── */
+/* ── Hell / Dunkel ──
+   Das Thema selbst setzt der Vorspann im Kopf, noch vor dem ersten Bild —
+   hier steht nur noch, was auf einen Klick hin passiert. */
 const knopf = document.getElementById("theme");
 if (knopf) {
-  const gespeichert = localStorage.getItem("gw-theme");
-  if (gespeichert) {
-    document.documentElement.dataset.theme = gespeichert;
-    knopf.textContent = gespeichert === "dunkel" ? "Hell" : "Dunkel";
-  }
+  const marke = document.getElementById("wortmarke");
+  const anschrift = (t) => (knopf.textContent = t === "dunkel" ? "Hell" : "Dunkel");
+  anschrift(document.documentElement.dataset.theme);
+
   knopf.onclick = () => {
     const neu = document.documentElement.dataset.theme === "dunkel" ? "hell" : "dunkel";
     document.documentElement.dataset.theme = neu;
-    knopf.textContent = neu === "dunkel" ? "Hell" : "Dunkel";
+    anschrift(neu);
     localStorage.setItem("gw-theme", neu);
+    // Die Wortmarke ist gemalt, nicht gesetzt — sie hat für jedes Thema
+    // ein eigenes Bild und kann nicht einfach die Farbe wechseln.
+    if (marke) marke.src = `/wortmarke/wordmark-${marke.dataset.stil}-${neu === "dunkel" ? "dark" : "light"}.png`;
   };
+}
+
+/* ── Die eigene Spur ──
+   Der Browser-Zurück-Knopf kann das auch — aber er zeigt nicht, wohin er
+   führt. Hier steht der Titel der Station, von der man kam: man muss sich
+   nicht erinnern, sondern liest es ab.
+
+   Im sessionStorage, nicht im localStorage: Eine Spur gehört zu einem
+   Besuch. Wer morgen wiederkommt, fängt neu an zu gehen. */
+{
+  const SPUR = "gw-spur";
+  try {
+    const hier = location.pathname;
+    let spur = JSON.parse(sessionStorage.getItem(SPUR) || "[]");
+
+    /* Ist man zurückgegangen, steht die aktuelle Seite schon in der Spur.
+       Dann wird sie gekürzt statt verlängert — sonst wüchse sie beim
+       Hin und Her endlos und zeigte als „woher" die Seite, die man gerade
+       verlassen hat, also den Weg vorwärts. */
+    const schon = spur.findIndex((s) => s.url === hier);
+    if (schon >= 0) spur = spur.slice(0, schon);
+
+    const vorher = spur[spur.length - 1];
+    const pille = document.getElementById("kopfleisteSpur");
+    // Auf „/" führt schon die Wortmarke daneben — zweimal derselbe Weg
+    // wäre keine zweite Auskunft.
+    if (pille && vorher && vorher.url !== "/") {
+      pille.href = vorher.url;
+      pille.textContent = `← ${vorher.titel}`;
+      pille.hidden = false;
+    }
+
+    const titel = document.querySelector("#text h1, .blatt h1")?.textContent?.trim()
+      || document.title.split(" · ")[0];
+    spur.push({ url: hier, titel });
+    // Fünfundzwanzig reichen für jeden Besuch; die Spur soll den Speicher
+    // nicht vollschreiben.
+    sessionStorage.setItem(SPUR, JSON.stringify(spur.slice(-25)));
+  } catch { /* Privater Modus: dann eben ohne Spur. */ }
+}
+
+/* ── Die Rubrikwahl ──
+   Ein Klappmenü und nicht zehn Reiter nebeneinander: Zehn Rubriken im
+   Kopf wären eine zweite Zeile, und die Kopfleiste soll eine bleiben. */
+{
+  const wahl = document.getElementById("rubrikwahl");
+  const knopf = wahl?.querySelector(".rubrikwahl__knopf");
+  const liste = document.getElementById("rubrikwahlListe");
+
+  if (wahl && knopf && liste) {
+    const stellen = (offen) => {
+      liste.hidden = !offen;
+      knopf.setAttribute("aria-expanded", String(offen));
+      wahl.toggleAttribute("data-offen", offen);
+    };
+
+    knopf.addEventListener("click", (e) => {
+      e.stopPropagation();       // sonst schließt der Klick sofort wieder
+      stellen(liste.hidden);
+    });
+
+    // Wer danebenklickt, will weg — das muss man nicht erst lernen.
+    addEventListener("click", (e) => { if (!wahl.contains(e.target)) stellen(false); });
+    addEventListener("keydown", (e) => { if (e.key === "Escape") stellen(false); });
+  }
+}
+
+/* ── Die Kopfleiste bekommt ihren Grund ──
+   Oben liegt sie ohne Kante im Papier. Sobald Text unter ihr durchläuft,
+   braucht sie einen Untergrund, sonst liefe der Satz durch die Marke. */
+{
+  const stand = () => document.body.classList.toggle("ist-gescrollt", scrollY > 12);
+  stand();
+  addEventListener("scroll", stand, { passive: true });
 }
 
 /* ── Die Malerhand unter dem Bild ──

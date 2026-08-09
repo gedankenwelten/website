@@ -21,6 +21,7 @@
   --marge:   9.5rem;
   --neben:   16rem;
   --luft:    2.75rem;
+  --kopf:    3.4rem;   /* Höhe der Kopfleiste — Zeitleiste und Satz weichen ihr aus */
 
   /* Die Rubrikfarben, aufs Papier übersetzt. Der Farbton bleibt —
      Zeitgeist ist violett, Spuren rosé —, aber die Neonsättigung, die auf
@@ -85,7 +86,9 @@ body {
 
 /* ───────────────────────────  Zeitleiste  ─────────────────────────── */
 
-.rail { position: fixed; left: 0; top: 0; bottom: 0; width: 4.5rem; z-index: 40; pointer-events: none; }
+/* Unter der Kopfleiste, nicht hinter ihr. Marken und Zeiger sitzen in
+   Prozent der Leistenhöhe — sie rücken von selbst mit. */
+.rail { position: fixed; left: 0; top: var(--kopf); bottom: 0; width: 4.5rem; z-index: 40; pointer-events: none; }
 .rail__line { position: absolute; left: 2.3rem; top: 5.5rem; bottom: 5.5rem; width: 1px; background: var(--linie); }
 .rail__cap {
   position: absolute; left: 0; width: 4.5rem; text-align: center;
@@ -122,7 +125,7 @@ body {
 
 .blatt {
   width: calc(var(--marge) + var(--spalte) + var(--neben) + 2 * var(--luft));
-  margin: 0 auto; padding: 0 0 12rem;
+  margin: 0 auto; padding: var(--kopf) 0 12rem;
 }
 .strang { width: var(--spalte); margin-left: calc(var(--marge) + var(--luft)); position: relative; }
 
@@ -396,13 +399,160 @@ h1 {
 
 /* ── Schalter ── */
 .schalter { position: fixed; top: 1.6rem; right: 1.7rem; z-index: 70; display: flex; gap: .45rem; }
-.schalter button, .schalter a {
+.schalter button, .schalter a,
+.kopfleiste__schalter button, .kopfleiste__schalter a {
   font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .42rem .95rem; cursor: pointer; text-decoration: none; transition: all .2s;
 }
-.schalter button:hover, .schalter a:hover { color: var(--akzent); border-color: var(--akzent); }
+.schalter button:hover, .schalter a:hover,
+.kopfleiste__schalter button:hover, .kopfleiste__schalter a:hover { color: var(--akzent); border-color: var(--akzent); }
+
+/* ── Kopfleiste ──
+   Der einzige Ort, der auf jeder Seite steht. Oben liegt sie ohne Grund und
+   ohne Linie im Papier — man soll sie erst bemerken, wenn man sie braucht.
+   Sobald Text unter ihr durchläuft, bekommt sie Untergrund und Kante, sonst
+   liefe der Satz durch die Wortmarke hindurch. */
+.kopfleiste {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--kopf);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.7rem; z-index: 70;
+  background: transparent; border-bottom: 1px solid transparent;
+  transition: background .3s ease, border-color .3s ease;
+}
+.ist-gescrollt .kopfleiste {
+  background: var(--papier);
+  border-bottom-color: var(--linie);
+}
+
+.kopfleiste__weg { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+.kopfleiste__werkzeug { display: flex; align-items: center; gap: .55rem; flex: 0 0 auto; }
+.kopfleiste__schalter { display: flex; gap: .45rem; flex: 0 0 auto; }
+
+/* ── Die Rubrikwahl ── */
+.rubrikwahl { position: relative; flex: 0 0 auto; }
+.rubrikwahl__knopf {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
+  background: none; border: 1px solid transparent; border-radius: 100px;
+  padding: .42rem .75rem; cursor: pointer; transition: all .2s;
+}
+.rubrikwahl__knopf:hover, .rubrikwahl[data-offen] .rubrikwahl__knopf {
+  color: var(--akzent); border-color: var(--linie); background: var(--papier);
+}
+.rubrikwahl__pfeil {
+  width: 0; height: 0; margin-left: .1rem;
+  border: 3.5px solid transparent; border-top-color: currentColor; border-bottom: 0;
+  transition: transform .2s;
+}
+.rubrikwahl[data-offen] .rubrikwahl__pfeil { transform: rotate(180deg); }
+
+.rubrikwahl__liste {
+  position: absolute; top: calc(100% + .5rem); left: 0; z-index: 80;
+  min-width: 15rem; padding: .45rem;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: var(--schatten);
+}
+.rubrikwahl__liste[hidden] { display: none; }
+.rubrikwahl__liste a {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .42rem .6rem; border-radius: 4px;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 12.5px;
+  color: var(--tinte); text-decoration: none; transition: background .15s;
+}
+.rubrikwahl__liste a:hover { background: var(--papier-tief); }
+.rubrikwahl__liste a[aria-current="page"] { color: var(--akzent); }
+.rubrikwahl__name { flex: 1; }
+/* Tabellare Ziffern, damit die Zahlen untereinander eine Spalte bilden
+   und nicht zu zehn verschieden breiten Klötzchen zerfallen. */
+.rubrikwahl__liste i {
+  font-style: normal; font-size: 11px; color: var(--tinte-fern);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Das Suchfeld ──
+   Sichtbar als Feld, nicht versteckt hinter einem Zeichen: Bei über
+   siebenhundert Notes ist die Suche kein Werkzeug für Fortgeschrittene,
+   sondern ein Hauptzugang. */
+.suchfeld {
+  display: inline-flex; align-items: center; gap: .5rem;
+  width: 15rem; padding: .38rem .7rem;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 12px;
+  color: var(--tinte-fern); cursor: text; text-align: left; transition: all .2s;
+}
+.suchfeld:hover { border-color: var(--akzent); color: var(--tinte-leise); }
+.suchfeld__lupe { width: 13px; height: 13px; flex: 0 0 auto; }
+.suchfeld__wort { flex: 1; }
+.suchfeld__taste {
+  font-family: inherit; font-size: 9.5px; letter-spacing: .04em;
+  color: var(--tinte-fern); border: 1px solid var(--linie); border-radius: 3px;
+  padding: .1rem .3rem; flex: 0 0 auto;
+}
+
+.kopfleiste__licht {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .42rem .95rem; cursor: pointer; transition: all .2s;
+}
+.kopfleiste__licht:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.kopfleiste__marke {
+  display: inline-flex; align-items: center; line-height: 0;
+  font-size: 15.5px; letter-spacing: .005em; color: var(--tinte);
+  text-decoration: none; white-space: nowrap; flex: 0 0 auto;
+  transition: color .2s, opacity .35s ease;
+}
+.kopfleiste__marke:hover { color: var(--akzent); }
+.kopfleiste__marke-wort { line-height: 1.2; }
+.kopfleiste__marke.hat-bild .kopfleiste__marke-wort { display: none; }
+
+/* Die Wortmarken haben keinen Alphakanal — heller Grund ist fast weiß,
+   dunkler fast schwarz. Statt zwölf Bilder freizustellen, rechnet das
+   Mischen sie ins Papier: `multiply` löscht Weiß, `screen` löscht
+   Schwarz. Der Rest der Malerei bleibt, wie sie ist. */
+.kopfleiste__marke-bild {
+  display: none; width: auto; height: 1.85rem;
+  mix-blend-mode: multiply;
+}
+[data-theme="dunkel"] .kopfleiste__marke-bild { mix-blend-mode: screen; }
+.kopfleiste__marke.hat-bild .kopfleiste__marke-bild { display: block; }
+
+/* Drei Handschriften stehen mit viel Luft um die Schrift — ungetrimmt
+   wögen sie im Kopf leichter als die anderen. Verhältnisse aus der
+   Quartz-Fassung übernommen. */
+.kopfleiste__marke-bild[data-stil="sumie"]    { height: 2.3rem; }
+.kopfleiste__marke-bild[data-stil="aquarell"] { height: 2.25rem; }
+.kopfleiste__marke-bild[data-stil="aether"]   { height: 2.05rem; }
+
+/* Auf der Startseite steht die Wortmarke schon groß im Satz — zweimal
+   übereinander wäre sie ein Echo. Sie kommt erst, wenn die große weg ist. */
+.kopfleiste__marke[data-heim="still"] { opacity: 0; pointer-events: none; }
+.ist-gescrollt .kopfleiste__marke[data-heim="still"] { opacity: 1; pointer-events: auto; }
+
+.kopfleiste__trenner { color: var(--tinte-fern); font-style: normal; flex: 0 0 auto; }
+
+.kopfleiste__rubrik, .kopfleiste__spur {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
+  text-decoration: none; white-space: nowrap; transition: color .2s;
+}
+.kopfleiste__rubrik { display: inline-flex; align-items: center; gap: .42rem; flex: 0 0 auto; }
+.kopfleiste__rubrik:hover, .kopfleiste__spur:hover { color: var(--akzent); }
+
+/* Die Spur trägt einen ganzen Notetitel und ist das Einzige hier, dessen
+   Länge wir nicht kennen — also ist sie auch das Einzige, das nachgibt.
+   Und sie behält ihre Schreibung: Versalien sind ein Etikett („DENKER"),
+   ein Titel darin liest sich als Ruf. */
+.kopfleiste__spur {
+  margin-left: .5rem; padding-left: .9rem; border-left: 1px solid var(--linie);
+  overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 24rem;
+  text-transform: none; letter-spacing: .01em; font-size: 11.5px;
+}
+.kopfleiste__spur[hidden] { display: none; }
 
 /* Die Rubrikmarke als Punkt — Startseite, Rubrikseite, Fußnavigation. */
 .regal__punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--tinte-fern); flex: 0 0 auto; }

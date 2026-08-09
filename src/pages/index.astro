@@ -1,11 +1,18 @@
 ---
 /**
- * Die Startseite — ein Weg statt eines Rasters.
+ * Die Startseite — zwei Zugänge, einer davon der Grundzustand.
  *
- * Die alte Startseite sortiert nach Datum und begräbt damit strukturell
- * 740 von 748 Notes. Diese hier führt: Sie beginnt bei etwas Frischem und
- * geht dann an geschriebenen Verbindungen entlang rückwärts durch die
- * Zeit. Nach sieben Stationen ist man im April, ohne gesucht zu haben.
+ * Sie war zuerst nur ein Weg: sieben Stationen, an geschriebenen
+ * Verbindungen entlang rückwärts durch die Zeit. Als Idee gut, als
+ * Startseite falsch — sie beginnt mit *einer* Note groß, und das liest
+ * sich als Behauptung, dass ausgerechnet diese wichtig sei. Wer ankommt,
+ * will erst sehen, was da ist.
+ *
+ * Also: **Das Feld ist der Grundzustand** — alle Notes als Karten, nach
+ * Datum, nach Rubrik filterbar. Das ist der journalistische Teil:
+ * Übersicht, Gleichrang, selbst entscheiden. **Der Faden bleibt als
+ * Angebot** hinter einem Knopf. Das ist der kuratierte Teil: eine
+ * Strecke, eine Handschrift. Was einer lieber mag, merkt sich der Browser.
  */
 import "../styles/note.css";
 import "../styles/stern.css";
@@ -13,18 +20,33 @@ import "../styles/start.css";
 import { alleFaeden } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
+import { alleRubriken } from "../lib/rubriken.mjs";
 import Suche from "../components/Suche.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Vorspann from "../components/Vorspann.astro";
 
 const faeden = alleFaeden(7);
 const idx = ladeIndex();
 const g = ladeGraph();
 
 /* Ohne die Kataloge und ohne die beiden alten Quartz-Deckblätter
-   (`Zeitgeist/index`, `GoodNews/index`) — sonst zählte das Regal einen
+   (`Zeitgeist/index`, `GoodNews/index`) — sonst zählte das Feld einen
    Bestand, den die Rubrikseite daneben anders zählt. */
 const notes = idx.alle.filter((n) => !g.katalog.has(n.id) && n.basis.toLowerCase() !== "index");
 const datiert = notes.map((n) => n.datum).filter(Boolean).sort();
 const [erstesDatum, letztesDatum] = [datiert[0], datiert[datiert.length - 1]];
+
+const rubriken = alleRubriken();
+
+/* Das Feld: alles, neueste zuerst. Notes ohne Datum ganz nach hinten —
+   sie sind nicht neu, sie sind nur undatiert. */
+const feld = [...notes].sort((a, b) =>
+  String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
+
+/* Wie viele Karten sichtbar starten. Alle stehen im Dokument — sonst
+   könnte der Rubrikfilter nicht sofort antworten, und ein Filter, der
+   erst lädt, ist zäher als gar keiner. Sichtbar ist erst dieser Anfang. */
+const ERSTE_LADUNG = 48;
 
 /* Die Zeitleiste läuft von heute nach unten in die Vergangenheit — lesen
    heißt hier zurückgehen. Der Anteil sagt, wie weit eine Station liegt. */
@@ -37,6 +59,11 @@ const langDatum = (d) => {
   const [j, m, t] = d.split("-");
   return `${Number(t)}. ${MONATE[Number(m) - 1]} ${j}`;
 };
+const kurzDatum = (d) => {
+  if (!d) return null;
+  const [j, m, t] = d.split("-");
+  return `${Number(t)}.${Number(m)}.${j.slice(2)}`;
+};
 const monatJahr = (d) => {
   const [j, m] = d.split("-");
   return `${MONATE[Number(m) - 1]} ${j}`;
@@ -46,26 +73,6 @@ const kurzMonat = (d) => {
   const [j, m] = d.split("-");
   return `${MONATE[Number(m) - 1].slice(0, 3)} ${j.slice(2)}`;
 };
-
-/* Der Bestand unter dem Faden: jede Rubrik mit ihrem Umfang und dem, was
-   zuletzt dazukam. Kein Ersatz für Rubrikenseiten — aber solange es die
-   nicht gibt, führt von hier wenigstens ein Weg hinein. */
-const rubriken = [...Map.groupBy(notes, (n) => n.rubrik)]
-  .map(([name, ns]) => {
-    const neu = [...ns].sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
-    return {
-      name,
-      anzahl: ns.length,
-      // Das Gesicht der Rubrik: die jüngste Note, die überhaupt eins hat.
-      // Bei Zeitgeist trägt nur ein Drittel ein Banner — die jüngste blind
-      // zu nehmen hieße, dort meistens ein Loch zu zeigen.
-      kopf: neu.find((n) => n.banner) ?? neu[0],
-      weitere: neu.filter((n) => n !== (neu.find((x) => x.banner) ?? neu[0])).slice(0, 3),
-    };
-  })
-  .sort((a, b) => b.anzahl - a.anzahl);
-
-const funde = faeden.flat().filter((s) => s.grund?.fund).length;
 ---
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
@@ -73,8 +80,17 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gedankenwelten</title>
-  <meta name="description" content="Ein Weg durch {notes.length} Notes — Zeitgeist, Denker, Geistesblitz, Kultur, Spuren.">
+  <meta name="description" content={`Ein Bestand von ${notes.length} Notes — Zeitgeist, Denker, Geistesblitz, Kultur, Spuren.`}>
   <meta name="robots" content="noindex, follow">
+  <Vorspann />
+  {/* Die Ansicht muss vor dem ersten Bild feststehen: Stünde sie erst am
+      Fuß der Seite, sähe jeder Faden-Leser zuerst das Feld aufblitzen. */}
+  <script is:inline>
+    try {
+      if (localStorage.getItem("gw-ansicht") === "faden")
+        document.documentElement.dataset.ansicht = "faden";
+    } catch {}
+  </script>
 </head>
 <body class="ist-start">
 
@@ -83,128 +99,150 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
   <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
 </div>
 
-<div class="schalter">
-  <button data-suche-auf type="button" title="Suchen (/ oder ⌘K)">Suchen</button>
-  <button id="theme">Dunkel</button>
-</div>
+<Kopfleiste heim={false} />
 
+{/* Die Zeitleiste gehört zum Faden — sie zeigt, wie weit man sich beim
+    Gehen vom Neuesten entfernt hat. Im Feld hätte sie nichts zu sagen. */}
 <div class="rail" id="rail">
   <div class="rail__cap rail__cap--oben">{kurzMonat(letztesDatum)}</div>
   <div class="rail__line"></div>
   <div class="rail__cap rail__cap--unten">{kurzMonat(erstesDatum)}</div>
 </div>
 
-<main class="blatt">
+<main class="start">
 
-  <header class="strang start__kopf">
+  <header class="start__kopf">
     <h1 class="wortmarke">Gedanken&shy;welten</h1>
     <p class="start__satz">
       {notes.length} Notes, gelesen und verbunden seit {monatJahr(erstesDatum)}.
-      Diese Seite legt keine davon nach Datum aus — sie geht einen Weg hindurch.
     </p>
   </header>
 
-  {faeden.map((faden, fi) => (
-    <section class="faden" data-faden={fi} hidden={fi > 0}>
-      <ol class="faden__weg">
-        {faden.map((s, si) => (
-          <li
-            class={`station${si === 0 ? " station--auftakt" : ""}`}
-            data-tiefe={tiefe(s.datum).toFixed(4)}
-            data-monat={s.datum ? monatJahr(s.datum) : ""}
-          >
-            <a class="station__karte" href={s.url}>
-              {s.banner && (
-                <img
-                  class={`station__bild${s.eigenesBild ? "" : " station__bild--rubrik"}`}
-                  src={s.banner}
-                  alt=""
-                  width="1200" height="500"
-                  loading={si === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                >
-              )}
-
-              <div class="kennung">
-                <b>{s.rubrik}</b>
-                {s.datum && <><i>·</i>{langDatum(s.datum)}</>}
-              </div>
-
-              <h2 class="station__titel">{s.titel}</h2>
-              {s.teaser && <p class="station__teaser">{s.teaser}</p>}
-
-              {/* Der Schritt gehört unter den Titel, nicht über die
-                  Rubrikzeile: Dort las er sich als Vorspann der Station,
-                  die man gerade verlassen hat. Er sagt, warum der Weg
-                  *hierher* führt — also steht er bei dem, wohin er führt.
-
-                  `--knapp` (Versalien) ist für die kurzen Auskünfte
-                  („verweisen aufeinander"). Ein Fund nennt einen ganzen
-                  Quellentitel und wird darin unlesbar — er bekommt dieselbe
-                  ruhige Kursive wie die geschriebenen Gründe. */}
-              {s.grund && (
-                <p class={`schritt${s.grund.fund ? " schritt--fund" : ""}${s.grund.satz || s.grund.fund ? "" : " schritt--knapp"}`}>
-                  {s.grund.fund && <span class="schritt__marke">im Bestand gefunden</span>}
-                  {s.grund.wie}
-                </p>
-              )}
-            </a>
-          </li>
-        ))}
-      </ol>
-
-      <p class="faden__fuss">
-        <span>Sieben Stationen, {monatJahr(faden[0].datum)} bis {monatJahr(faden[faden.length - 1].datum)}</span>
-      </p>
-    </section>
-  ))}
-
-  <p class="start__nochmal">
-    <button id="nochmal" type="button">Ein anderer Weg</button>
-    <span class="start__zaehler"><b id="fadenNr">1</b> von {faeden.length}</span>
-  </p>
-
-  {/* Kein `strang`: Dort unterstreicht note.css jeden Link, was im
-      Fließtext richtig ist und in einer Liste aus lauter Links nichts
-      mehr unterscheidet. Die Breite setzt `.bestand` selbst. */}
-  <section class="bestand">
-    <h2>Der Bestand</h2>
-    <div class="bestand__gitter">
+  {/* ── Die Leiste: filtern und die Ansicht wählen ── */}
+  <div class="lenkung">
+    <div class="lenkung__rubriken" id="filter">
+      <button class="chip ist-gewaehlt" type="button" data-rubrik="">
+        Alles <i>{notes.length}</i>
+      </button>
       {rubriken.map((r) => (
-        <div class="regal">
-          {/* Der Regalkopf führt in die Rubrik. Vorher zeigte er drei
-              Titel und endete dort — die Zahl daneben nannte einen
-              Bestand, den man nicht sehen konnte. */}
-          <a class="regal__kopf" href={`/${r.name}`}>
-            <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
-            {r.name}
-            <i>{r.anzahl}</i>
-          </a>
-
-          <a class="karte" href={r.kopf.url}>
-            {/* Vipassana und GoodNews haben keine Note mit Banner — dann
-                steht hier das Bild der Rubrik statt einer leeren Fläche. */}
-            <img src={r.kopf.vorschau ?? rubrikBild(r.name)} alt=""
-                 width="1200" height="500" loading="lazy" decoding="async">
-            <span class="karte__titel">{r.kopf.titel}</span>
-          </a>
-
-          <ul>
-            {r.weitere.map((n) => <li><a href={n.url}>{n.titel}</a></li>)}
-          </ul>
-        </div>
+        <button class="chip" type="button" data-rubrik={r.name}>
+          <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
+          {r.name} <i>{r.anzahl}</i>
+        </button>
       ))}
     </div>
+
+    <div class="lenkung__ansicht">
+      {/* Der Zufall gehört zum Stöbern: Wer findet, was er nicht gesucht
+          hat, bleibt. Ohne Javascript führt der Link auf die jüngste Note
+          statt ins Leere. */}
+      <a class="lenkung__knopf" id="wuerfel" href={feld[0].url} title="Irgendeine Note aus der Auswahl">
+        Aufs Geratewohl
+      </a>
+      <button class="lenkung__knopf lenkung__knopf--wechsel" id="ansicht" type="button"
+              aria-pressed="false">
+        <span class="zeig-im-feld">Einen Faden gehen</span>
+        <span class="zeig-im-faden">Zurück ins Feld</span>
+      </button>
+    </div>
+  </div>
+
+  {/* ── Das Feld ── */}
+  <section class="feld" id="feld">
+    <ol class="feld__gitter" id="gitter">
+      {feld.map((n, i) => (
+        <li class="kachel" data-rubrik={n.rubrik} hidden={i >= ERSTE_LADUNG}>
+          <a href={n.url}>
+            <span class="kachel__bild">
+              <img src={n.vorschau ?? rubrikBild(n.rubrik)} alt=""
+                   width="1200" height="500"
+                   loading={i < 9 ? "eager" : "lazy"} decoding="async">
+            </span>
+            <span class="kachel__kennung">
+              <span class={`regal__punkt regal__punkt--${n.rubrik.toLowerCase()}`}></span>
+              {n.rubrik}
+              {n.datum && <em>{kurzDatum(n.datum)}</em>}
+            </span>
+            <span class="kachel__titel">{n.titel}</span>
+            {n.beschreibung && <span class="kachel__teaser">{n.beschreibung}</span>}
+          </a>
+        </li>
+      ))}
+    </ol>
+
+    <p class="feld__fuss">
+      <button id="mehr" type="button">Mehr zeigen</button>
+      <span id="standAnzeige" class="feld__stand"></span>
+    </p>
   </section>
+
+  {/* ── Der Faden ── */}
+  <div class="faeden" id="faeden">
+    {faeden.map((faden, fi) => (
+      <section class="faden" data-faden={fi} hidden={fi > 0}>
+        <ol class="faden__weg">
+          {faden.map((s, si) => (
+            <li
+              class={`station${si === 0 ? " station--auftakt" : ""}`}
+              data-tiefe={tiefe(s.datum).toFixed(4)}
+              data-monat={s.datum ? monatJahr(s.datum) : ""}
+            >
+              <a class="station__karte" href={s.url}>
+                {s.banner && (
+                  <img
+                    class={`station__bild${s.eigenesBild ? "" : " station__bild--rubrik"}`}
+                    src={s.banner}
+                    alt=""
+                    width="1200" height="500"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                )}
+
+                <div class="kennung">
+                  <b>{s.rubrik}</b>
+                  {s.datum && <><i>·</i>{langDatum(s.datum)}</>}
+                </div>
+
+                <h2 class="station__titel">{s.titel}</h2>
+                {s.teaser && <p class="station__teaser">{s.teaser}</p>}
+
+                {/* Der Schritt gehört unter den Titel, nicht über die
+                    Rubrikzeile: Dort las er sich als Vorspann der Station,
+                    die man gerade verlassen hat. Er sagt, warum der Weg
+                    *hierher* führt — also steht er bei dem, wohin er führt. */}
+                {s.grund && (
+                  <p class={`schritt${s.grund.fund ? " schritt--fund" : ""}${s.grund.satz || s.grund.fund ? "" : " schritt--knapp"}`}>
+                    {s.grund.fund && <span class="schritt__marke">im Bestand gefunden</span>}
+                    {s.grund.wie}
+                  </p>
+                )}
+              </a>
+            </li>
+          ))}
+        </ol>
+
+        <p class="faden__fuss">
+          <span>Sieben Stationen, {monatJahr(faden[0].datum)} bis {monatJahr(faden[faden.length - 1].datum)}</span>
+        </p>
+      </section>
+    ))}
+
+    <p class="start__nochmal">
+      <button id="nochmal" type="button">Ein anderer Weg</button>
+      <span class="start__zaehler"><b id="fadenNr">1</b> von {faeden.length}</span>
+    </p>
+  </div>
 
 </main>
 
 <script>
-  /* ── Die Zeitleiste ──
-     Auf der Note zeigt sie den Ort im Gespräch. Hier zeigt sie den Ort im
-     Bestand: oben heute, unten der März. Beim Scrollen wandert der Zeiger
-     nach unten — man sieht, wie weit man sich vom Neuesten entfernt hat.
-     Genau das war der Wunsch: beiläufig im Archiv ankommen. */
+  const wurzel = document.documentElement;
+
+  /* ══ Die Zeitleiste des Fadens ══
+     Oben heute, unten der März. Beim Scrollen wandert der Zeiger nach
+     unten — man sieht, wie weit man sich vom Neuesten entfernt hat.
+     Steht vor dem Ansichtsschalter, weil der sie beim Aufschlagen ruft. */
   const rail = document.getElementById("rail");
   // Weiter oben als auf der Note: Dort steht „0:00", hier „Aug 26" — und
   // der Zeiger der ersten Station säße dem Wort sonst im Gesicht.
@@ -212,8 +250,10 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
   const yVon = (p) => `calc(${OBEN}px + (100% - ${OBEN + UNTEN}px) * ${p})`;
 
   let zeiger = null, marken = [], aktiv = null;
+  const sichtbarerFaden = () => document.querySelector(".faden:not([hidden])");
 
   function leisteBauen(faden) {
+    if (!faden) return;
     for (const m of marken) m.remove();
     marken = [];
     for (const st of faden.querySelectorAll(".station")) {
@@ -237,7 +277,8 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
   }
 
   function verfolgen() {
-    const sichtbar = document.querySelector(".faden:not([hidden])");
+    if (wurzel.dataset.ansicht !== "faden") return;
+    const sichtbar = sichtbarerFaden();
     if (!sichtbar || !zeiger) return;
     const mitte = innerHeight * 0.42;
     let beste = null, dist = Infinity;
@@ -258,23 +299,87 @@ const funde = faeden.flat().filter((s) => s.grund?.fund).length;
   addEventListener("scroll", verfolgen, { passive: true });
   addEventListener("resize", verfolgen);
 
+  /* ══ Ansicht: Feld oder Faden ══
+     Der Grundzustand ist das Feld. Wer den Faden wählt, bekommt ihn beim
+     nächsten Besuch wieder — die Wahl gehört dem Leser, nicht der Seite. */
+  {
+    const knopf = document.getElementById("ansicht");
+    const setzen = (a, merken) => {
+      wurzel.dataset.ansicht = a;
+      knopf.setAttribute("aria-pressed", String(a === "faden"));
+      if (merken) { try { localStorage.setItem("gw-ansicht", a); } catch {} }
+      if (a === "faden") leisteBauen(sichtbarerFaden());
+    };
+    // Der Kopf hat den gespeicherten Zustand schon gesetzt; hier wird der
+    // Knopf nur noch darauf eingestellt.
+    if (wurzel.dataset.ansicht === "faden") setzen("faden", false);
+
+    knopf.addEventListener("click", () => {
+      setzen(wurzel.dataset.ansicht === "faden" ? "feld" : "faden", true);
+      scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  /* ══ Das Feld ══ */
+  const kacheln = [...document.querySelectorAll(".kachel")];
+  const mehr = document.getElementById("mehr");
+  const stand = document.getElementById("standAnzeige");
+  const PORTION = 48;
+  let rubrik = "";      // "" heißt: alles
+  let gezeigt = PORTION;
+
+  /* Alle Kacheln stehen im Dokument, sichtbar ist ein Ausschnitt. Der
+     Filter rechnet darum nichts nach — er blendet um, und das merkt man
+     nicht. */
+  function auslegen() {
+    let passend = 0, sichtbar = 0;
+    for (const k of kacheln) {
+      const trifft = !rubrik || k.dataset.rubrik === rubrik;
+      if (trifft) passend++;
+      const zeigen = trifft && sichtbar < gezeigt;
+      k.hidden = !zeigen;
+      if (zeigen) sichtbar++;
+    }
+    mehr.hidden = sichtbar >= passend;
+    // Zählt, was die Auswahl übriglässt — nicht, wie groß das Regal ist.
+    stand.textContent = sichtbar >= passend ? `alle ${passend}` : `${sichtbar} von ${passend}`;
+  }
+
+  document.getElementById("filter").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    rubrik = chip.dataset.rubrik;
+    gezeigt = PORTION;
+    for (const c of document.querySelectorAll(".chip")) c.classList.toggle("ist-gewaehlt", c === chip);
+    auslegen();
+  });
+
+  mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
+  auslegen();
+
+  /* Aufs Geratewohl — aus dem, was gerade gefiltert ist. Sonst führte der
+     Würfel aus einer Rubrik hinaus, die man ausdrücklich gewählt hat. */
+  document.getElementById("wuerfel").addEventListener("click", (e) => {
+    e.preventDefault();
+    const topf = kacheln.filter((k) => !rubrik || k.dataset.rubrik === rubrik);
+    location.href = topf[Math.floor(Math.random() * topf.length)].querySelector("a").href;
+  });
+
   /* ── Ein anderer Weg ──
      Neun Fäden liegen fertig im Dokument, einer je Rubrik als Eingang.
      Sie im Browser neu zu berechnen hieße, den halben Bestand mitzuliefern
      — für eine Geste, die neun Zustände hat. */
-  const faeden = [...document.querySelectorAll(".faden")];
+  const alleFadenTeile = [...document.querySelectorAll(".faden")];
   const nr = document.getElementById("fadenNr");
   let i = 0;
   document.getElementById("nochmal")?.addEventListener("click", () => {
-    faeden[i].hidden = true;
-    i = (i + 1) % faeden.length;
-    faeden[i].hidden = false;
+    alleFadenTeile[i].hidden = true;
+    i = (i + 1) % alleFadenTeile.length;
+    alleFadenTeile[i].hidden = false;
     nr.textContent = String(i + 1);
-    leisteBauen(faeden[i]);
-    faeden[i].scrollIntoView({ block: "start", behavior: "smooth" });
+    leisteBauen(alleFadenTeile[i]);
+    alleFadenTeile[i].scrollIntoView({ block: "start", behavior: "smooth" });
   });
-
-  if (faeden.length) leisteBauen(faeden[0]);
 </script>
 
 <Suche />

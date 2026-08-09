@@ -5,6 +5,8 @@ import Stern from "../components/Stern.astro";
 import { filterbareThemen } from "../lib/rubriken.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
 import Suche from "../components/Suche.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Vorspann from "../components/Vorspann.astro";
 
 const { note, kopf } = Astro.props;
 const d = note.data;
@@ -43,6 +45,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
   <title>{d.title} · Gedankenwelten</title>
   {d.description && <meta name="description" content={d.description}>}
   <meta name="robots" content="noindex, follow">
+  <Vorspann />
 </head>
 <body>
 
@@ -51,10 +54,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
   <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
 </div>
 
-<div class="schalter">
-  <button data-suche-auf type="button" title="Suchen (/ oder ⌘K)">Suchen</button>
-  <button id="theme">Dunkel</button>
-</div>
+<Kopfleiste rubrik={rubrik} />
 
 {dauer > 0 && (
   <div class="rail" id="rail" data-dauer={dauer}>

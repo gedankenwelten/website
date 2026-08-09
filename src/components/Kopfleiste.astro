@@ -1,0 +1,90 @@
+---
+/**
+ * Die Kopfleiste — der einzige Ort, der auf jeder Seite steht.
+ *
+ * Vorher gab es auf einer Note genau einen Navigations-Link: die Rubrik in
+ * der Kennzeile. Die scrollt nach dem ersten Absatz weg, und danach führte
+ * bis zum Stern am Fuß nichts mehr irgendwohin — zurück kam man nur über
+ * den Browser-Knopf.
+ *
+ * Aufgeteilt wie ein Kopf es soll: links, wo man ist und wie man weiter
+ * kommt (Marke, Rubriken, die eigene Spur), rechts das Werkzeug (Suche,
+ * Licht). Bewusst eine Zeile und kein Kasten — der Datei-Explorer war der
+ * stärkste Altbacken-Treiber der alten Fassung, und ein Anker ist kein
+ * Werkzeugkasten. Sie liegt ohne Grund im Papier, solange man oben ist,
+ * und bekommt ihre Kante erst, wenn Text unter ihr durchläuft.
+ */
+import { alleRubriken } from "../lib/rubriken.mjs";
+
+const { rubrik = null, heim = true } = Astro.props;
+const rubriken = alleRubriken();
+---
+<header class="kopfleiste" id="kopfleiste">
+
+  <nav class="kopfleiste__weg" aria-label="Hauptnavigation">
+    <a class="kopfleiste__marke" href="/" aria-label="Gedankenwelten — zur Startseite"
+       data-heim={heim ? null : "still"}>
+      {/* Der Name als Text trägt, wenn das Bild nicht kommt — ohne
+          Javascript bleibt er stehen, das ist der ehrliche Rückfall. */}
+      <span class="kopfleiste__marke-wort">Gedanken&shy;welten</span>
+      <img class="kopfleiste__marke-bild" id="wortmarke" alt="" aria-hidden="true" decoding="async">
+    </a>
+    {/* Erst hier bekommt das Bild seine Quelle: Stünde sie im Markup, holte
+        der Browser die Marke des *Bautags* im hellen Thema, bevor irgendwer
+        sie korrigieren kann — zwei Bilder für eine Marke. `data-wm` und
+        `data-theme` hat der Vorspann im Kopf schon gesetzt. */}
+    <script is:inline>
+      {
+        const w = document.documentElement, b = document.getElementById("wortmarke");
+        b.src = `/wortmarke/wordmark-${w.dataset.wm}-${w.dataset.theme === "dunkel" ? "dark" : "light"}.png`;
+        b.dataset.stil = w.dataset.wm;
+        b.onload = () => b.closest(".kopfleiste__marke").classList.add("hat-bild");
+      }
+    </script>
+
+    {/* Ein Element, zwei Aufgaben: Es *sagt*, in welcher Rubrik man steht,
+        und es *führt* in jede andere. Zwei getrennte Anzeigen — „Rubriken"
+        neben „Denker" — sagten zusammen weniger als diese eine. */}
+    <div class="rubrikwahl" id="rubrikwahl">
+      <button class="rubrikwahl__knopf" type="button"
+              aria-expanded="false" aria-controls="rubrikwahlListe">
+        {rubrik
+          ? <><span class={`regal__punkt regal__punkt--${rubrik.toLowerCase()}`}></span>{rubrik}</>
+          : <span>Rubriken</span>}
+        <i class="rubrikwahl__pfeil" aria-hidden="true"></i>
+      </button>
+
+      <div class="rubrikwahl__liste" id="rubrikwahlListe" hidden>
+        {rubriken.map((r) => (
+          <a href={`/${r.name}`} aria-current={r.name === rubrik ? "page" : null}>
+            <span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>
+            <span class="rubrikwahl__name">{r.name}</span>
+            <i>{r.anzahl}</i>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {/* Die eigene Spur. Anders als der Browser-Knopf zeigt sie, wohin sie
+        führt — man muss sich nicht erinnern, sondern liest es ab. */}
+    <a class="kopfleiste__spur" id="kopfleisteSpur" hidden></a>
+  </nav>
+
+  <div class="kopfleiste__werkzeug">
+    {/* Ein Feld, kein Knopf. Bei 761 Notes ist die Suche ein Hauptzugang,
+        und ein Hauptzugang, der wie ein Zahnrad aussieht, wird nicht
+        gefunden. Es ist eine Schaltfläche in Feldgestalt: Der Klick
+        öffnet die Suchschicht, in der schon der Fokus steht — ein zweites
+        echtes Eingabefeld daneben würde nur fragen, in welches man tippt. */}
+    <button class="suchfeld" type="button" data-suche-auf aria-label="Im Bestand suchen">
+      <svg class="suchfeld__lupe" viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10.4 10.4 L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="suchfeld__wort">Im Bestand suchen</span>
+      <kbd class="suchfeld__taste">⌘K</kbd>
+    </button>
+
+    <button id="theme" class="kopfleiste__licht">Dunkel</button>
+  </div>
+</header>
