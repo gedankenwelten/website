@@ -7,6 +7,7 @@ import { ladeGraph } from "../lib/graph.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Vorspann from "../components/Vorspann.astro";
+import Schau from "../components/Schau.astro";
 
 const { note, kopf } = Astro.props;
 const d = note.data;
@@ -169,6 +170,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
   </div>
 )}
 
+<Schau />
 <Suche />
 
 <script src="/leser.js" is:inline></script>

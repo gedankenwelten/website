@@ -1,0 +1,125 @@
+/* ══════════════════════════════════════════════════════════════════
+   Die Vorschau — eine Note anlesen, ohne die Seite zu verlassen
+   Startseite (Griff an der Karte) und Note (Klick im Stern) teilen sie.
+   ══════════════════════════════════════════════════════════════════
+   Wie das Popover der Quartz-Fassung, nur auf Klick und als Schicht über
+   der Seite: Man liest den Anfang und verliert seinen Platz nicht. Der
+   Inhalt wird aus der fertigen Note geholt und bringt ihre eigenen
+   Klassen mit; hier steht nur, was im engeren Fenster anders sein muss. */
+.schau { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; }
+.schau[hidden] { display: none; }
+.schau__grund {
+  position: absolute; inset: 0;
+  background: color-mix(in oklab, var(--tinte) 42%, transparent);
+  backdrop-filter: blur(2px);
+  animation: schau-grund .25s ease;
+}
+@keyframes schau-grund { from { opacity: 0; } }
+
+.schau__blatt {
+  position: relative; z-index: 1;
+  width: min(92vw, 46rem); max-height: 84vh; overflow-y: auto;
+  /* Unten kein Polster: Der Fuß klebt dort und muss bis an die Kante
+     decken, sonst scrollt Text in den Spalt darunter. */
+  padding: 2.6rem 3rem 0;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: 0 24px 70px rgba(30, 22, 14, .32);
+  animation: schau-auf .32s cubic-bezier(.2,.85,.25,1);
+}
+@keyframes schau-auf { from { opacity: 0; transform: translateY(18px) scale(.985); } }
+
+.schau__zu {
+  position: sticky; top: 0; float: right; margin: -1.4rem -1.6rem 0 0;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .3rem .7rem; cursor: pointer; transition: all .2s; z-index: 2;
+}
+.schau__zu:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.schau__laedt {
+  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  text-align: center; padding: 3rem 0;
+}
+
+/* Der geholte Anfang trägt das Note-Layout in sich — und das rechnet mit
+   Rändern, die es hier nicht gibt. Also die Spaltenbreite lösen und alles
+   einsammeln, was sonst in die Marginalien ausbrechen würde. */
+.schau__blatt:focus { outline: none; }
+.schau__inhalt .strang { width: auto; margin-left: 0; }
+/* Zeitmarken zeigen in den Rand — den gibt es hier nicht — und öffneten
+   den Begleiter *dieser* Seite mit dem Video einer anderen. Weg damit. */
+.schau__inhalt .ts { display: none; }
+.schau__inhalt .banner { margin-top: 0; }
+.schau__inhalt h1 { font-size: 2rem; line-height: 1.14; }
+.schau__inhalt .zeitanker,
+.schau__inhalt .verwandt { display: none; }
+.schau__inhalt .strang > :last-child {
+  /* Der Anfang bricht mitten im Text ab — das soll man sehen, statt es
+     für das Ende zu halten. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.schau__fuss {
+  position: sticky; bottom: 0; margin: 0; padding: 1.8rem 0 1.6rem;
+  background: linear-gradient(to bottom, transparent, var(--papier) 42%, var(--papier));
+  text-align: center;
+}
+.schau__fuss a {
+  display: inline-block;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .58rem 1.5rem; text-decoration: none; transition: all .2s;
+}
+.schau__fuss a:hover { color: var(--akzent); border-color: var(--akzent); }
+
+/* ── Von unten ──
+   Aus dem Stern heraus kommt die Vorschau nicht als Kärtchen in der
+   Mitte, sondern als großes Blatt vom unteren Rand — dieselbe Bewegung
+   wie die Bühne, aus der man gerade kommt: Erst hebt sich der Stern,
+   dann hebt sich die Note. Höher und breiter als das Kärtchen, weil man
+   hier wirklich hineinschauen soll, nicht nur hineinblinzeln. */
+.schau--unten { place-items: end center; }
+.schau--unten .schau__blatt {
+  width: min(94vw, 58rem); max-height: 90vh;
+  border-radius: 8px 8px 0 0; border-bottom: 0;
+  box-shadow: 0 -18px 60px rgba(30,22,14,.28), 0 -2px 8px rgba(30,22,14,.08);
+  animation: schau-von-unten .58s cubic-bezier(.2,.85,.25,1);
+}
+@keyframes schau-von-unten { from { transform: translateY(100%); } }
+[data-theme="dunkel"] .schau--unten .schau__blatt {
+  box-shadow: 0 -18px 70px rgba(0,0,0,.6), 0 -2px 8px rgba(0,0,0,.4);
+}
+
+/* ── Warum verbunden ──
+   Das Besondere an einer Vorschau aus dem Stern: Man weiß, *warum* man
+   hier ist. Der Satz aus dem Bestand — von Montaigne oder Andreas
+   geschrieben — steht über der Note, in derselben Gestalt wie der
+   Schritt auf dem Faden: kursiv, mit Linie, leiser als der Text. */
+.schau__grund-satz {
+  margin: 0 0 2rem; padding: .2rem 0 .2rem 1.1rem;
+  border-left: 1.5px solid var(--akzent);
+  font-size: .95rem; line-height: 1.55; color: var(--tinte-leise);
+  font-style: italic; text-wrap: pretty;
+}
+.schau__grund-satz b {
+  display: block; font-family: -apple-system, "Inter", sans-serif;
+  font-style: normal; font-weight: 600; font-size: 9.5px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--akzent); margin-bottom: .45rem;
+}
+.schau__grund-satz[hidden] { display: none; }
+/* Manche Begründungen sind ein ganzer Absatz. Vier Zeilen stehen, der
+   Rest klappt auf Klick auf — sonst schöbe der Satz die Note aus dem
+   Blatt, um die es eigentlich geht. */
+.schau__grund-satz span {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
+  overflow: hidden; cursor: pointer;
+}
+.schau__grund-satz.ist-offen span { -webkit-line-clamp: unset; }
+
+@media (prefers-reduced-motion: reduce) {
+  .schau__blatt, .schau__grund { animation: none; }
+}

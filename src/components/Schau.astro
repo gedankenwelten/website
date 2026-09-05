@@ -1,0 +1,23 @@
+---
+/**
+ * Die Vorschau — eine Note anlesen, ohne die Seite zu verlassen.
+ *
+ * Steht auf der Startseite (Griff an jeder Karte) und auf jeder Note
+ * (Klick auf einen Knoten im Stern). Die Seite wird geholt und ihr Anfang
+ * gezeigt; nichts davon liegt im Voraus bereit — 492 Anfänge im Dokument
+ * wären ein Vielfaches der Seite für etwas, das man einmal aufschlägt.
+ * Die Logik steht in `public/leser.js` (`gwSchau`).
+ */
+import "../styles/schau.css";
+---
+<div class="schau" id="schau" hidden>
+  <div class="schau__grund" data-schau-zu></div>
+  <div class="schau__blatt" role="dialog" aria-modal="true" aria-label="Vorschau">
+    <button class="schau__zu" type="button" data-schau-zu aria-label="Schließen">esc</button>
+    <p class="schau__grund-satz" id="schauGrund" hidden><b>Verbunden mit dieser Note</b><span></span></p>
+    <div class="schau__inhalt" id="schauInhalt"></div>
+    <p class="schau__fuss">
+      <a id="schauWeiter" href="#">Ganz lesen →</a>
+    </p>
+  </div>
+</div>

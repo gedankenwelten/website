@@ -259,6 +259,98 @@ if (knopf) {
   } catch { /* Privater Modus: dann eben ohne Spur. */ }
 }
 
+/* ── Die Vorschau ──
+   Die Seite wird geholt und ihr Anfang gezeigt — Kopf, Aufmacher und so
+   viel Text, wie man im Vorbeigehen liest. Wer weiterwill, hat unten den
+   Weg; wer nicht, hat nichts verloren. Startseite (Griff an der Karte)
+   und Note (Klick im Stern) teilen sich das Stück; das Markup steht in
+   `components/Schau.astro`, die Gestalt in `styles/schau.css`.
+
+   Zwei Formen: als Kärtchen in der Mitte (Startseite) oder als großes
+   Blatt vom unteren Rand (`unten`, aus dem Stern) — und dort mit dem
+   Satz darüber, *warum* die beiden Notes verbunden sind (`grund`). */
+window.gwSchau = (() => {
+  const schau = document.getElementById("schau");
+  if (!schau) return { oeffnen() {}, schliessen() {} };
+  const inhalt = document.getElementById("schauInhalt");
+  const weiter = document.getElementById("schauWeiter");
+  const grundZeile = document.getElementById("schauGrund");
+  const blatt = schau.querySelector(".schau__blatt");
+  const geholt = new Map();     // schon geholte Anfänge, je Adresse
+  let laeuft = 0;               // gegen überholende Anfragen
+  let zuvorFokus = null;
+
+  function schliessen() {
+    if (schau.hidden) return;
+    schau.hidden = true;
+    document.body.style.overflow = "";
+    zuvorFokus?.focus?.({ preventScroll: true });
+    zuvorFokus = null;
+  }
+
+  async function oeffnen(url, { unten = false, grund = null } = {}) {
+    const lauf = ++laeuft;
+    zuvorFokus = document.activeElement;
+    schau.classList.toggle("schau--unten", unten);
+    if (grundZeile) {
+      grundZeile.classList.remove("ist-offen");
+      grundZeile.hidden = !grund;
+      grundZeile.querySelector("span").textContent = grund ?? "";
+    }
+    schau.hidden = false;
+    document.body.style.overflow = "hidden";
+    weiter.href = url;
+    blatt.scrollTop = 0;
+    blatt.tabIndex = -1;
+    blatt.focus({ preventScroll: true });
+
+    if (geholt.has(url)) { inhalt.replaceChildren(geholt.get(url).cloneNode(true)); return; }
+    inhalt.innerHTML = '<p class="schau__laedt">wird geholt …</p>';
+
+    let seite;
+    try {
+      seite = new DOMParser().parseFromString(await (await fetch(url)).text(), "text/html");
+    } catch {
+      // Ehrlich sagen, dass es nicht ging — ein leeres Fenster sieht aus
+      // wie eine Note ohne Inhalt.
+      if (lauf === laeuft) inhalt.innerHTML = '<p class="schau__laedt">Der Anfang ließ sich nicht holen.</p>';
+      return;
+    }
+    if (lauf !== laeuft) return;    // inzwischen wurde eine andere geöffnet
+
+    const stueck = document.createElement("div");
+    const kopf = seite.querySelector(".blatt > header");
+    if (kopf) stueck.append(kopf);
+    // Der Text bekommt seinen Umschlag wieder — die Regeln für Links,
+    // Absätze und Zitate hängen alle an `.strang`.
+    const text = document.createElement("div");
+    text.className = "strang";
+    stueck.append(text);
+
+    /* So viel Text, wie man im Vorbeigehen liest. Nicht nach Absätzen
+       gezählt, sondern nach Zeichen — ein Aufmacher-Callout wiegt so viel
+       wie fünf kurze Zwischenüberschriften. Vom unteren Rand aus etwas
+       mehr: Das Blatt ist höher, und man ist gekommen, um hineinzuschauen. */
+    let last = 0;
+    const genug = unten ? 2600 : 1600;
+    for (const kind of [...(seite.getElementById("text")?.children ?? [])]) {
+      if (last > genug) break;
+      // Das 🎨-Osterei ist ein Bildnachweis, keine Lektüre.
+      if (kind.tagName === "DETAILS" || kind.classList.contains("marken-zeile") || kind.hidden) continue;
+      last += kind.textContent.length;
+      text.append(kind);
+    }
+
+    geholt.set(url, stueck);
+    if (lauf === laeuft) inhalt.replaceChildren(stueck.cloneNode(true));
+  }
+
+  for (const el of schau.querySelectorAll("[data-schau-zu]")) el.addEventListener("click", schliessen);
+  grundZeile?.addEventListener("click", () => grundZeile.classList.toggle("ist-offen"));
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !schau.hidden) { e.stopImmediatePropagation(); schliessen(); } });
+  return { oeffnen, schliessen };
+})();
+
 /* ── Der Stern als Griff ──
    Der Stern steht am Fuß, und der Fuß liegt bei langen Notes 30.000 px
    tief. Darum ein Griff am unteren Rand, sobald man zu lesen begonnen
@@ -531,5 +623,47 @@ if (knopf) {
     osterei.classList.add("malerhand");
     // Ans Ende der Kennzeile, rechts außen — nicht als eigene Zeile.
     kennung.append(osterei);
+  }
+}
+
+/* ── Ein Klick im Stern schaut erst hinein ──
+   Ein Knoten ist ein Link, und das bleibt er: Rechtsklick, mittlere
+   Taste, ⌘-Klick führen weiterhin auf die Seite. Der einfache Klick aber
+   hebt die Vorschau vom unteren Rand — man ist im Stern, um zu sehen,
+   was da draußen liegt, nicht um sofort wegzugehen. (Andreas, 05.09.)
+
+   Der Satz darüber kommt aus dem Bestand: erst aus dem Kasten rechts
+   (die geschriebene Begründung), sonst aus der Kante selbst („beide
+   zitieren …") — was der Stern beim Berühren auch sagt. */
+{
+  const sterne = [...document.querySelectorAll("section.stern")];
+  if (sterne.length && window.gwSchau) {
+    const weg = (u) => { try { return new URL(u, location.href).pathname.replace(/\/$/, ""); } catch { return null; } };
+    const gruende = new Map();
+    for (const a of document.querySelectorAll(".verwandt__liste li a[href]")) {
+      const p = weg(a.getAttribute("href"));
+      const w = a.querySelector(".verwandt__warum")?.textContent.trim();
+      if (p && w) gruende.set(p, w);
+    }
+    for (const stern of sterne) {
+      const mitte = stern.querySelector(".knoten--mitte")?.dataset.id;
+      stern.addEventListener("click", (e) => {
+        const k = e.target.closest("a.knoten");
+        if (!k || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        const href = k.getAttribute("href");
+        let grund = gruende.get(weg(href)) ?? null;
+        if (!grund && mitte) {
+          const id = k.dataset.id;
+          const kante = [...stern.querySelectorAll(".kante:not(.kante--rand)")]
+            .find((x) => (x.dataset.a === id && x.dataset.b === mitte) || (x.dataset.b === id && x.dataset.a === mitte));
+          const w = kante?.dataset.warum ?? "";
+          // „Titel · beide zitieren …" — nur der Teil nach dem Titel trägt hier.
+          grund = w.includes(" · ") ? w.slice(w.indexOf(" · ") + 3) : (w || null);
+          if (grund === "verweisen aufeinander") grund = null;
+        }
+        gwSchau.oeffnen(href, { unten: true, grund });
+      });
+    }
   }
 }

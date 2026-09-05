@@ -24,6 +24,7 @@ import { alleRubriken } from "../lib/rubriken.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Vorspann from "../components/Vorspann.astro";
+import Schau from "../components/Schau.astro";
 
 const faeden = alleFaeden(7);
 const idx = ladeIndex();
@@ -531,7 +532,7 @@ const kurzMonat = (d) => {
       return;
     }
     const schauKnopf = e.target.closest("[data-schau]");
-    if (schauKnopf) { schauOeffnen(schauKnopf.dataset.schau); return; }
+    if (schauKnopf) { gwSchau.oeffnen(schauKnopf.dataset.schau); return; }
     const nahKnopf = e.target.closest("[data-nah-auf]");
     if (nahKnopf) { verwandtesZeigen(+nahKnopf.dataset.nahAuf); return; }
     const fadenKnopf = e.target.closest("[data-faden]");
@@ -605,68 +606,8 @@ const kurzMonat = (d) => {
     scrollTo({ top: zurueckAuf, behavior: "instant" });
   }
 
-  /* ══ Die Vorschau ══
-     Die Seite wird geholt und ihr Anfang gezeigt — Kopf, Aufmacher und
-     so viel Text, wie man im Vorbeigehen liest. Wer weiterwill, hat
-     unten den Weg; wer nicht, hat nichts verloren. */
-  const schau = document.getElementById("schau");
-  const schauInhalt = document.getElementById("schauInhalt");
-  const schauWeiter = document.getElementById("schauWeiter");
-  const geholt = new Map();     // schon geholte Anfänge, je Adresse
-  let schauLaeuft = 0;          // gegen überholende Anfragen
-
-  function schauSchliessen() {
-    schau.hidden = true;
-    document.body.style.overflow = "";
-  }
-
-  async function schauOeffnen(url) {
-    const lauf = ++schauLaeuft;
-    schau.hidden = false;
-    document.body.style.overflow = "hidden";
-    schauWeiter.href = url;
-    schau.querySelector(".schau__blatt").scrollTop = 0;
-
-    if (geholt.has(url)) { schauInhalt.replaceChildren(geholt.get(url).cloneNode(true)); return; }
-    schauInhalt.innerHTML = '<p class="schau__laedt">wird geholt …</p>';
-
-    let seite;
-    try {
-      seite = new DOMParser().parseFromString(await (await fetch(url)).text(), "text/html");
-    } catch {
-      // Ehrlich sagen, dass es nicht ging — ein leeres Fenster sieht aus
-      // wie eine Note ohne Inhalt.
-      if (lauf === schauLaeuft) {
-        schauInhalt.innerHTML = '<p class="schau__laedt">Der Anfang ließ sich nicht holen.</p>';
-      }
-      return;
-    }
-    if (lauf !== schauLaeuft) return;    // inzwischen wurde eine andere geöffnet
-
-    const stueck = document.createElement("div");
-    const kopf = seite.querySelector(".blatt > header");
-    if (kopf) stueck.append(kopf);
-
-    /* So viel Text, wie man im Vorbeigehen liest. Nicht nach Absätzen
-       gezählt, sondern nach Zeichen — ein Aufmacher-Callout wiegt so viel
-       wie fünf kurze Zwischenüberschriften. */
-    let last = 0;
-    for (const kind of [...(seite.getElementById("text")?.children ?? [])]) {
-      if (last > 1600) break;
-      // Das 🎨-Osterei ist ein Bildnachweis, keine Lektüre.
-      if (kind.tagName === "DETAILS" || kind.classList.contains("marken-zeile")) continue;
-      last += kind.textContent.length;
-      stueck.append(kind);
-    }
-
-    geholt.set(url, stueck);
-    if (lauf === schauLaeuft) schauInhalt.replaceChildren(stueck.cloneNode(true));
-  }
-
-  for (const el of schau.querySelectorAll("[data-schau-zu]")) {
-    el.addEventListener("click", schauSchliessen);
-  }
-  addEventListener("keydown", (e) => { if (e.key === "Escape" && !schau.hidden) schauSchliessen(); });
+  /* ══ Die Vorschau ══ steht in leser.js (`gwSchau`) — Startseite und
+     Note teilen sie sich seit dem 05.09. */
 
   /* Aufs Geratewohl — aus dem, was gerade gefiltert ist. Sonst führte der
      Würfel aus einer Rubrik hinaus, die man ausdrücklich gewählt hat. */
@@ -794,21 +735,7 @@ const kurzMonat = (d) => {
   });
 </script>
 
-{/* ── Die Vorschau ──
-    Wie das Popover der Quartz-Fassung, nur auf Klick und als Schicht:
-    Die Seite wird geholt, ihr Anfang gezeigt. Nichts davon liegt im
-    Voraus bereit — 492 Anfänge im Dokument wären ein Vielfaches der
-    Startseite für etwas, das man einmal aufschlägt. */}
-<div class="schau" id="schau" hidden>
-  <div class="schau__grund" data-schau-zu></div>
-  <div class="schau__blatt" role="dialog" aria-modal="true" aria-label="Vorschau">
-    <button class="schau__zu" type="button" data-schau-zu aria-label="Schließen">esc</button>
-    <div class="schau__inhalt" id="schauInhalt"></div>
-    <p class="schau__fuss">
-      <a id="schauWeiter" href="#">Ganz lesen →</a>
-    </p>
-  </div>
-</div>
+<Schau />
 
 <Suche />
 
