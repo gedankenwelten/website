@@ -399,7 +399,7 @@ h1 {
    am Kästchen: Ein Rahmen liefe durch die Tönung hindurch. */
 .verwandt__liste { list-style: none; margin: 0; padding: 0; }
 .verwandt__liste li {
-  position: relative; padding: .9rem 1rem; margin: 0 -1rem;
+  position: relative; padding: .62rem 1rem; margin: 0 -1rem;
   border-radius: 6px; transition: background .3s ease, box-shadow .3s ease;
 }
 .verwandt__liste li + li::before {
@@ -414,17 +414,40 @@ h1 {
 .verwandt__liste a {
   display: block; text-decoration: none; color: inherit; border: 0 !important;
 }
+/* Eine Liste aus Titeln, nicht aus Absätzen. Acht Titel in Fettschrift
+   sähen aus wie ein Inhaltsverzeichnis — also Normalschnitt, und das
+   Gewicht kommt erst, wenn der Eintrag nah ist. Der Punkt davor trägt
+   die Rubrikfarbe. */
 .verwandt__titel {
-  display: block; font-size: .93rem; line-height: 1.32; font-weight: 600;
-  margin-bottom: .4rem; text-wrap: pretty; transition: color .2s;
+  display: flex; align-items: baseline; gap: .55rem;
+  font-size: .95rem; line-height: 1.35; font-weight: 400;
+  text-wrap: pretty; transition: color .2s;
 }
+.verwandt__titel .regal__punkt { position: relative; top: -.12em; width: 5px; height: 5px; }
 .verwandt__liste a:hover .verwandt__titel { color: var(--akzent); }
 /* Der ganze Vergleichssatz, ungekürzt — er ist der eigentliche Wert:
-   Jemand hat aufgeschrieben, *warum* die beiden zusammengehören. */
+   Jemand hat aufgeschrieben, *warum* die beiden zusammengehören. Aber
+   er liegt zusammengeklappt, bis der Eintrag nah ist: Ein Gitter mit
+   null Zeilen, das auf eine Zeile wächst — die einzige Art, in CSS von
+   „zu" nach „auf" zu gleiten, ohne die Höhe vorher zu kennen. Der
+   Einzug lässt ihn unter dem Titel stehen, nicht unter dem Punkt. */
 .verwandt__warum {
-  display: block; font-family: -apple-system, "Inter", sans-serif;
-  font-size: .76rem; line-height: 1.55; color: var(--tinte-leise);
-  text-wrap: pretty;
+  display: grid; grid-template-rows: 0fr;
+  padding-left: calc(5px + .55rem);
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: .78rem; line-height: 1.55; color: var(--tinte-leise);
+  text-wrap: pretty; opacity: 0;
+  transition: grid-template-rows .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease, padding-top .38s;
+}
+.verwandt__warum > span { min-height: 0; overflow: hidden; }
+.verwandt__liste li.ist-nah .verwandt__warum,
+.verwandt__liste li:focus-within .verwandt__warum {
+  grid-template-rows: 1fr; opacity: 1; padding-top: .45rem;
+}
+.verwandt__liste li.ist-nah .verwandt__titel,
+.verwandt__liste li:focus-within .verwandt__titel { font-weight: 600; }
+@media (prefers-reduced-motion: reduce) {
+  .verwandt__warum { transition: none; }
 }
 
 /* ── Links ── */
@@ -762,8 +785,8 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
      zusammen wachsen. */
   .verwandt__kopf  { font-size: 10px; }
   .verwandt__titel { font-size: 1.05rem; }
-  .verwandt__warum { font-size: .92rem; line-height: 1.62; }
-  .verwandt__liste li { padding: 1.05rem 1.15rem; margin: 0 -1.15rem; }
+  .verwandt__warum { font-size: .9rem; line-height: 1.62; }
+  .verwandt__liste li { padding: .72rem 1.15rem; margin: 0 -1.15rem; }
   .verwandt__liste li + li::before { left: 1.15rem; right: 1.15rem; }
 }
 

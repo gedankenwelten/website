@@ -121,15 +121,31 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
     <aside class="verwandt" data-pagefind-ignore>
       <div class="verwandt__halt">
         <h2 class="verwandt__kopf">Verwandt <i>{kopf.verbindungen.length}</i></h2>
+        {/* Titel stehen, Begründungen liegen zusammengeklappt darunter.
+            Acht ganze Absätze in der Randspalte waren eine Wand neben dem
+            Text — und sie versteckten, dass der Kasten *reagiert*: Wenn
+            ohnehin alles offen ist, sieht man nicht, was gerade aufgeht.
+            Jetzt öffnet sich der eine Eintrag, der nah ist — der Stern
+            berührt ihn, die Maus liegt darauf, oder der Text verweist
+            gerade auf ihn. Der Punkt davor nennt die Rubrik, in derselben
+            Sprache wie die Kopfleiste. Der innere `span` ist für die
+            Klappbewegung: Das Gitter braucht ein Kind, das es auf null
+            Zeilen drücken kann. */}
         <ol class="verwandt__liste">
-          {kopf.verbindungen.map((v) => (
-            <li>
-              <a href={v.url ?? "#"}>
-                <span class="verwandt__titel">{v.titel}</span>
-                {v.warum && <span class="verwandt__warum">{v.warum}</span>}
-              </a>
-            </li>
-          ))}
+          {kopf.verbindungen.map((v) => {
+            const rub = (v.url ?? "").split("/")[1]?.toLowerCase();
+            return (
+              <li>
+                <a href={v.url ?? "#"}>
+                  <span class="verwandt__titel">
+                    {rub && <span class={`regal__punkt regal__punkt--${rub}`} aria-hidden="true"></span>}
+                    {v.titel}
+                  </span>
+                  {v.warum && <span class="verwandt__warum"><span>{v.warum}</span></span>}
+                </a>
+              </li>
+            );
+          })}
         </ol>
       </div>
     </aside>

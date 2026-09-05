@@ -276,7 +276,8 @@ if (knopf) {
   const halt = document.querySelector(".verwandt__halt");
   const knoten = [...document.querySelectorAll(".stern a.knoten")];
 
-  if (halt && knoten.length) {
+  // Auch ohne Stern: Die Lesezeile unten braucht nur den Kasten.
+  if (halt) {
     const weg = (u) => { try { return new URL(u, location.href).pathname.replace(/\/$/, ""); } catch { return null; } };
 
     const eintraege = new Map();
@@ -294,7 +295,7 @@ if (knopf) {
     const kopfHoehe = halt.querySelector(".verwandt__kopf")?.offsetHeight ?? 0;
     let gemerkt = null;
 
-    function zeigenAuf(pfad) {
+    function zeigenAuf(pfad, { rollen = true } = {}) {
       if (pfad === gemerkt) return;
       gemerkt = pfad;
       for (const li of eintraege.values()) li.classList.remove("ist-nah");
@@ -305,30 +306,70 @@ if (knopf) {
       sterne.get(pfad)?.classList.add("ist-nah");
 
       const li = eintraege.get(pfad);
-      if (!li) return;
+      if (!li || !rollen) return;
       /* Von Hand gerollt statt `scrollIntoView`: Das würde bei Bedarf auch
          die ganze Seite verschieben, und dann wandert einem der Stern unter
          dem Zeiger weg. Hier rollt nur der Kasten. */
       halt.scrollTo({ top: Math.max(0, li.offsetTop - kopfHoehe - 12), behavior: "smooth" });
     }
 
+    /* ── Der Text zeigt auch ──
+       Die dritte Quelle für „nah", und die einzige, die ohne Maus
+       auskommt: Wo der Text gerade auf eine der Nachbarn verweist, geht
+       drüben ihr Eintrag auf. Gemessen wird an der Lesezeile — etwas
+       über der Mitte des Fensters, dort ruht das Auge beim Lesen —, und
+       es gilt der Verweis, der ihr am nächsten liegt, solange er im
+       Fenster steht. Kein Verweis im Fenster: nichts offen. So sieht
+       man beim Lesen, dass der Kasten *mitliest*, statt nur dazustehen.
+
+       Die Maus hat Vorrang: Solange sie über Stern oder Kasten liegt,
+       schweigt die Lesezeile, und wenn sie geht, übernimmt die Lesezeile
+       wieder — statt auf „nichts" zurückzufallen. */
+    const verweise = [...document.querySelectorAll("#text .wikilink[data-note]")]
+      .map((a) => ({ a, p: weg(a.dataset.note) }))
+      .filter(({ p }) => p && eintraege.has(p));
+    let ausText = null, schwebt = false, angefragt = false;
+
+    function lesezeileMessen() {
+      angefragt = false;
+      const oben = kopfHoehe + 40, unten = innerHeight * .88;
+      const zeile = innerHeight * .4;
+      let best = null, abstand = Infinity;
+      for (const { a, p } of verweise) {
+        const r = a.getBoundingClientRect();
+        if (r.bottom < oben || r.top > unten) continue;
+        const d = Math.abs((r.top + r.bottom) / 2 - zeile);
+        if (d < abstand) { abstand = d; best = p; }
+      }
+      ausText = best;
+      if (!schwebt) zeigenAuf(ausText);
+    }
+    if (verweise.length) {
+      const anstossen = () => { if (!angefragt) { angefragt = true; requestAnimationFrame(lesezeileMessen); } };
+      addEventListener("scroll", anstossen, { passive: true });
+      addEventListener("resize", anstossen, { passive: true });
+      lesezeileMessen();
+      // Der Verweis im Text selbst berührt: derselbe Griff wie am Stern.
+      for (const { a, p } of verweise) {
+        a.addEventListener("pointerenter", () => { schwebt = true; zeigenAuf(p); });
+        a.addEventListener("pointerleave", () => { schwebt = false; zeigenAuf(ausText); });
+      }
+    }
+
     for (const k of knoten) {
       const p = weg(k.getAttribute("href"));
-      k.addEventListener("pointerenter", () => zeigenAuf(p));
+      k.addEventListener("pointerenter", () => { schwebt = true; zeigenAuf(p); });
     }
-    document.querySelector(".stern")?.addEventListener("pointerleave", () => zeigenAuf(null));
+    document.querySelector(".stern")?.addEventListener("pointerleave", () => { schwebt = false; zeigenAuf(ausText); });
 
     // Andersherum genauso: Wer im Kasten liest, sieht im Bild, wo es steht.
     for (const [p, li] of eintraege) {
       li.addEventListener("pointerenter", () => {
-        gemerkt = null;                     // ohne Rollen — man ist ja schon da
-        for (const x of eintraege.values()) x.classList.remove("ist-nah");
-        for (const s of sterne.values()) s.classList.remove("ist-nah");
-        li.classList.add("ist-nah");
-        sterne.get(p)?.classList.add("ist-nah");
+        schwebt = true;
+        zeigenAuf(p, { rollen: false });   // ohne Rollen — man ist ja schon da
       });
     }
-    halt.addEventListener("pointerleave", () => zeigenAuf(null));
+    halt.addEventListener("pointerleave", () => { schwebt = false; zeigenAuf(ausText); });
   }
 }
 
