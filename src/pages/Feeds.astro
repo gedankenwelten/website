@@ -1,0 +1,81 @@
+---
+/**
+ * Die Feeds — die Gedankenwelten abonnieren, ohne Plattform, ohne
+ * Algorithmus. Ein Haupt-Feed und je einer pro Rubrik, an denselben
+ * Adressen wie in der ersten Fassung (wer abonniert hat, bleibt
+ * abonniert). Jeder mit Kopieren-Knopf: Ein nackter XML-Link zeigt im
+ * Browser nur Rohtext, und das erklärt niemandem, was er da hat.
+ */
+import "../styles/note.css";
+import "../styles/mobil.css";
+import Kopf from "../components/Kopf.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Fusszeile from "../components/Fusszeile.astro";
+import Suche from "../components/Suche.astro";
+import Schau from "../components/Schau.astro";
+import { alleRubriken, RUBRIKEN_INFO } from "../lib/rubriken.mjs";
+import { SITE } from "../lib/site.mjs";
+
+const rubriken = alleRubriken();
+const beschreibung = "Die Gedankenwelten abonnieren — per RSS, ohne Algorithmus, ohne Plattform. Ein Haupt-Feed und je ein Feed pro Rubrik.";
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <Kopf titel="RSS-Feeds" beschreibung={beschreibung} art="website" />
+</head>
+<body class="ist-beiseite">
+<Kopfleiste />
+<article class="blatt blatt--beiseite">
+  <header class="strang">
+    <div class="kennung"><b><a class="kennung__rubrik" href="/">Gedankenwelten</a></b></div>
+    <h1>RSS-Feeds</h1>
+    <p class="standfirst">{beschreibung}</p>
+  </header>
+  <div class="strang" id="text" data-pagefind-ignore>
+    <p>Ein Feed-Reader holt sich neue Notes, sobald sie da sind — ohne dass jemand dazwischen entscheidet,
+    was du siehst. Adresse kopieren, im Reader einfügen (NetNewsWire, Feedly, Inoreader, Miniflux …), fertig.
+    Jeder Feed führt die letzten dreißig Notes mit Aufmacher und Volltext.</p>
+
+    <ul class="feeds">
+      <li class="feed feed--haupt">
+        <div class="feed__text">
+          <b>Alle Notes</b>
+          <span>Der Haupt-Feed: jede neue Note, quer durch alle Rubriken.</span>
+          <code>{SITE.url}/index.xml</code>
+        </div>
+        <button class="feed__kopieren" type="button" data-feed={`${SITE.url}/index.xml`}>Kopieren</button>
+      </li>
+      {rubriken.map((r) => (
+        <li class="feed">
+          <div class="feed__text">
+            <b><span class={`regal__punkt regal__punkt--${r.name.toLowerCase()}`}></span>{r.name} <i>{r.anzahl}</i></b>
+            <span>{RUBRIKEN_INFO[r.name]?.satz}</span>
+            <code>{SITE.url}/{r.name}/index.xml</code>
+          </div>
+          <button class="feed__kopieren" type="button" data-feed={`${SITE.url}/${r.name}/index.xml`}>Kopieren</button>
+        </li>
+      ))}
+    </ul>
+
+    <p>Wer lieber fragt als liest: Der <a href="/MCP">MCP-Server</a> macht dieselben Notes für den eigenen
+    KI-Assistenten durchsuchbar.</p>
+  </div>
+</article>
+<Fusszeile />
+<Schau />
+<Suche />
+<script src="/leser.js" is:inline></script>
+<script is:inline>
+  for (const k of document.querySelectorAll(".feed__kopieren")) {
+    k.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(k.dataset.feed);
+        const war = k.textContent; k.textContent = "Kopiert"; k.classList.add("ist-kopiert");
+        setTimeout(() => { k.textContent = war; k.classList.remove("ist-kopiert"); }, 1600);
+      } catch { location.href = k.dataset.feed; }
+    });
+  }
+</script>
+</body>
+</html>

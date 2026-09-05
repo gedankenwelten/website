@@ -13,6 +13,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { INHALT, RUBRIKEN } from "./notizen.mjs";
+import { alleSeiten } from "./seiten.mjs";
 
 /**
  * Ein Kniff vor dem Parsen: In `[[Ziel|Text]]` ist der senkrechte Strich der
@@ -89,6 +90,37 @@ export function notizenLoader() {
           if (fs.existsSync(ordner)) watcher.add(ordner);
         }
       }
+    },
+  };
+}
+
+
+/**
+ * Derselbe Weg für die Beiseiten (Impressum, Datenschutz, MCP, Quellen):
+ * lesen, parsen, rendern — nur aus der Wurzel des Pools statt aus den
+ * Rubriken. Kennung ist der Slug, die Adresse `/<Slug>`.
+ */
+export function seitenLoader() {
+  return {
+    name: "gedankenwelten-seiten",
+    async load({ store, parseData, generateDigest, renderMarkdown, logger }) {
+      store.clear();
+      for (const seite of alleSeiten()) {
+        try {
+          const roh = fs.readFileSync(seite.pfad, "utf8");
+          const { data, content } = matter(roh);
+          store.set({
+            id: seite.slug,
+            data: await parseData({ id: seite.slug, data: { ...data, title: data.title ?? seite.titel } }),
+            body: content,
+            digest: generateDigest(`v${FORM_VERSION}:${roh}`),
+            rendered: await renderMarkdown(vorbereiten(content), { fileURL: pathToFileURL(seite.pfad) }),
+          });
+        } catch (fehler) {
+          logger.warn(`Beiseite ${seite.datei}: ${fehler.message}`);
+        }
+      }
+      logger.info(`${alleSeiten().length} Beiseiten geladen`);
     },
   };
 }

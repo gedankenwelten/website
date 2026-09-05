@@ -1,5 +1,5 @@
 import { defineCollection, z } from "astro:content";
-import { notizenLoader } from "./lib/loader.mjs";
+import { notizenLoader, seitenLoader } from "./lib/loader.mjs";
 
 /**
  * Eine Sammlung über alle Rubriken. Der Inhalt liegt bewusst AUSSERHALB des
@@ -22,4 +22,9 @@ const notes = defineCollection({
     .passthrough(),
 });
 
-export const collections = { notes };
+const seiten = defineCollection({
+  loader: seitenLoader(),
+  schema: z.object({ title: z.string().optional(), description: z.string().optional() }).passthrough(),
+});
+
+export const collections = { notes, seiten };

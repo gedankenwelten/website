@@ -1,0 +1,31 @@
+---
+import "../styles/note.css";
+import "../styles/mobil.css";
+import Kopf from "../components/Kopf.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Fusszeile from "../components/Fusszeile.astro";
+import Suche from "../components/Suche.astro";
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <Kopf titel="Nicht gefunden" beschreibung="Diese Adresse führt zu keiner Note." art="website" />
+</head>
+<body class="ist-beiseite">
+<Kopfleiste />
+<article class="blatt blatt--beiseite">
+  <header class="strang">
+    <div class="kennung"><b>404</b><i>·</i>nichts unter dieser Adresse</div>
+    <h1>Hier ist keine Note.</h1>
+    <p class="standfirst">Vielleicht wurde sie umbenannt, vielleicht hat sich ein Zeichen in den Link geschlichen.
+    Die Suche kennt alle Titel — oder du gehst zurück ins Feld.</p>
+  </header>
+  <div class="strang" id="text">
+    <p><a href="/">Zur Startseite</a> · <a href="#" data-suche-auf>Im Bestand suchen</a></p>
+  </div>
+</article>
+<Fusszeile />
+<Suche />
+<script src="/leser.js" is:inline></script>
+</body>
+</html>

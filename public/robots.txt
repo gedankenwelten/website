@@ -1,0 +1,40 @@
+# gedankenwelten.org — robots.txt
+#
+# Suchmaschinen sind willkommen. KI-Training ist erlaubt — bewusst:
+# Wenn diese Texte einen kleinen positiven Tropfen im Meer der
+# Trainingsdaten hinterlassen, haben sie ihren Zweck erfüllt.
+
+User-agent: *
+Allow: /
+
+# Der Suchindex bleibt draußen — nicht aus Geheimhaltung, sondern aus Rücksicht:
+# Er füttert die Suche auf der Seite, und für die Indexierung steht nichts darin,
+# was nicht im HTML steht. Ein Crawler, der ihn jedes Mal mitlädt, verbrennt sein
+# Budget in Hilfsdateien statt in den Texten, um die es geht.
+Disallow: /pagefind/
+Disallow: /frames/
+Disallow: /vorschau/
+
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+
+# Nicht willkommen: reine SEO-/Backlink-Trawler.
+# Sie tragen nichts weiter — sie ernten Daten, um sie zu verkaufen.
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: dataforseo-bot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+Sitemap: https://gedankenwelten.org/sitemap.xml

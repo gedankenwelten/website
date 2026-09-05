@@ -1,0 +1,46 @@
+---
+/**
+ * Eine Beiseite: Impressum, Datenschutz, MCP-Doku, Quellen-Index.
+ * Das Blatt der Note, ohne Zeitleiste, ohne Nachbarschaft, ohne Stern —
+ * eine Seite, die etwas sagt, und sonst nichts.
+ */
+import { getCollection, render } from "astro:content";
+import "../styles/note.css";
+import "../styles/mobil.css";
+import Kopf from "../components/Kopf.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Fusszeile from "../components/Fusszeile.astro";
+import Suche from "../components/Suche.astro";
+import Schau from "../components/Schau.astro";
+
+export async function getStaticPaths() {
+  const seiten = await getCollection("seiten");
+  return seiten.map((seite) => ({ params: { seite: seite.id }, props: { seite } }));
+}
+const { seite } = Astro.props;
+const { Content } = await render(seite);
+const d = seite.data;
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <Kopf titel={d.title} beschreibung={d.description} art="website" />
+</head>
+<body class="ist-beiseite">
+<Kopfleiste />
+<article class="blatt blatt--beiseite">
+  <header class="strang">
+    <div class="kennung"><b><a class="kennung__rubrik" href="/">Gedankenwelten</a></b></div>
+    <h1>{d.title}</h1>
+    {d.description && <p class="standfirst">{d.description}</p>}
+  </header>
+  <div class="strang" id="text" data-pagefind-ignore>
+    <Content />
+  </div>
+</article>
+<Fusszeile />
+<Schau />
+<Suche />
+<script src="/leser.js" is:inline></script>
+</body>
+</html>

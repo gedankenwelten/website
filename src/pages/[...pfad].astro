@@ -5,7 +5,10 @@ import { slugify } from "../lib/slug.mjs";
 
 export async function getStaticPaths() {
   const notes = await getCollection("notes");
-  return notes.map((note) => {
+  /* Die beiden alten Quartz-Deckblätter (`Zeitgeist/index`, `GoodNews/index`,
+     `Vipassana/index`) bekommen keine Seite: Ihre Adresse ist die der
+     Rubrikseite, und die gibt es hier schon. */
+  return notes.filter((n) => n.id.split("/").pop().toLowerCase() !== "index").map((note) => {
     const [rubrik, ...rest] = note.id.split("/");
     return {
       params: { pfad: `${rubrik}/${slugify(rest.join("/"))}` },

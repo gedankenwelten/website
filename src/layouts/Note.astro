@@ -6,8 +6,10 @@ import { filterbareThemen } from "../lib/rubriken.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
-import Vorspann from "../components/Vorspann.astro";
+import Kopf from "../components/Kopf.astro";
+import Fusszeile from "../components/Fusszeile.astro";
 import Schau from "../components/Schau.astro";
+import "../styles/mobil.css";
 
 const { note, kopf } = Astro.props;
 const d = note.data;
@@ -41,19 +43,9 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{d.title} · Gedankenwelten</title>
-  {d.description && <meta name="description" content={d.description}>}
-  <meta name="robots" content="noindex, follow">
-  <Vorspann />
+  <Kopf titel={d.title} beschreibung={d.description} bild={kopf.banner ?? null} rubrik={rubrik} />
 </head>
 <body>
-
-<div class="zu-schmal">
-  <p>Diese Fassung ist für den großen Schirm gemacht — sie braucht ihre Ränder.<br><br>
-  <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
-</div>
 
 <Kopfleiste rubrik={rubrik} />
 
@@ -154,6 +146,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 
   <Stern id={note.id} />
 </article>
+<Fusszeile rubrik={rubrik} />
 
 <figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
 

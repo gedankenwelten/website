@@ -1,0 +1,24 @@
+---
+/**
+ * Die Fußzeile — das Beiwerk, an einem Ort, leise.
+ *
+ * Impressum und Datenschutz müssen von jeder Seite erreichbar sein; die
+ * Feeds und der MCP-Server sind die zwei Wege, die Gedankenwelten ohne
+ * Browser zu lesen. Dazu der eine Satz, der die Seite trägt. Keine
+ * Spalten, keine Kästen — eine Zeile in der Stimme der Kennzeile.
+ */
+import { SITE } from "../lib/site.mjs";
+const { rubrik = null } = Astro.props;
+const jahr = new Date().getFullYear();
+---
+<footer class="fusszeile">
+  <p class="fusszeile__satz">{SITE.satz}</p>
+  <nav class="fusszeile__wege" aria-label="Beiwerk">
+    <a href="/Feeds">RSS-Feeds</a>
+    {rubrik && <a href={`/${rubrik}/index.xml`} title={`Feed der Rubrik ${rubrik}`}>{rubrik} abonnieren</a>}
+    <a href="/MCP">MCP-Server</a>
+    <a href="/Impressum">Impressum</a>
+    <a href="/Datenschutz">Datenschutz</a>
+    <span>© {jahr} Andreas Schmieder</span>
+  </nav>
+</footer>

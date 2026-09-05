@@ -1,0 +1,54 @@
+---
+/**
+ * Der Kopf jeder Seite — was Browser, Suchmaschinen, Feed-Reader und
+ * geteilte Links über sie wissen sollen. Ein Ort statt vier: Note,
+ * Startseite, Rubrik und Beiseiten hatten je einen eigenen Kopf, und
+ * keiner trug alles.
+ */
+import { SITE } from "../lib/site.mjs";
+import Vorspann from "./Vorspann.astro";
+
+const {
+  titel,
+  beschreibung = SITE.satz,
+  bild = null,            // absoluter Pfad, z. B. /assets/…
+  art = "article",
+  rubrik = null,          // für den Rubrik-Feed als Alternative
+} = Astro.props;
+
+const voll = titel ? `${titel} · ${SITE.name}` : SITE.name;
+const hier = new URL(Astro.url.pathname, SITE.url).href;
+const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
+---
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{voll}</title>
+<meta name="description" content={beschreibung}>
+<link rel="canonical" href={hier}>
+{SITE.noindex && <meta name="robots" content="noindex, follow">}
+
+<link rel="icon" href="/icon.png" type="image/png">
+<link rel="icon" href="/gedankenwelten-favicon-64.png" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="/icon.png">
+<meta name="theme-color" content="#faf7f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)">
+
+<meta property="og:site_name" content={SITE.name}>
+<meta property="og:title" content={titel ?? SITE.name}>
+<meta property="og:description" content={beschreibung}>
+<meta property="og:type" content={art}>
+<meta property="og:url" content={hier}>
+<meta property="og:image" content={bildUrl}>
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={titel ?? SITE.name}>
+<meta name="twitter:description" content={beschreibung}>
+<meta name="twitter:image" content={bildUrl}>
+
+<link rel="alternate" type="application/rss+xml" title={`${SITE.name} — alle Notes`} href={`${SITE.url}/index.xml`}>
+{rubrik && <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — ${rubrik}`} href={`${SITE.url}/${rubrik}/index.xml`}>}
+
+{/* Umami: cookielos, ohne IP, ohne Profil — dieselbe Instanz wie bisher. */}
+<script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id}></script>
+
+<Vorspann />

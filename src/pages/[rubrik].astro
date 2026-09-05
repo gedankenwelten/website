@@ -19,7 +19,9 @@ import "../styles/rubrik.css";
 import { RUBRIKEN_INFO, rubrikBestand, alleRubriken, langDatum, monatJahr } from "../lib/rubriken.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
-import Vorspann from "../components/Vorspann.astro";
+import Kopf from "../components/Kopf.astro";
+import Fusszeile from "../components/Fusszeile.astro";
+import "../styles/mobil.css";
 
 export function getStaticPaths() {
   return Object.keys(RUBRIKEN_INFO).map((rubrik) => ({ params: { rubrik } }));
@@ -55,19 +57,9 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{rubrik} · Gedankenwelten</title>
-  <meta name="description" content={b.satz}>
-  <meta name="robots" content="noindex, follow">
-  <Vorspann />
+  <Kopf titel={rubrik} beschreibung={b.satz} art="website" rubrik={rubrik} />
 </head>
 <body class="ist-rubrik">
-
-<div class="zu-schmal">
-  <p>Diese Fassung ist für den großen Schirm gemacht — sie braucht ihre Ränder.<br><br>
-  <span style="font-size:.85rem">Fenster auf mindestens 1180&nbsp;px verbreitern.</span></p>
-</div>
 
 <Kopfleiste rubrik={rubrik} />
 
@@ -159,6 +151,7 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
   </nav>
 
 </main>
+<Fusszeile rubrik={rubrik} />
 
 <script>
   /* ── Die Zeitleiste ──

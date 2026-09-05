@@ -822,3 +822,73 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 .ts--stumm { cursor: default; }
 .ts--stumm::after { content: none; }
 .ts--stumm:hover { color: var(--tinte-fern); }
+
+/* ── Fußzeile ──
+   Eine Zeile, keine Landschaft. Der Satz in der Stimme des Standfirst,
+   die Wege in der Stimme der Kennzeile. Steht unter allem, mit Luft. */
+.fusszeile {
+  width: min(94vw, 84rem); margin: 6rem auto 0;
+  padding: 2.2rem 0 2.6rem; border-top: 1px solid var(--linie);
+}
+.fusszeile__satz {
+  margin: 0 0 1.1rem; max-width: 40rem;
+  font-size: .98rem; line-height: 1.55; font-style: italic; color: var(--tinte-leise);
+  text-wrap: pretty;
+}
+.fusszeile__wege {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.6rem;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.fusszeile__wege a {
+  color: var(--tinte-leise); text-decoration: none;
+  border-bottom: 1px solid transparent; transition: color .2s, border-color .2s;
+}
+.fusszeile__wege a:hover { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
+.fusszeile__wege span { margin-left: auto; }
+/* Die Note hat ihr eigenes Blatt mit festem Maß — die Fußzeile richtet
+   sich dort nach ihm, nicht nach dem Fenster. */
+.blatt + .fusszeile { width: calc(var(--marge) + var(--luft) + var(--spalte) + var(--spalt) + var(--neben)); }
+
+/* ── Beiseiten ── */
+.blatt--beiseite { padding-top: calc(var(--kopf) + 3rem); padding-bottom: 4rem; }
+.blatt--beiseite .kennung { margin-top: 0; }
+.blatt--beiseite .strang h2 {
+  /* Auf den Beiseiten gliedert ## wirklich — keine leise Rubrikmarke */
+  font-family: inherit; font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em;
+  text-transform: none; color: var(--tinte); text-align: left; display: block;
+  margin: 3.4rem 0 1.2rem;
+}
+.blatt--beiseite .strang h2::before, .blatt--beiseite .strang h2::after { content: none; }
+.blatt--beiseite .strang h3 { font-size: 1.2rem; margin: 2.4rem 0 .9rem; }
+.blatt--beiseite .strang h3::before { content: none; }
+.blatt--beiseite .strang pre {
+  font-size: .82rem; line-height: 1.55; padding: 1rem 1.2rem; overflow-x: auto;
+  background: var(--papier-tief); border-radius: 4px;
+}
+.blatt--beiseite .strang code { font-size: .88em; }
+
+/* Die Feed-Liste */
+.feeds { list-style: none; margin: 2rem 0 2.5rem; padding: 0; }
+.feed {
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: 1.1rem 0; border-top: 1px solid var(--linie);
+}
+.feed:last-child { border-bottom: 1px solid var(--linie); }
+.feed__text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .3rem; }
+.feed__text b { display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; }
+.feed__text b i { font-style: normal; font-size: .78rem; color: var(--tinte-fern); font-variant-numeric: tabular-nums; }
+.feed__text span { font-size: .9rem; line-height: 1.5; color: var(--tinte-leise); }
+.feed__text code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .74rem;
+  color: var(--tinte-fern); word-break: break-all;
+}
+.feed__kopieren {
+  flex: 0 0 auto;
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .45rem 1rem; cursor: pointer; transition: all .2s;
+}
+.feed__kopieren:hover { color: var(--akzent); border-color: var(--akzent); }
+.feed__kopieren.ist-kopiert { color: var(--papier); background: var(--akzent); border-color: var(--akzent); }
