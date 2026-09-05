@@ -23,7 +23,7 @@
 /* Dieselbe leise Rubrikmarke wie im Text — der Stern ist ein Abschnitt
    der Seite, kein angehängtes Werkzeug. */
 .stern h2 {
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 10.5px; font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
   color: var(--tinte-fern);
   margin: 0 0 1.2rem; display: flex; align-items: center; gap: 1.4rem;
@@ -61,7 +61,7 @@
   transition: r .22s cubic-bezier(.2,.8,.2,1), fill .25s;
 }
 .knoten__schrift {
-  font-family: -apple-system, "Inter", "Helvetica Neue", sans-serif;
+  font-family: "Inter", -apple-system, "Helvetica Neue", sans-serif;
   fill: var(--tinte); transition: fill .25s;
 }
 .knoten__kopf { font-size: 12.5px; font-weight: 600; letter-spacing: -.004em; }
@@ -99,7 +99,7 @@
 /* ── Die sprechende Zeile ─────────────────────────────────────────
    Statt eines Kästchens am Mauszeiger: ein Satz, der sich ändert. */
 .stern__sage {
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: .8rem; line-height: 1.5; color: var(--tinte-fern);
   margin: 1.2rem 0 0; min-height: 2.4em;
   text-align: center; transition: color .25s;
@@ -109,7 +109,7 @@
 
 .stern__schluessel {
   display: flex; justify-content: center; gap: 1.8rem; margin-top: .3rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-fern);
 }
 .stern__schluessel span { display: inline-flex; align-items: center; gap: .5rem; }
@@ -153,7 +153,7 @@
 .stern-griff {
   position: fixed; left: 50%; bottom: 1.35rem; z-index: 85;
   display: inline-flex; align-items: center; gap: .55rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise);
   background: color-mix(in oklab, var(--papier) 88%, transparent);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
@@ -203,7 +203,7 @@
 .stern-buehne__leiste {
   width: min(100%, 60rem); margin: 0 auto .4rem;
   display: flex; align-items: center; gap: .6rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .19em; text-transform: uppercase; color: var(--tinte-fern);
 }
 .stern-buehne__leiste b { font-weight: 600; color: var(--tinte-leise); }

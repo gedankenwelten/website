@@ -16,7 +16,7 @@
 
 .rubrik__zurueck {
   margin: 0 0 2.8rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .17em; text-transform: uppercase;
 }
 .rubrik__zurueck a {
@@ -58,7 +58,7 @@
   border-bottom: 1px solid var(--linie);
 }
 .thema {
-  font-family: -apple-system, "Inter", sans-serif; font-size: .76rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: .76rem;
   color: var(--tinte-leise); background: var(--papier);
   border: 1px solid var(--linie); border-radius: 100px;
   padding: .3rem .55rem .3rem .78rem; cursor: pointer;
@@ -84,7 +84,7 @@
 .band__marke {
   display: flex; align-items: center; gap: 1.2rem;
   margin: 0 0 1.6rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
   color: var(--tinte-fern);
 }
@@ -143,7 +143,7 @@
 
 .posten__datum {
   display: block; margin-bottom: .3rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
 }
 .posten__titel {
@@ -188,14 +188,14 @@
 .weiter { margin-top: 7rem; padding-top: 2.4rem; border-top: 1px solid var(--linie); }
 .weiter h2 {
   margin: 0 0 1.6rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
   color: var(--tinte-fern);
 }
 .weiter ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem .55rem; }
 .weiter a {
   display: inline-flex; align-items: center; gap: .55rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: .8rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: .8rem;
   color: var(--tinte-leise); text-decoration: none;
   border: 1px solid var(--linie); border-radius: 100px;
   padding: .38rem .8rem .38rem .7rem; transition: color .2s, border-color .2s;

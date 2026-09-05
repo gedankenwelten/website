@@ -1,3 +1,5 @@
+@import url("./schrift.css");
+
 /* ══════════════════════════════════════════════════════════════════
    Gedankenwelten — Lesestreifen
    Desktop-Entwurf. Zeitleiste · Marginalie · Text · Verwandtes
@@ -107,16 +109,21 @@ body {
   margin: 0;
   background: var(--papier);
   color: var(--tinte);
-  font-family: "Iowan Old Style", Charter, "Palatino Linotype", Palatino,
+  /* Literata, selbst gehostet (schrift.css) — vorher Iowan Old Style, die
+     es nur auf dem Mac gibt: Auf jedem anderen Rechner sah die Seite
+     anders aus als das, was hier beurteilt wurde. Literata hat die
+     größere x-Höhe, darum ein Grad kleiner als Iowan (20,5 px). */
+  font-family: "Literata", "Iowan Old Style", Charter, "Palatino Linotype", Palatino,
                "Book Antiqua", Georgia, serif;
-  font-size: 20.5px;
+  font-size: 19.5px;
+  font-optical-sizing: auto;
   line-height: 1.72;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background .5s ease, color .5s ease;
 }
 
-.sans { font-family: -apple-system, "Inter", "Helvetica Neue", Arial, sans-serif; }
+.sans { font-family: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif; }
 
 /* ───────────────────────────  Zeitleiste  ─────────────────────────── */
 
@@ -127,7 +134,7 @@ body {
 .rail__cap {
   position: absolute; left: 0; width: 4.5rem; text-align: center;
   font-size: 9.5px; letter-spacing: .11em; color: var(--tinte-fern); text-transform: uppercase;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
 }
 .rail__cap--oben { top: 4.1rem; }
 .rail__cap--unten { bottom: 4.1rem; }
@@ -152,7 +159,7 @@ body {
   position: absolute; left: 1.9rem; top: 50%; transform: translateY(-50%);
   font-size: 10.5px; letter-spacing: .06em; color: var(--akzent);
   white-space: nowrap; font-variant-numeric: tabular-nums;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
 }
 
 /* ───────────────────────────  Seite  ─────────────────────────── */
@@ -178,7 +185,7 @@ body {
   display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
   font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
   color: var(--tinte-fern); margin: 2rem 0 1.25rem;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
 }
 /* Die Malerhand sitzt in dieser Zeile, rechts außen — statt als eigene
    Zeile unter dem Bild, die zusammen mit dem Abstand darunter 140 px
@@ -216,7 +223,7 @@ h1 {
    und ### den eigentlichen Abschnitt. Also ist ## der leise Rubrikwechsel
    und ### die große Überschrift — nicht andersherum. */
 .strang h2 {
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 10.5px; font-weight: 600; letter-spacing: .19em; text-transform: uppercase;
   color: var(--tinte-fern);
   margin: 6.5rem 0 3rem; text-align: center;
@@ -245,7 +252,7 @@ h1 {
 .strang li { margin-bottom: .5rem; }
 .strang img { max-width: 100%; height: auto; border-radius: 3px; display: block; margin: 2.5rem 0; }
 .strang details {
-  font-family: -apple-system, "Inter", sans-serif; font-size: .82rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: .82rem;
   color: var(--tinte-leise); margin: 1.5rem 0; line-height: 1.6;
 }
 .strang details summary { cursor: pointer; opacity: .6; }
@@ -255,7 +262,7 @@ h1 {
 .ts {
   position: absolute; right: calc(100% + var(--luft)); top: .5em;
   width: var(--marge); text-align: right;
-  font-family: -apple-system, "Inter", "Helvetica Neue", sans-serif;
+  font-family: "Inter", -apple-system, "Helvetica Neue", sans-serif;
   font-size: 11.5px; font-variant-numeric: tabular-nums; letter-spacing: .04em;
   color: var(--tinte-fern); cursor: pointer; user-select: none;
   transition: color .2s; white-space: nowrap;
@@ -275,7 +282,7 @@ h1 {
 .guck.da { opacity: 1; transform: translateY(0) scale(1); }
 .guck img { width: 100%; display: block; margin: 0; border-radius: 0; }
 .guck figcaption {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .04em; color: var(--tinte-leise); padding: .5rem .65rem .55rem;
 }
 
@@ -290,7 +297,7 @@ h1 {
 .oton p { margin: 0 0 .5rem; }
 .oton em { font-style: italic; }
 .oton__horen {
-  display: block; font-family: -apple-system, "Inter", sans-serif; font-style: normal;
+  display: block; font-family: "Inter", -apple-system, sans-serif; font-style: normal;
   font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--tinte-fern); margin-top: .85rem; transition: color .25s;
 }
@@ -317,7 +324,7 @@ h1 {
 .kopfnote strong { color: var(--tinte); font-weight: 600; }
 
 .block-label {
-  display: block; font-family: -apple-system, "Inter", sans-serif;
+  display: block; font-family: "Inter", -apple-system, sans-serif;
   font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
   color: var(--tinte-fern); margin-bottom: .7rem;
 }
@@ -398,7 +405,7 @@ h1 {
 
 .verwandt__kopf {
   display: flex; align-items: baseline; gap: .55rem; margin: 0 0 1.1rem;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 9.5px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase;
   color: var(--tinte-fern);
   /* Bleibt beim Rollen innerhalb der Spalte oben stehen — sonst weiß man
@@ -453,7 +460,7 @@ h1 {
 .verwandt__warum {
   display: grid; grid-template-rows: 0fr;
   padding-left: calc(5px + .55rem);
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: .78rem; line-height: 1.55; color: var(--tinte-leise);
   text-wrap: pretty; opacity: 0;
   transition: grid-template-rows .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease, padding-top .38s;
@@ -490,7 +497,7 @@ h1 {
 .marken-zeile {
   display: flex; flex-wrap: wrap; gap: .45rem 0; margin-top: 3.5rem;
   padding-top: 1.4rem; border-top: 1px solid var(--linie);
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .14em; text-transform: uppercase;
 }
 .marken-zeile a, .marken-zeile span {
@@ -531,14 +538,14 @@ h1 {
 .begleiter__buehne > #buehne { flex: 1; display: flex; }
 .begleiter__leiste {
   display: flex; align-items: center; gap: .7rem; padding: .55rem .8rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
   color: var(--tinte-leise); background: var(--papier); border-top: 1px solid var(--linie);
 }
 .begleiter__leiste b { color: var(--akzent); font-variant-numeric: tabular-nums; }
 .begleiter__ersatz {
   flex: 1; display: flex; flex-direction: column; justify-content: center;
   gap: .8rem; padding: 1.4rem 1.5rem; background: var(--papier-tief);
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: .8rem; line-height: 1.55; color: var(--tinte-leise);
 }
 .begleiter__ersatz a { color: var(--akzent); text-decoration: none; font-weight: 600; }
@@ -550,7 +557,7 @@ h1 {
 .schalter { position: fixed; top: 1.6rem; right: 1.7rem; z-index: 70; display: flex; gap: .45rem; }
 .schalter button, .schalter a,
 .kopfleiste__schalter button, .kopfleiste__schalter a {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .42rem .95rem; cursor: pointer; text-decoration: none; transition: all .2s;
@@ -583,7 +590,7 @@ h1 {
 .rubrikwahl { position: relative; flex: 0 0 auto; }
 .rubrikwahl__knopf {
   display: inline-flex; align-items: center; gap: .45rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
   background: none; border: 1px solid transparent; border-radius: 100px;
   padding: .42rem .75rem; cursor: pointer; transition: all .2s;
@@ -608,7 +615,7 @@ h1 {
 .rubrikwahl__liste a {
   display: flex; align-items: center; gap: .6rem;
   padding: .42rem .6rem; border-radius: 4px;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 12.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 12.5px;
   color: var(--tinte); text-decoration: none; transition: background .15s;
 }
 .rubrikwahl__liste a:hover { background: var(--papier-tief); }
@@ -629,7 +636,7 @@ h1 {
   display: inline-flex; align-items: center; gap: .5rem;
   width: 15rem; padding: .38rem .7rem;
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 12px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 12px;
   color: var(--tinte-fern); cursor: text; text-align: left; transition: all .2s;
 }
 .suchfeld:hover { border-color: var(--akzent); color: var(--tinte-leise); }
@@ -642,7 +649,7 @@ h1 {
 }
 
 .kopfleiste__licht {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .42rem .95rem; cursor: pointer; transition: all .2s;
@@ -661,7 +668,7 @@ h1 {
 .kopfleiste__trenner { color: var(--tinte-fern); font-style: normal; flex: 0 0 auto; }
 
 .kopfleiste__rubrik, .kopfleiste__spur {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-leise);
   text-decoration: none; white-space: nowrap; transition: color .2s;
 }
@@ -710,7 +717,7 @@ h1 {
    wissen, wessen Hand das gemalt hat; wer nicht, sieht ein Bild. */
 details.malerhand {
   margin: .55rem 0 0; text-align: right;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: .78rem; line-height: 1.6; color: var(--tinte-leise);
 }
 details.malerhand summary {
@@ -754,7 +761,7 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 }
 .tabelle table {
   width: 100%; border-collapse: collapse;
-  font-family: -apple-system, "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: .82rem; line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
@@ -791,7 +798,7 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
   /* Mit der Spalte wächst der Grad mit. Sonst würde nur die Zeile länger,
      und Zeilenlänge ohne Schriftgrad ist genau die Verschlechterung, die
      man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
-  body { font-size: 21.5px; }
+  body { font-size: 20.5px; }
 
   /* Eine 32-rem-Spalte mit 12-px-Schrift ergab fünfundachtzig Zeichen je
      Zeile. Breiter heißt nicht automatisch besser lesbar; beides muss
@@ -837,7 +844,7 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 }
 .fusszeile__wege {
   display: flex; flex-wrap: wrap; gap: .5rem 1.6rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
 }
 .fusszeile__wege a {
@@ -885,7 +892,7 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 }
 .feed__kopieren {
   flex: 0 0 auto;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .45rem 1rem; cursor: pointer; transition: all .2s;

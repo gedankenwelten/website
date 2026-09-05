@@ -80,7 +80,7 @@
 
 .chip {
   display: inline-flex; align-items: center; gap: .42rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
   letter-spacing: .05em; color: var(--tinte-leise);
   background: none; border: 1px solid var(--linie); border-radius: 100px;
   padding: .38rem .8rem; cursor: pointer; transition: all .18s;
@@ -99,7 +99,7 @@
 .chip .regal__punkt { width: 5px; height: 5px; }
 
 .lenkung__knopf {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .45rem 1rem; cursor: pointer; text-decoration: none;
@@ -154,7 +154,7 @@
 
 .kachel__kennung {
   display: flex; align-items: center; gap: .45rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 9.5px;
   letter-spacing: .15em; text-transform: uppercase; color: var(--tinte-fern);
   margin-bottom: .45rem;
 }
@@ -200,7 +200,7 @@
 }
 .griff {
   display: inline-flex; align-items: center; gap: .35rem;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 9.5px;
   letter-spacing: .11em; text-transform: uppercase;
   color: var(--tinte-fern); background: none;
   border: 1px solid transparent; border-radius: 100px;
@@ -260,13 +260,13 @@
 }
 .verwandtschaft[hidden] { display: none; }
 .verwandtschaft__wort {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 9.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 9.5px;
   letter-spacing: .16em; text-transform: uppercase; color: var(--akzent);
 }
 .verwandtschaft b { font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
 .verwandtschaft button {
   margin-left: auto;
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .42rem 1rem; cursor: pointer; transition: all .2s;
@@ -278,7 +278,7 @@
   margin-top: 3.4rem; padding-top: 2rem; border-top: 1px solid var(--linie);
 }
 .feld__fuss button {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .55rem 1.4rem; cursor: pointer; transition: all .2s;
@@ -286,7 +286,7 @@
 .feld__fuss button:hover { color: var(--akzent); border-color: var(--akzent); }
 .feld__fuss button[hidden] { display: none; }
 .feld__stand {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-fern);
   font-variant-numeric: tabular-nums;
 }
@@ -317,7 +317,7 @@
   font-style: italic; text-wrap: pretty;
 }
 .schritt--knapp {
-  font-style: normal; font-family: -apple-system, "Inter", sans-serif;
+  font-style: normal; font-family: "Inter", -apple-system, sans-serif;
   font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
   color: var(--tinte-fern);
 }
@@ -327,7 +327,7 @@
    Linie gestrichelt und nimmt die Akzentfarbe an. */
 .schritt--fund { border-left: 1.5px dashed var(--akzent); }
 .schritt__marke {
-  display: block; font-family: -apple-system, "Inter", sans-serif;
+  display: block; font-family: "Inter", -apple-system, sans-serif;
   font-style: normal; font-size: 9.5px; letter-spacing: .16em;
   text-transform: uppercase; color: var(--akzent); margin-bottom: .55rem;
 }
@@ -398,7 +398,7 @@
 .faden__fuss {
   width: var(--spalte); margin-top: 3rem;
   padding-top: 1.4rem; border-top: 1px solid var(--linie);
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
 }
 
@@ -408,14 +408,14 @@
   display: flex; align-items: center; gap: 1rem;
 }
 .start__nochmal button {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 11px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
   letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-leise);
   background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
   padding: .55rem 1.2rem; cursor: pointer; transition: all .2s;
 }
 .start__nochmal button:hover { color: var(--akzent); border-color: var(--akzent); }
 .start__zaehler {
-  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
   letter-spacing: .1em; color: var(--tinte-fern); font-variant-numeric: tabular-nums;
 }
 

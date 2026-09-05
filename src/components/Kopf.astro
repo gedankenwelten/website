@@ -27,6 +27,11 @@ const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
 <link rel="canonical" href={hier}>
 {SITE.noindex && <meta name="robots" content="noindex, follow">}
 
+{/* Die Leseschrift vorab holen — sonst steht der Text kurz in der
+    Ersatzschrift und springt. Nur Latin, nur die zwei Schnitte, die
+    jede Seite braucht. */}
+<link rel="preload" href="/schrift/literata-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/schrift/literata-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="/icon.png" type="image/png">
 <link rel="icon" href="/gedankenwelten-favicon-64.png" sizes="64x64" type="image/png">
 <link rel="apple-touch-icon" href="/icon.png">

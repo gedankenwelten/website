@@ -16,7 +16,7 @@
 
   /* ── Grundmaße ── */
   :root { --spalte: auto; --marge: 0px; --neben: 0px; --luft: 0px; --spalt: 0px; }
-  body { font-size: 19px; }
+  body { font-size: 18.5px; }
   .rail, .guck { display: none !important; }
 
   /* ── Kopfleiste ── */
@@ -135,7 +135,7 @@
 }
 
 @media (max-width: 700px) {
-  body { font-size: 18px; line-height: 1.65; }
+  body { font-size: 17.5px; line-height: 1.65; }
   h1 { font-size: 1.85rem; letter-spacing: -.015em; }
   .standfirst { font-size: 1.08rem; }
   .strang h3 { font-size: 1.4rem; margin-top: 3.2rem; }
