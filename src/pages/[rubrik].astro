@@ -97,7 +97,13 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
   </header>
 
   {b.themen.length > 1 && (
-    <nav class="themen" aria-label="Themen">
+    <button class="themen__klappe" id="themenKlappe" type="button" aria-expanded="false" aria-controls="themen">
+      <b id="themenKlappeWort">Themen</b><i id="themenKlappeZahl">{b.themen.length}</i>
+      <i class="rubrikwahl__pfeil" aria-hidden="true"></i>
+    </button>
+  )}
+  {b.themen.length > 1 && (
+    <nav class="themen" id="themen" aria-label="Themen">
       {b.themen.map((t) => (
         <button class="thema" type="button" data-thema={t.name}>
           {t.name}<i>{t.anzahl}</i>
@@ -288,5 +294,30 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
 <Suche />
 
 <script src="/leser.js" is:inline></script>
+<script is:inline>
+  /* Die Themen-Klappe (nur Telefon): auf, zu, gewähltes Thema als Etikett. */
+  {
+    const klappe = document.getElementById("themenKlappe"), themen = document.getElementById("themen");
+    if (klappe && themen) {
+      const wort = document.getElementById("themenKlappeWort"), zahl = document.getElementById("themenKlappeZahl");
+      const anzahl = zahl.textContent;
+      klappe.addEventListener("click", () => {
+        const offen = themen.classList.toggle("ist-offen");
+        klappe.setAttribute("aria-expanded", String(offen));
+      });
+      themen.addEventListener("click", (e) => {
+        if (!e.target.closest(".thema")) return;
+        requestAnimationFrame(() => {
+          const t = themen.querySelector(".thema.ist");
+          klappe.classList.toggle("hat-thema", !!t);
+          wort.textContent = t ? t.dataset.thema : "Themen";
+          zahl.textContent = t ? (t.querySelector("i")?.textContent ?? "") : anzahl;
+          themen.classList.remove("ist-offen");
+          klappe.setAttribute("aria-expanded", "false");
+        });
+      });
+    }
+  }
+</script>
 </body>
 </html>

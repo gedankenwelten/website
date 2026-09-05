@@ -168,7 +168,14 @@ const kurzMonat = (d) => {
   </header>
 
   {/* ── Die Leiste: filtern und die Ansicht wählen ── */}
-  <div class="lenkung">
+  <div class="lenkung" id="lenkung">
+    {/* Nur auf dem Telefon sichtbar (start.css): sagt, welche Rubrik
+        gewählt ist, und zeigt die Chips erst auf Tippen. */}
+    <button class="lenkung__klappe" id="klappe" type="button" aria-expanded="false" aria-controls="filter">
+      <span class="regal__punkt" id="klappePunkt" hidden></span>
+      <b id="klappeWort">Alles</b><i id="klappeZahl">{inhaltlich.length}</i>
+      <i class="rubrikwahl__pfeil" aria-hidden="true"></i>
+    </button>
     <div class="lenkung__rubriken" id="filter">
       <button class="chip ist-gewaehlt" type="button" data-rubrik="">
         Alles <i>{inhaltlich.length}</i>
@@ -733,5 +740,32 @@ const kurzMonat = (d) => {
 <Suche />
 
 <script src="/leser.js" is:inline></script>
+<script is:inline>
+  /* Die Klappe über den Rubriken (nur Telefon): auf, zu, und nach jeder
+     Wahl das Etikett nachziehen und wieder zu. */
+  {
+    const lenkung = document.getElementById("lenkung"), klappe = document.getElementById("klappe");
+    const wort = document.getElementById("klappeWort"), zahl = document.getElementById("klappeZahl");
+    const punkt = document.getElementById("klappePunkt");
+    klappe.addEventListener("click", () => {
+      const offen = lenkung.classList.toggle("ist-offen");
+      klappe.setAttribute("aria-expanded", String(offen));
+    });
+    document.getElementById("filter").addEventListener("click", (e) => {
+      if (!e.target.closest(".chip")) return;
+      requestAnimationFrame(() => {
+        const c = document.querySelector(".chip.ist-gewaehlt");
+        if (!c) return;
+        const r = c.dataset.rubrik || "";
+        wort.textContent = r || "Alles";
+        zahl.textContent = c.querySelector("i")?.textContent ?? "";
+        punkt.hidden = !r;
+        punkt.className = r ? `regal__punkt regal__punkt--${r.toLowerCase()}` : "regal__punkt";
+        lenkung.classList.remove("ist-offen");
+        klappe.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+</script>
 </body>
 </html>

@@ -421,3 +421,107 @@
 
 /* Die Vorschau (`.schau`) steht seit dem 05.09. in `schau.css` — sie
    gehört Startseite und Note gemeinsam. */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   Der kleine Schirm — muss hier am Ende stehen, nicht in mobil.css
+   (siehe dort: Bündel-Reihenfolge).
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Die Klappe für die Rubriken: auf dem großen Schirm gibt es sie nicht,
+   dort stehen die Chips. */
+.lenkung__klappe { display: none; }
+
+@media (max-width: 1179px) {
+  /* ── Startseite ── */
+  .start { width: auto; padding: calc(var(--kopf) + 1rem) 1.15rem 4rem; }
+  .start__kopf { margin: 1rem 0 1.6rem; }
+  .lenkung { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 1.8rem; }
+  /* Die Rubriken in einer Zeile zum Schieben — elf Chips in drei Zeilen
+     wären ein Wall vor dem Feld. Randlos über die ganze Breite. */
+  .lenkung__rubriken {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin: 0 -1.15rem; padding: 0 1.15rem .2rem;
+  }
+  .lenkung__rubriken::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; }
+  .lenkung__ansicht { justify-content: flex-start; }
+  .feld__gitter { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.4rem; row-gap: 2.4rem; }
+  .kachel__bild img { height: auto; aspect-ratio: 12 / 5; }
+  /* Kein Hovern — die Wörter an den Griffen stehen. */
+  .griff__wort { max-width: 8rem; opacity: 1; }
+  .station { width: auto; }
+  .start__nochmal, .faden__fuss { width: auto; }
+
+}
+
+@media (max-width: 700px) {
+  .wortmarke, .wortmarke:has([data-stil]) { height: 3.1rem; }
+  .wortmarke__bild { height: 3.1rem; }
+  .wortmarke__bild[data-stil="sumie"]    { height: 3.85rem; }
+  .wortmarke__bild[data-stil="aquarell"] { height: 3.75rem; }
+  .wortmarke__bild[data-stil="aether"]   { height: 3.45rem; }
+  .wortmarke:has([data-stil="sumie"]), .wortmarke:has([data-stil="aquarell"]) { height: 3.85rem; }
+  .wortmarke:has([data-stil="aether"]) { height: 3.45rem; }
+  .start__satz { font-size: .95rem; }
+  .feld__gitter { grid-template-columns: 1fr; row-gap: 2.2rem; }
+  .kachel__titel { font-size: 1.15rem; }
+  .lenkung__ansicht { flex-wrap: wrap; }
+
+
+  /* ── Die Lenkung: eine Zeile ──
+     Elf Chips waren drei Zeilen Wall vor dem Feld. Jetzt eine Klappe,
+     die sagt, was gewählt ist, und die Chips erst auf Tippen zeigt —
+     daneben die zwei Wege. */
+  .lenkung { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .45rem; margin-bottom: 1.2rem; padding-bottom: .9rem; }
+  .lenkung__klappe {
+    display: inline-flex; align-items: center; gap: .45rem; flex: 0 0 auto;
+    font-family: "Inter", -apple-system, sans-serif; font-size: 11px; letter-spacing: .05em;
+    color: var(--papier); background: var(--tinte); border: 1px solid var(--tinte); border-radius: 100px;
+    padding: .42rem .8rem .42rem .7rem; cursor: pointer;
+  }
+  .lenkung__klappe i { font-style: normal; font-size: 10px; opacity: .65; font-variant-numeric: tabular-nums; }
+  .lenkung__klappe .regal__punkt { width: 5px; height: 5px; }
+  .lenkung__klappe .regal__punkt[hidden] { display: none; }
+  .lenkung__klappe .rubrikwahl__pfeil { border-top-color: currentColor; opacity: 1; }
+  .lenkung.ist-offen .lenkung__klappe .rubrikwahl__pfeil { transform: rotate(180deg); }
+  [data-ansicht="faden"] .lenkung__klappe { display: none; }
+  .lenkung__rubriken {
+    display: none; flex-basis: 100%; order: 3;
+    margin: .3rem 0 0; padding: .6rem 0 0; overflow: visible; flex-wrap: wrap;
+    border-top: 1px solid var(--linie);
+  }
+  .lenkung.ist-offen .lenkung__rubriken { display: flex; }
+  .lenkung__ansicht { margin-left: auto; gap: .35rem; }
+  .lenkung__knopf { padding: .42rem .7rem; font-size: 9.5px; letter-spacing: .08em; }
+
+  /* ── Das Feld als Liste ──
+     Wie ein Nachrichtenstrom: Zeile für Zeile untereinander, Text links,
+     das Bild klein rechts, Haarlinie dazwischen. Drei Karten nebeneinander
+     auf 390 px waren gedrungen (Andreas, 05.09.); eine Karte pro Zeile
+     mit großem Bild wäre eine Bildergalerie. Die Zeile ist die Form, die
+     den Bestand zeigt, statt ihn vorzuführen. */
+  .feld__gitter { display: block; }
+  .kachel {
+    display: grid; grid-template-columns: minmax(0, 1fr) 92px;
+    grid-template-areas: "kennung bild" "titel bild" "teaser bild";
+    column-gap: .9rem; row-gap: .15rem; align-items: start;
+    padding: .9rem 0; border-top: 1px solid color-mix(in oklab, var(--linie) 70%, transparent);
+  }
+  .kachel:first-child { border-top: 0; padding-top: .2rem; }
+  .kachel[hidden] { display: none; }
+  /* Der Link löst sich als Kasten auf, seine Kinder setzen sich ins
+     Raster der Zeile; anklickbar bleiben sie. */
+  .kachel__weg { display: contents; }
+  .kachel__bild { grid-area: bild; margin: 0; box-shadow: none; border-radius: 6px; align-self: start; margin-top: .15rem; }
+  .kachel__bild img { width: 92px; height: 66px; aspect-ratio: auto; }
+  .kachel__kennung { grid-area: kennung; margin-bottom: 0; font-size: 9px; }
+  .kachel__titel { grid-area: titel; font-size: 1.02rem; line-height: 1.28; }
+  .kachel__teaser { grid-area: teaser; margin: .2rem 0 0; -webkit-line-clamp: 2; font-size: .84rem; line-height: 1.4; }
+  .kachel__teaser.ist-offen { -webkit-line-clamp: unset; }
+  .griffe { display: none; }
+  .kachel--quelle .kachel__bild { outline-offset: 2px; }
+  .kachel.kommt, .kachel.geht { animation: none; }
+  .feld__fuss { margin-top: 2rem; padding-top: 1.4rem; }
+  .verwandtschaft { margin: 0 0 1rem; }
+}

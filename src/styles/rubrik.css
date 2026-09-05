@@ -205,3 +205,49 @@
   font-style: normal; font-size: .7rem; color: var(--tinte-fern);
   font-variant-numeric: tabular-nums;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   Der kleine Schirm — am Ende dieser Datei, nicht in mobil.css
+   (Bündel-Reihenfolge, siehe dort).
+   ══════════════════════════════════════════════════════════════════ */
+.themen__klappe { display: none; }
+
+@media (max-width: 1179px) {
+  /* ── Rubrikseite ── */
+  .rubrik { width: auto; padding: 0 1.15rem 5rem; }
+  .rubrik__kopf { margin: 4.6rem 0 2.4rem; }
+  .rubrik__name { font-size: 2.6rem; }
+  .rubrik__satz { font-size: 1.08rem; }
+  .posten > a { gap: 1rem; margin: 0; padding: .95rem 0; border-radius: 0; }
+  .stapel--register { grid-template-columns: 1fr; }
+  .stapel--register .posten:nth-child(2) { border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent); }
+
+}
+
+@media (max-width: 700px) {
+  .rubrik__name { font-size: 2.2rem; }
+  .posten__bild { width: 96px; height: 40px; }
+  .posten__titel { font-size: 1.05rem; }
+  .posten__teaser { font-size: .9rem; }
+  .themen { gap: .35rem; padding-bottom: 1.8rem; margin-bottom: 2.4rem; }
+
+
+  /* Neunundzwanzig Themen-Chips über der Liste waren ein Wall. Eine
+     Klappe zeigt, ob ein Thema gewählt ist, und öffnet die Chips erst
+     auf Tippen. */
+  .themen__klappe {
+    display: inline-flex; align-items: center; gap: .5rem;
+    margin: 0 0 1.4rem;
+    font-family: "Inter", -apple-system, sans-serif; font-size: 11px; letter-spacing: .05em;
+    color: var(--tinte-leise); background: var(--papier); border: 1px solid var(--linie);
+    border-radius: 100px; padding: .42rem .8rem; cursor: pointer;
+  }
+  .themen__klappe.hat-thema { color: var(--papier); background: var(--akzent); border-color: var(--akzent); }
+  .themen__klappe i { font-style: normal; font-size: 10px; color: var(--tinte-fern); font-variant-numeric: tabular-nums; }
+  .themen__klappe.hat-thema i { color: var(--papier); opacity: .7; }
+  .themen__klappe .rubrikwahl__pfeil { border-top-color: currentColor; }
+  .themen__klappe[aria-expanded="true"] .rubrikwahl__pfeil { transform: rotate(180deg); }
+  .themen { display: none; }
+  .themen.ist-offen { display: flex; }
+}

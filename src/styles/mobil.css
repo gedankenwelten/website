@@ -10,7 +10,15 @@
    anders gestapelt.
 
    Zwei Stufen: bis 1179 px (Tablet, schmales Fenster) fällt der Rand,
-   bis 700 px (Telefon) wird alles einspaltig und der Grad etwas kleiner. */
+   bis 700 px (Telefon) wird alles einspaltig und der Grad etwas kleiner.
+
+   Hier stehen nur die Regeln für das, was in note.css steht. Startseite
+   und Rubrikseite tragen ihre Mobilregeln am Ende von start.css bzw.
+   rubrik.css — Astro bündelt note.css in ein gemeinsames Stylesheet, das
+   *vor* dem seiteneigenen geladen wird; lägen die Regeln hier, gewännen
+   die Desktop-Regeln der Seite (gleiche Spezifität, spätere Zeile).
+   Genau so ging die erste Live-Fassung am 05.09. schief: drei Karten
+   nebeneinander auf dem Telefon. */
 
 @media (max-width: 1179px) {
 
@@ -98,35 +106,6 @@
   .suche__zeile input { font-size: 1.25rem; }
   .suche__treffer img, .suche__leer { width: 76px; height: 32px; }
 
-  /* ── Startseite ── */
-  .start { width: auto; padding: calc(var(--kopf) + 1rem) 1.15rem 4rem; }
-  .start__kopf { margin: 1rem 0 1.6rem; }
-  .lenkung { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 1.8rem; }
-  /* Die Rubriken in einer Zeile zum Schieben — elf Chips in drei Zeilen
-     wären ein Wall vor dem Feld. Randlos über die ganze Breite. */
-  .lenkung__rubriken {
-    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
-    margin: 0 -1.15rem; padding: 0 1.15rem .2rem;
-  }
-  .lenkung__rubriken::-webkit-scrollbar { display: none; }
-  .chip { flex: 0 0 auto; }
-  .lenkung__ansicht { justify-content: flex-start; }
-  .feld__gitter { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.4rem; row-gap: 2.4rem; }
-  .kachel__bild img { height: auto; aspect-ratio: 12 / 5; }
-  /* Kein Hovern — die Wörter an den Griffen stehen. */
-  .griff__wort { max-width: 8rem; opacity: 1; }
-  .station { width: auto; }
-  .start__nochmal, .faden__fuss { width: auto; }
-
-  /* ── Rubrikseite ── */
-  .rubrik { width: auto; padding: 0 1.15rem 5rem; }
-  .rubrik__kopf { margin: 4.6rem 0 2.4rem; }
-  .rubrik__name { font-size: 2.6rem; }
-  .rubrik__satz { font-size: 1.08rem; }
-  .posten > a { gap: 1rem; margin: 0; padding: .95rem 0; border-radius: 0; }
-  .stapel--register { grid-template-columns: 1fr; }
-  .stapel--register .posten:nth-child(2) { border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent); }
-
   /* ── Beiseiten, Fußzeile ── */
   .blatt--beiseite { padding-top: calc(var(--kopf) + 1.6rem); }
   .fusszeile, .blatt + .fusszeile { width: auto; margin: 3rem 1.15rem 0; }
@@ -141,24 +120,6 @@
   .strang h3 { font-size: 1.4rem; margin-top: 3.2rem; }
   .strang h2 { margin: 4.5rem 0 2rem; }
   .kennung { gap: .55rem; font-size: 10px; }
-
-  .wortmarke, .wortmarke:has([data-stil]) { height: 3.1rem; }
-  .wortmarke__bild { height: 3.1rem; }
-  .wortmarke__bild[data-stil="sumie"]    { height: 3.85rem; }
-  .wortmarke__bild[data-stil="aquarell"] { height: 3.75rem; }
-  .wortmarke__bild[data-stil="aether"]   { height: 3.45rem; }
-  .wortmarke:has([data-stil="sumie"]), .wortmarke:has([data-stil="aquarell"]) { height: 3.85rem; }
-  .wortmarke:has([data-stil="aether"]) { height: 3.45rem; }
-  .start__satz { font-size: .95rem; }
-  .feld__gitter { grid-template-columns: 1fr; row-gap: 2.2rem; }
-  .kachel__titel { font-size: 1.15rem; }
-  .lenkung__ansicht { flex-wrap: wrap; }
-
-  .rubrik__name { font-size: 2.2rem; }
-  .posten__bild { width: 96px; height: 40px; }
-  .posten__titel { font-size: 1.05rem; }
-  .posten__teaser { font-size: .9rem; }
-  .themen { gap: .35rem; padding-bottom: 1.8rem; margin-bottom: 2.4rem; }
 
   .verwandt__titel { font-size: .95rem; }
   .schau__inhalt h1 { font-size: 1.55rem; }

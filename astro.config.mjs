@@ -69,4 +69,8 @@ export default defineConfig({
     smartypants: false,
   },
   devToolbar: { enabled: false },
+  /* Der CSS-Minifierer schreibt `max-width: 700px` sonst als
+     `(width <= 700px)` — Bereichs-Syntax, die Safari erst seit 16.4
+     kennt. Ein älteres Telefon bekäme die Desktop-Fassung. */
+  vite: { build: { cssTarget: ["safari15", "ios15", "chrome100", "firefox100"] } },
 });
