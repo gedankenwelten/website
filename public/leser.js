@@ -259,6 +259,108 @@ if (knopf) {
   } catch { /* Privater Modus: dann eben ohne Spur. */ }
 }
 
+/* ── Der Stern als Griff ──
+   Der Stern steht am Fuß, und der Fuß liegt bei langen Notes 30.000 px
+   tief. Darum ein Griff am unteren Rand, sobald man zu lesen begonnen
+   hat: Er hebt eine Bühne mit *demselben* Stern hoch — ein Klon des
+   Sternbilds vom Fuß, gebaut, bevor das Stern-Skript (ein Modul, läuft
+   nach diesem hier) seine Berührungen verdrahtet: So hört der Klon
+   genauso zu wie das Original, und die Kopplung mit dem Kasten rechts
+   kennt beide.
+
+   Kommt man unten beim echten Stern an, geht die Bühne von selbst zu und
+   der Griff verschwindet. Dann sitzt der Stern in der Seite, wie gehabt —
+   die Bühne war nur der Vorgriff darauf. (Andreas, 05.09.) */
+{
+  const original = document.querySelector("section.stern");
+  if (original && !document.body.classList.contains("ist-start")) {
+    const zahl = original.querySelectorAll("a.knoten").length;
+    const zeichen = `<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="1.9" fill="currentColor"/><circle cx="2.6" cy="4" r="1.3" fill="currentColor" opacity=".55"/><circle cx="13.4" cy="5" r="1.3" fill="currentColor" opacity=".55"/><circle cx="4" cy="13" r="1.3" fill="currentColor" opacity=".55"/><circle cx="12.6" cy="12.4" r="1.3" fill="currentColor" opacity=".55"/><g stroke="currentColor" stroke-width=".9" opacity=".4"><path d="M8 8 L2.6 4M8 8 L13.4 5M8 8 L4 13M8 8 L12.6 12.4"/></g></svg>`;
+
+    const buehne = document.createElement("div");
+    buehne.className = "stern-buehne";
+    buehne.id = "sternBuehne";
+    buehne.innerHTML = `<div class="stern-buehne__schleier"></div>
+      <div class="stern-buehne__blatt" role="dialog" aria-label="Im Bestand" aria-modal="false">
+        <div class="stern-buehne__leiste"><b>Im Bestand</b><i>${zahl}</i>
+          <button class="stern-buehne__zu" type="button">schließen</button></div>
+      </div>`;
+    const klon = original.cloneNode(true);
+    klon.removeAttribute("id");
+    const blatt = buehne.querySelector(".stern-buehne__blatt");
+    blatt.tabIndex = -1;
+    blatt.append(klon);
+
+    const griff = document.createElement("button");
+    griff.type = "button";
+    griff.className = "stern-griff weg";
+    griff.id = "sternGriff";
+    griff.setAttribute("aria-expanded", "false");
+    griff.setAttribute("aria-controls", "sternBuehne");
+    griff.title = "Was um diese Note herum liegt";
+    griff.innerHTML = `${zeichen}<span>Im Bestand</span><i>${zahl}</i>`;
+
+    document.body.append(buehne, griff);
+
+    let offen = false, unten = false;
+    const bewegt = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Ankunft auf der Bühne: erst hebt sich das Blatt, dann treten die
+       Knoten aus der Mitte — dieselbe Bewegung wie unten beim
+       Hereinscrollen, nur ausgelöst vom Griff. Beim Schließen wird sie
+       zurückgenommen, damit sie beim nächsten Öffnen wieder da ist. */
+    const ankommen = () => {
+      if (!bewegt) return;
+      klon.classList.remove("da");
+      setTimeout(() => klon.classList.add("da"), 160);
+    };
+    const griffZeigen = () => {
+      const zeigen = !offen && !unten && scrollY > 480;
+      griff.classList.toggle("weg", !zeigen);
+    };
+    const auf = () => {
+      if (offen) return;
+      offen = true;
+      buehne.classList.add("offen");
+      griff.setAttribute("aria-expanded", "true");
+      griffZeigen();
+      ankommen();
+      // Das Blatt bekommt den Fokus — von dort geht es mit Tab in den Stern.
+      // Nicht der Schließen-Knopf: Der bekäme vom Browser den Tastatur-Ring,
+      // obwohl niemand eine Taste gedrückt hat.
+      blatt.focus({ preventScroll: true });
+    };
+    const zu = ({ fokus = true } = {}) => {
+      if (!offen) return;
+      offen = false;
+      buehne.classList.remove("offen");
+      griff.setAttribute("aria-expanded", "false");
+      if (bewegt) setTimeout(() => klon.classList.remove("da"), 600);
+      griffZeigen();
+      if (fokus && !unten) griff.focus({ preventScroll: true });
+    };
+
+    griff.addEventListener("click", auf);
+    buehne.querySelector(".stern-buehne__zu").addEventListener("click", () => zu());
+    buehne.querySelector(".stern-buehne__schleier").addEventListener("click", () => zu());
+    addEventListener("keydown", (e) => { if (e.key === "Escape" && offen) zu(); });
+    addEventListener("scroll", griffZeigen, { passive: true });
+
+    /* Wenn der echte Stern ins Bild kommt, hat die Bühne ihren Dienst
+       getan: Sie geht zu, der Griff verschwindet, der Stern gehört der
+       Seite. Etwas Vorlauf (Rand unten), damit die Bühne schon weicht,
+       während der Stern heraufkommt — die eine Bewegung geht in die
+       andere über. */
+    new IntersectionObserver(([e]) => {
+      unten = e.isIntersecting;
+      if (unten) zu({ fokus: false });
+      griffZeigen();
+    }, { rootMargin: "0px 0px 18% 0px" }).observe(original);
+
+    griffZeigen();
+  }
+}
+
 /* ── Stern und Nachbarschaft sind zwei Ansichten derselben Sache ──
    Der Stern zeigt das Netz, der Kasten rechts die geschriebenen Gründe.
    Bisher standen sie unverbunden nebeneinander: Wer im Sternbild einen
@@ -286,10 +388,14 @@ if (knopf) {
       const p = a && weg(a.getAttribute("href"));
       if (p) eintraege.set(p, li);
     }
+    // Je Pfad *alle* Knoten — der Stern steht zweimal (am Fuß und auf
+    // der Bühne), und beide sollen aufleuchten.
     const sterne = new Map();
     for (const k of knoten) {
       const p = weg(k.getAttribute("href"));
-      if (p && !sterne.has(p)) sterne.set(p, k);
+      if (!p) continue;
+      if (!sterne.has(p)) sterne.set(p, []);
+      sterne.get(p).push(k);
     }
 
     const kopfHoehe = halt.querySelector(".verwandt__kopf")?.offsetHeight ?? 0;
@@ -299,11 +405,11 @@ if (knopf) {
       if (pfad === gemerkt) return;
       gemerkt = pfad;
       for (const li of eintraege.values()) li.classList.remove("ist-nah");
-      for (const k of sterne.values()) k.classList.remove("ist-nah");
+      for (const ks of sterne.values()) for (const k of ks) k.classList.remove("ist-nah");
       if (!pfad) return;
 
       eintraege.get(pfad)?.classList.add("ist-nah");
-      sterne.get(pfad)?.classList.add("ist-nah");
+      for (const k of sterne.get(pfad) ?? []) k.classList.add("ist-nah");
 
       const li = eintraege.get(pfad);
       if (!li || !rollen) return;
@@ -360,7 +466,8 @@ if (knopf) {
       const p = weg(k.getAttribute("href"));
       k.addEventListener("pointerenter", () => { schwebt = true; zeigenAuf(p); });
     }
-    document.querySelector(".stern")?.addEventListener("pointerleave", () => { schwebt = false; zeigenAuf(ausText); });
+    for (const st of document.querySelectorAll(".stern"))
+      st.addEventListener("pointerleave", () => { schwebt = false; zeigenAuf(ausText); });
 
     // Andersherum genauso: Wer im Kasten liest, sieht im Bild, wo es steht.
     for (const [p, li] of eintraege) {
