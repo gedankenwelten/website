@@ -167,14 +167,21 @@ body {
 .strang { width: var(--spalte); margin-left: calc(var(--marge) + var(--luft)); position: relative; }
 
 .banner { width: 100%; margin: 3.5rem 0 0; border-radius: 3px; display: block; box-shadow: var(--schatten); }
-.blatt > header { margin-bottom: 4.5rem; }
+.blatt > header { margin-bottom: 3.6rem; }
 
 .kennung {
   display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
   font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
-  color: var(--tinte-fern); margin: 3rem 0 1.4rem;
+  color: var(--tinte-fern); margin: 2rem 0 1.25rem;
   font-family: -apple-system, "Inter", sans-serif;
 }
+/* Die Malerhand sitzt in dieser Zeile, rechts außen — statt als eigene
+   Zeile unter dem Bild, die zusammen mit dem Abstand darunter 140 px
+   Leere zwischen Banner und Titel ließ (Andreas, 02.08.: „zwischen
+   Überschrift und worum gehts zu viel Platz"). Aufgeklappt nimmt sie die
+   ganze Zeile. */
+.kennung > details.malerhand { margin: 0 0 0 auto; }
+.kennung > details.malerhand[open] { flex: 0 0 100%; margin-top: .4rem; }
 .kennung b { color: var(--akzent); font-weight: 600; }
 .kennung i { color: var(--linie); font-style: normal; }
 .kennung__rubrik {
@@ -183,13 +190,16 @@ body {
 }
 .kennung__rubrik:hover { border-bottom-color: var(--akzent); }
 
+/* Eine Stufe kleiner als im ersten Entwurf (3,05 rem): Zeitgeist-Titel
+   sind lang, und drei Zeilen Riesenschrift über dem Standfirst trugen
+   mehr Gewicht als der Text darunter halten konnte. */
 h1 {
-  font-size: 3.05rem; line-height: 1.1; letter-spacing: -.021em;
-  font-weight: 600; margin: 0 0 1.6rem; text-wrap: balance;
+  font-size: 2.6rem; line-height: 1.12; letter-spacing: -.018em;
+  font-weight: 600; margin: 0 0 1.25rem; text-wrap: balance;
 }
 .standfirst {
-  font-size: 1.34rem; line-height: 1.55; color: var(--tinte-leise);
-  font-style: italic; margin: 0 0 2.4rem; text-wrap: pretty;
+  font-size: 1.26rem; line-height: 1.55; color: var(--tinte-leise);
+  font-style: italic; margin: 0 0 2rem; text-wrap: pretty;
 }
 
 /* ── Überschriften ──

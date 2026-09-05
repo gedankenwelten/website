@@ -417,11 +417,12 @@ if (knopf) {
    das Bild. Ohne Javascript bleibt es im Text stehen, wo es lesbar ist,
    nur eben unbegleitet. */
 {
-  const banner = document.querySelector(".banner");
+  const kennung = document.querySelector(".blatt > header .kennung");
   const osterei = [...document.querySelectorAll("#text > details")]
     .find((d) => (d.querySelector("summary")?.textContent ?? "").includes("🎨"));
-  if (banner && osterei) {
+  if (kennung && osterei && document.querySelector(".banner")) {
     osterei.classList.add("malerhand");
-    banner.after(osterei);
+    // Ans Ende der Kennzeile, rechts außen — nicht als eigene Zeile.
+    kennung.append(osterei);
   }
 }
