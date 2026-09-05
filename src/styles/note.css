@@ -495,11 +495,12 @@ h1 {
 }
 .marken-zeile a, .marken-zeile span {
   color: var(--tinte-leise); text-decoration: none; transition: color .2s;
+  border-bottom: 0 !important;   /* die Textlink-Unterstreichung gilt hier nicht */
 }
 .marken-zeile a:hover { color: var(--akzent); }
 .marken-zeile span { color: var(--tinte-fern); }
 .marken-zeile > * + *::before {
-  content: "·"; color: var(--linie); margin: 0 .75em; letter-spacing: 0;
+  content: "·"; color: var(--tinte-fern); margin: 0 .75em; letter-spacing: 0;
 }
 
 /* ── Begleiter ── */
