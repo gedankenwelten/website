@@ -34,6 +34,10 @@ cd "$PROJEKT" && git merge --ff-only origin/main --quiet
 if [ "$ALT_PROJ" != "$NEU_PROJ" ] || [ ! -d node_modules ]; then npm ci --silent; fi
 
 # Bauen — Inhalt liegt hier nicht unter ~/Gedankenwelten, sondern im Service-Ordner.
+# `public/assets` ist auf dem Mac ein Symlink in den Pool (Banner) und nicht im
+# Repo — hier zeigt er auf den Service-Ordner. Ohne ihn bricht Vite beim
+# Kopieren von public/ ab (ENOENT, 05.09.).
+ln -sfn "$INHALT_REPO/content/assets" public/assets
 rm -rf dist
 GW_INHALT="$INHALT_REPO/content" NOINDEX=0 nice -n 10 ionice -c2 -n7 npm run build --silent
 [ -f dist/index.html ] || { echo "$LOG: Build unvollständig — kein Swap"; exit 1; }
