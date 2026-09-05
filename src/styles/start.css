@@ -147,6 +147,10 @@
   transition: opacity .35s ease, filter .35s ease, transform .5s cubic-bezier(.2,.8,.2,1);
 }
 .kachel__weg:hover .kachel__bild img { opacity: 1; filter: saturate(1); transform: scale(1.035); }
+/* Im Dunkeln dämpft note.css alle Bilder; die Karte hat eigene Werte,
+   also hier noch einmal — sonst gewinnt die spätere, hellere Regel. */
+[data-theme="dunkel"] .kachel__bild img { filter: brightness(.84) saturate(.85); }
+[data-theme="dunkel"] .kachel__weg:hover .kachel__bild img { filter: none; }
 
 .kachel__kennung {
   display: flex; align-items: center; gap: .45rem;
@@ -207,6 +211,19 @@
   background: color-mix(in oklab, var(--akzent-weich) 35%, transparent);
 }
 .griff__zeichen { width: 11px; height: 11px; flex: 0 0 auto; }
+/* Achtundvierzig Karten mal drei Wörter sind hundertvierundvierzig mal
+   dasselbe. Die Zeichen bleiben stehen — wer sie erst durch Hovern
+   fände, fände sie nie —, die Wörter dazu kommen, wenn die Maus auf der
+   Karte liegt. Nur die Zahl der Verwandten bleibt immer da: Sie ist
+   Auskunft, kein Etikett. */
+.griff__wort {
+  max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0;
+  transition: max-width .3s cubic-bezier(.2,.8,.2,1), opacity .25s;
+}
+.griff__wort--bleibt, .kachel:hover .griff__wort, .griff:focus-visible .griff__wort {
+  max-width: 8rem; opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) { .griff__wort { transition: none; } }
 
 /* Die Karte, deren Nachbarschaft gerade steht: Sie ist der Grund, warum
    die anderen hier sind — also bekommt sie eine Kante in der Akzentfarbe

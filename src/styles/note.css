@@ -167,6 +167,11 @@ body {
 .strang { width: var(--spalte); margin-left: calc(var(--marge) + var(--luft)); position: relative; }
 
 .banner { width: 100%; margin: 3.5rem 0 0; border-radius: 3px; display: block; box-shadow: var(--schatten); }
+/* Auf dunklem Grund leuchten die Bilder wie Fenster — ein wenig gedämpft
+   liegen sie im Papier, statt davor zu stehen. Gilt für jedes Bild in
+   der Fassung, auch die Karten und Vorschauen. Beim Berühren voll. */
+[data-theme="dunkel"] img { filter: brightness(.86) saturate(.9); transition: filter .35s ease; }
+[data-theme="dunkel"] a:hover img, [data-theme="dunkel"] .banner:hover { filter: none; }
 .blatt > header { margin-bottom: 3.6rem; }
 
 .kennung {
@@ -180,7 +185,11 @@ body {
    Leere zwischen Banner und Titel ließ (Andreas, 02.08.: „zwischen
    Überschrift und worum gehts zu viel Platz"). Aufgeklappt nimmt sie die
    ganze Zeile. */
-.kennung > details.malerhand { margin: 0 0 0 auto; }
+.kennung > details.malerhand {
+  margin: 0 0 0 auto;
+  /* Die Kennzeile spricht in Versalien — die Malerhand nicht. */
+  text-transform: none; letter-spacing: normal; font-size: .78rem;
+}
 .kennung > details.malerhand[open] { flex: 0 0 100%; margin-top: .4rem; }
 .kennung b { color: var(--akzent); font-weight: 600; }
 .kennung i { color: var(--linie); font-style: normal; }
@@ -473,16 +482,25 @@ h1 {
 }
 
 /* ── Fuß ── */
-.marken-zeile { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 3.5rem; }
-.marken-zeile a, .marken-zeile span {
-  font-family: -apple-system, "Inter", sans-serif; font-size: .74rem;
-  color: var(--tinte-leise); text-decoration: none; border: 1px solid var(--linie);
-  padding: .28rem .7rem; border-radius: 100px; transition: all .2s;
+/* ── Die Marken am Fuß ──
+   Keine Pillen — die gab es hier in jeder Vorlage. Dieselbe Stimme wie
+   die Kennzeile oben: kleine Versalien, gesperrt, ein Punkt dazwischen.
+   Was führt, ist Tinte und bekommt beim Berühren die Akzentfarbe; was in
+   seiner Rubrik nichts trennt, steht ferner und führt nirgendwohin. */
+.marken-zeile {
+  display: flex; flex-wrap: wrap; gap: .45rem 0; margin-top: 3.5rem;
+  padding-top: 1.4rem; border-top: 1px solid var(--linie);
+  font-family: -apple-system, "Inter", sans-serif; font-size: 10.5px;
+  letter-spacing: .14em; text-transform: uppercase;
 }
-.marken-zeile a:hover { color: var(--akzent); border-color: var(--akzent); }
-/* Eine Marke, die in ihrer Rubrik nichts trennt, führt nirgendwohin —
-   und sieht auch nicht so aus, als täte sie es. */
-.marken-zeile span { color: var(--tinte-fern); border-style: dotted; }
+.marken-zeile a, .marken-zeile span {
+  color: var(--tinte-leise); text-decoration: none; transition: color .2s;
+}
+.marken-zeile a:hover { color: var(--akzent); }
+.marken-zeile span { color: var(--tinte-fern); }
+.marken-zeile > * + *::before {
+  content: "·"; color: var(--linie); margin: 0 .75em; letter-spacing: 0;
+}
 
 /* ── Begleiter ── */
 .begleiter {

@@ -253,7 +253,7 @@ const kurzMonat = (d) => {
                       fill="none" stroke="currentColor" stroke-width="1.2"/>
                 <circle cx="8" cy="8" r="1.7" fill="currentColor"/>
               </svg>
-              Vorschau
+              <span class="griff__wort">Vorschau</span>
             </button>
             {wege.has(n.id) && (
               <button class="griff" type="button" data-faden={n.id}
@@ -262,7 +262,7 @@ const kurzMonat = (d) => {
                   <path d="M2 12 C 5 12, 5 4, 8 4 S 11 12, 14 12" fill="none"
                         stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
                 </svg>
-                Faden
+                <span class="griff__wort">Faden</span>
               </button>
             )}
             {nachbarschaft[i].length > 0 && (
@@ -278,7 +278,7 @@ const kurzMonat = (d) => {
                     <path d="M8 8 L2.6 4M8 8 L13.4 5M8 8 L4 13M8 8 L12.6 12.4"/>
                   </g>
                 </svg>
-                {nachbarschaft[i].length} verwandt
+                <span class="griff__wort griff__wort--bleibt">{nachbarschaft[i].length} verwandt</span>
               </button>
             )}
           </div>
