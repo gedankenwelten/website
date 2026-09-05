@@ -300,11 +300,13 @@ window.gwSchau = (() => {
     schau.hidden = false;
     document.body.style.overflow = "hidden";
     weiter.href = url;
+    weiter.textContent = unten ? "Zur Note →" : "Ganz lesen →";
     blatt.scrollTop = 0;
     blatt.tabIndex = -1;
     blatt.focus({ preventScroll: true });
 
-    if (geholt.has(url)) { inhalt.replaceChildren(geholt.get(url).cloneNode(true)); return; }
+    const schluessel = `${unten ? "ganz" : "anfang"}:${url}`;
+    if (geholt.has(schluessel)) { inhalt.replaceChildren(geholt.get(schluessel).cloneNode(true)); return; }
     inhalt.innerHTML = '<p class="schau__laedt">wird geholt …</p>';
 
     let seite;
@@ -327,12 +329,14 @@ window.gwSchau = (() => {
     text.className = "strang";
     stueck.append(text);
 
-    /* So viel Text, wie man im Vorbeigehen liest. Nicht nach Absätzen
-       gezählt, sondern nach Zeichen — ein Aufmacher-Callout wiegt so viel
-       wie fünf kurze Zwischenüberschriften. Vom unteren Rand aus etwas
-       mehr: Das Blatt ist höher, und man ist gekommen, um hineinzuschauen. */
+    /* Auf der Startseite so viel Text, wie man im Vorbeigehen liest —
+       nicht nach Absätzen gezählt, sondern nach Zeichen: ein Aufmacher-
+       Callout wiegt so viel wie fünf kurze Zwischenüberschriften. Aus dem
+       Stern heraus dagegen **die ganze Note** (Andreas, 05.09.): Man soll
+       sie dort lesen können, nur ohne den Bestand — der Stern, aus dem
+       man kommt, steht ja schon unter einem. */
     let last = 0;
-    const genug = unten ? 2600 : 1600;
+    const genug = unten ? Infinity : 1600;
     for (const kind of [...(seite.getElementById("text")?.children ?? [])]) {
       if (last > genug) break;
       // Das 🎨-Osterei ist ein Bildnachweis, keine Lektüre.
@@ -341,7 +345,7 @@ window.gwSchau = (() => {
       text.append(kind);
     }
 
-    geholt.set(url, stueck);
+    geholt.set(schluessel, stueck);
     if (lauf === laeuft) inhalt.replaceChildren(stueck.cloneNode(true));
   }
 
