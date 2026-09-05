@@ -671,3 +671,15 @@ window.gwSchau = (() => {
     }
   }
 }
+
+/* ── Der Stern auf dem kleinen Schirm ──
+   Dort ist er breiter als das Fenster und lässt sich schieben. Beim
+   Aufschlagen soll die Mitte in der Mitte stehen — sonst sieht man erst
+   den linken Rand des Sternbilds und den Kern gar nicht. */
+if (matchMedia("(max-width: 1179px)").matches) {
+  for (const st of document.querySelectorAll(".stern")) {
+    const mittig = () => { st.scrollLeft = Math.max(0, (st.scrollWidth - st.clientWidth) / 2); };
+    mittig();
+    addEventListener("resize", mittig, { passive: true });
+  }
+}

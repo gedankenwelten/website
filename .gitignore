@@ -11,3 +11,4 @@ public/frames/
 
 .DS_Store
 *.log
+.live

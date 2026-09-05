@@ -12,7 +12,10 @@ import matter from "gray-matter";
 import { slugify, noteUrl } from "./slug.mjs";
 import { datumVon } from "./datum.mjs";
 
-export const INHALT = path.join(
+/* Der Markdown-Pool. Auf dem Mac liegt er unter ~/Gedankenwelten/content,
+   auf dem Pi unter ~/services/gedankenwelten/content — `GW_INHALT` sagt
+   es, wenn es woanders ist. */
+export const INHALT = process.env.GW_INHALT || path.join(
   process.env.HOME,
   "Gedankenwelten",
   "content",
