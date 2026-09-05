@@ -621,29 +621,13 @@ h1 {
 .kopfleiste__licht:hover { color: var(--akzent); border-color: var(--akzent); }
 
 .kopfleiste__marke {
-  display: inline-flex; align-items: center; line-height: 0;
-  font-size: 15.5px; letter-spacing: .005em; color: var(--tinte);
+  display: inline-flex; align-items: center;
+  font-size: 17px; font-weight: 600; letter-spacing: -.012em; color: var(--tinte);
   text-decoration: none; white-space: nowrap; flex: 0 0 auto;
-  transition: color .2s, opacity .35s ease;
+  transition: color .2s;
 }
 .kopfleiste__marke:hover { color: var(--akzent); }
 .kopfleiste__marke-wort { line-height: 1.2; }
-.kopfleiste__marke.hat-bild .kopfleiste__marke-wort { display: none; }
-
-/* Die Wortmarken sind freigestellt (`scripts/wortmarke_freistellen.py`) —
-   sie tragen einen echten Alphakanal und stehen darum auf jedem Untergrund
-   richtig. Vorher rechnete `mix-blend-mode` den gemalten Grund ins Papier,
-   aber nicht ganz: multiply landete sieben Stufen daneben, screen zwölf.
-   Genug für einen sichtbaren Kasten. */
-.kopfleiste__marke-bild { display: none; width: auto; height: 1.85rem; }
-.kopfleiste__marke.hat-bild .kopfleiste__marke-bild { display: block; }
-
-/* Drei Handschriften stehen mit viel Luft um die Schrift — ungetrimmt
-   wögen sie im Kopf leichter als die anderen. Verhältnisse aus der
-   Quartz-Fassung übernommen. */
-.kopfleiste__marke-bild[data-stil="sumie"]    { height: 2.3rem; }
-.kopfleiste__marke-bild[data-stil="aquarell"] { height: 2.25rem; }
-.kopfleiste__marke-bild[data-stil="aether"]   { height: 2.05rem; }
 
 .kopfleiste__trenner { color: var(--tinte-fern); font-style: normal; flex: 0 0 auto; }
 

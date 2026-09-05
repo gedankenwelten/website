@@ -36,10 +36,26 @@
 /* ── Kopf ── */
 .start__kopf { margin: 1.6rem 0 2.2rem; }
 
+/* Der Auftakt: die gemalte Marke des Tages. Bis sie geladen ist, steht
+   das Wort in der Schrift der Seite an derselben Stelle und in derselben
+   Höhe — kein Springen, wenn das Bild kommt. Die Handschriften sind
+   verschieden hoch geschnitten (sumie und aquarell tragen Luft um die
+   Schrift), darum je Stil ein eigenes Maß, in denselben Verhältnissen
+   wie vorher in der Kopfleiste. */
 .wortmarke {
   font-size: 3.1rem; line-height: 1; letter-spacing: -.03em; font-weight: 600;
-  margin: 0 0 .55rem; hyphens: manual;
+  margin: 0 0 .7rem; hyphens: manual; height: 4.4rem;
+  display: flex; align-items: flex-end;
 }
+.wortmarke__bild { display: none; width: auto; height: 4.4rem; }
+.wortmarke.hat-bild .wortmarke__wort { display: none; }
+.wortmarke.hat-bild .wortmarke__bild { display: block; }
+.wortmarke__bild[data-stil="sumie"]    { height: 5.45rem; }
+.wortmarke__bild[data-stil="aquarell"] { height: 5.35rem; }
+.wortmarke__bild[data-stil="aether"]   { height: 4.9rem; }
+.wortmarke:has([data-stil="sumie"]),
+.wortmarke:has([data-stil="aquarell"]) { height: 5.45rem; }
+.wortmarke:has([data-stil="aether"])   { height: 4.9rem; }
 .start__satz {
   font-size: 1.05rem; line-height: 1.5; color: var(--tinte-leise);
   font-style: italic; margin: 0; max-width: 38rem; text-wrap: pretty;

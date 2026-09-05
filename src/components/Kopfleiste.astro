@@ -22,24 +22,14 @@ const rubriken = alleRubriken();
 <header class="kopfleiste" id="kopfleiste">
 
   <nav class="kopfleiste__weg" aria-label="Hauptnavigation">
+    {/* Nur das Wort, in der Schrift der Seite. Die gemalte Marke stand hier
+        bis zum 05.09. — das einzige laute Stück auf einer Seite, die sonst
+        flüstert, und auf der Startseite stand der Name zehn Zeilen tiefer
+        noch einmal. Jetzt hat sie *einen* Ort: den Auftakt der Startseite,
+        wo sie täglich wechseln darf. Die Kopfleiste sagt nur, wo man ist. */}
     <a class="kopfleiste__marke" href="/" aria-label="Gedankenwelten — zur Startseite">
-      {/* Der Name als Text trägt, wenn das Bild nicht kommt — ohne
-          Javascript bleibt er stehen, das ist der ehrliche Rückfall. */}
       <span class="kopfleiste__marke-wort">Gedanken&shy;welten</span>
-      <img class="kopfleiste__marke-bild" id="wortmarke" alt="" aria-hidden="true" decoding="async">
     </a>
-    {/* Erst hier bekommt das Bild seine Quelle: Stünde sie im Markup, holte
-        der Browser die Marke des *Bautags* im hellen Thema, bevor irgendwer
-        sie korrigieren kann — zwei Bilder für eine Marke. `data-wm` und
-        `data-theme` hat der Vorspann im Kopf schon gesetzt. */}
-    <script is:inline>
-      {
-        const w = document.documentElement, b = document.getElementById("wortmarke");
-        b.src = `/wortmarke/wordmark-${w.dataset.wm}-${w.dataset.theme === "dunkel" ? "dark" : "light"}.png`;
-        b.dataset.stil = w.dataset.wm;
-        b.onload = () => b.closest(".kopfleiste__marke").classList.add("hat-bild");
-      }
-    </script>
 
     {/* Ein Element, zwei Aufgaben: Es *sagt*, in welcher Rubrik man steht,
         und es *führt* in jede andere. Zwei getrennte Anzeigen — „Rubriken"

@@ -147,7 +147,25 @@ const kurzMonat = (d) => {
 <main class="start">
 
   <header class="start__kopf">
-    <h1 class="wortmarke">Gedanken&shy;welten</h1>
+    {/* Die gemalte Wortmarke — hier und nur hier, als Auftakt. Sie wechselt
+        mit dem Kalendertag (Vorspann setzt `data-wm`) und mit dem Thema
+        (`leser.js` tauscht das Bild am selben Knopf). Das Wort darunter
+        trägt, bis das Bild da ist, und bleibt stehen, wenn es nie kommt.
+        Die Quelle wird erst hier gesetzt, nicht im Markup: Stünde sie dort,
+        holte der Browser die Marke des Bautags im hellen Thema, bevor
+        irgendwer sie korrigieren kann — zwei Bilder für eine Marke. */}
+    <h1 class="wortmarke">
+      <span class="wortmarke__wort">Gedanken&shy;welten</span>
+      <img class="wortmarke__bild" id="wortmarke" alt="Gedankenwelten" decoding="async">
+    </h1>
+    <script is:inline>
+      {
+        const w = document.documentElement, b = document.getElementById("wortmarke");
+        b.src = `/wortmarke/wordmark-${w.dataset.wm}-${w.dataset.theme === "dunkel" ? "dark" : "light"}.png`;
+        b.dataset.stil = w.dataset.wm;
+        b.onload = () => b.closest(".wortmarke").classList.add("hat-bild");
+      }
+    </script>
     {/* Die Vitas werden genannt, nicht verschwiegen: Sie fehlen im Feld,
         weil sie ein Register sind — nicht, weil es sie nicht gäbe. */}
     <p class="start__satz">
