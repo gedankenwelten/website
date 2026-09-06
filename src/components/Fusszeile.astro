@@ -12,15 +12,20 @@
  * ohne Aufforderung. Wer klickt, bekommt ein Feld über der Seite; ohne
  * Skript ist der Link ein mailto. Was ankommt, landet in der Cortex-
  * Inbox (Dienst `gedankenwelten-rueckmeldung` auf dem Pi).
+ *
+ * `fest`: Auf der Startseite bleibt die Zeile am unteren Rand stehen
+ * (Andreas, 06.09.2026) — der Faden ist lang, das Beiwerk soll trotzdem
+ * jederzeit da sein. Der Satz entfällt dort; er steht oben schon im Kopf.
+ * Auf allen anderen Seiten fließt die Fußzeile wie bisher unter dem Text.
  */
 import "../styles/rueckmeldung.css";
 import { SITE } from "../lib/site.mjs";
-const { rubrik = null } = Astro.props;
+const { rubrik = null, fest = false } = Astro.props;
 const jahr = new Date().getFullYear();
 const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Feedback zu gedankenwelten.org");
 ---
-<footer class="fusszeile">
-  <p class="fusszeile__satz">{SITE.satz}</p>
+<footer class={`fusszeile${fest ? " fusszeile--fest" : ""}`}>
+  {!fest && <p class="fusszeile__satz">{SITE.satz}</p>}
   <nav class="fusszeile__wege" aria-label="Beiwerk">
     <a href="/Feeds">RSS-Feeds</a>
     {rubrik && <a href={`/${rubrik}/index.xml`} title={`Feed der Rubrik ${rubrik}`}>{rubrik} abonnieren</a>}

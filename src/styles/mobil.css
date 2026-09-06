@@ -110,6 +110,13 @@
   .blatt--beiseite { padding-top: calc(var(--kopf) + 1.6rem); }
   .fusszeile, .blatt + .fusszeile { width: auto; margin: 3rem 1.15rem 0; }
   .fusszeile__wege span { margin-left: 0; flex-basis: 100%; }
+  /* Fest am Rand auch auf dem Telefon, aber schmal: ohne die Jahreszeile
+     (sie steht im Impressum), die Wege dürfen auf zwei Zeilen umbrechen.
+     Der Start bekommt unten Luft, damit die letzte Station nicht darunter liegt. */
+  .fusszeile--fest { margin: 0; padding: .6rem 1.15rem .7rem; }
+  .fusszeile--fest .fusszeile__wege { gap: .35rem 1.1rem; }
+  .fusszeile--fest .fusszeile__wege span { display: none; }
+  body:has(.fusszeile--fest) .start { padding-bottom: 7rem; }
   .feed { gap: 1rem; }
 }
 

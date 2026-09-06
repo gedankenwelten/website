@@ -856,6 +856,17 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 /* Die Note hat ihr eigenes Blatt mit festem Maß — die Fußzeile richtet
    sich dort nach ihm, nicht nach dem Fenster. */
 .blatt + .fusszeile { width: calc(var(--marge) + var(--luft) + var(--spalte) + var(--spalt) + var(--neben)); }
+/* Auf der Startseite steht die Zeile fest am unteren Rand: kein Kasten,
+   nur das Papier, das leicht durchscheint, und die eine Linie darüber.
+   Der Abstand rechts/links ist derselbe wie der des Starts (94vw, 84rem),
+   damit die Wege unter den Stationen bleiben, nicht am Fensterrand. */
+.fusszeile--fest {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  width: auto; margin: 0;
+  padding: .75rem max(3vw, calc((100vw - 84rem) / 2)) .8rem;
+  background: color-mix(in oklab, var(--papier) 90%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
 
 /* ── Beiseiten ── */
 .blatt--beiseite { padding-top: calc(var(--kopf) + 3rem); padding-bottom: 4rem; }
