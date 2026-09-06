@@ -19,16 +19,21 @@
   --rot:         #9d3b30;
   --schatten:    0 8px 30px rgba(60,45,30,.13), 0 2px 6px rgba(60,45,30,.07);
 
-  --spalte:  41rem;
-  --marge:   9.5rem;
-  --neben:   16rem;
-  --luft:    2.75rem;
+  /* Der Schriftgrad (Kopfleiste) skaliert `rem` — also alles, was in rem
+     gesetzt ist: Titel, Teaser, Karten, Listen. Die Seite selbst soll dabei
+     stehen bleiben, darum rechnen die Layoutmaße in --e, dem *ungeskalten*
+     rem: 41 * --e ist bei jedem Grad gleich breit. */
+  --e: calc(1rem / var(--schrift, 1));
+  --spalte:  calc(41 * var(--e));
+  --marge:   calc(9.5 * var(--e));
+  --neben:   calc(16 * var(--e));
+  --luft:    calc(2.75 * var(--e));
   /* Der Abstand zwischen Text und Verwandtem — eigenes Maß, nicht `--luft`.
      Die Nachbarschaft soll erkennbar *daneben* stehen und nicht am Satz
      kleben; die Zeitmarken links dagegen gehören eng an den Text, sie
      verweisen ja hinein. Zwei Abstände, zwei Aufgaben. */
-  --spalt:   2.75rem;
-  --kopf:    3.4rem;   /* Höhe der Kopfleiste — Zeitleiste und Satz weichen ihr aus */
+  --spalt:   calc(2.75 * var(--e));
+  --kopf:    calc(3.4 * var(--e));   /* Höhe der Kopfleiste — Zeitleiste und Satz weichen ihr aus */
 
   /* Die Rubrikfarben, aufs Papier übersetzt. Der Farbton bleibt —
      Zeitgeist ist violett, Spuren rosé —, aber die Neonsättigung, die auf
@@ -84,7 +89,7 @@
    Die Grundwerte bleiben unter 72 rem, damit die Seite über der
    1180-px-Schwelle nicht überläuft; erst darüber wird zugelegt. */
 @media (min-width: 1400px) {
-  :root { --spalte: 45rem; --marge: 10.5rem; --neben: 21rem; --spalt: 4rem; }
+  :root { --spalte: calc(45 * var(--e)); --marge: calc(10.5 * var(--e)); --neben: calc(21 * var(--e)); --spalt: calc(4 * var(--e)); }
 }
 /* Auf dem großen Schirm rückt die Note nach links und wird breiter, die
    Nachbarschaft rutscht mit einem deutlichen Spalt nach rechts. Weil das
@@ -95,7 +100,7 @@
    länger, und Zeilenlänge ohne Schriftgrad ist genau die Verschlechterung,
    die man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
 @media (min-width: 1700px) {
-  :root { --spalte: 50rem; --marge: 10rem; --neben: 32rem; --luft: 3rem; --spalt: 8rem; }
+  :root { --spalte: calc(50 * var(--e)); --marge: calc(10 * var(--e)); --neben: calc(32 * var(--e)); --luft: calc(3 * var(--e)); --spalt: calc(8 * var(--e)); }
 }
 /* Die Schriftgrade dazu stehen am Dateiende — hier oben würden die
    Grundregeln weiter unten sie wieder überschreiben (gleiche Spezifität,
@@ -104,6 +109,9 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+/* Der Grad wirkt auf die rem-Basis, damit auch Titel, Teaser und Karten
+   mitgehen — nicht nur der Fließtext. Layoutmaße rechnen in --e (oben). */
+html { font-size: calc(100% * var(--schrift, 1)); }
 html[data-schrift="klein"] { --schrift: .9; }
 html[data-schrift="gross"] { --schrift: 1.12; }
 
@@ -122,7 +130,7 @@ body {
      dem 06.09. einen Grad kleiner als vorher (19,5 px); wer es größer mag,
      hat ihn als Stufe. Die Spaltenmaße hängen an rem, nicht an body —
      der Satz wird enger oder weiter, die Seite bleibt, wo sie ist. */
-  font-size: calc(18.5px * var(--schrift, 1));
+  font-size: calc(18.5px * var(--schrift, 1));   /* in px, damit body nicht doppelt skaliert */
   font-optical-sizing: auto;
   line-height: 1.72;
   -webkit-font-smoothing: antialiased;
