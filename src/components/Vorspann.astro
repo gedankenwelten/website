@@ -8,6 +8,8 @@
  * - Das Thema stand bisher als `hell` im HTML und wurde erst am Fuß der
  *   Seite von `leser.js` umgestellt. Wer dunkel liest, sah bei jedem
  *   Seitenwechsel ein weißes Aufblitzen.
+ * - Der Schriftgrad (klein · mittel · groß, wie am Lesegerät) — ohne ihn
+ *   hier würde der Text nach dem ersten Bild noch einmal springen.
  * - Die Wortmarke des Tages entscheidet, welches von zwölf Bildern geholt
  *   wird. Stünde eine Vorgabe im `src`, lüde der Browser sie los, bevor
  *   Javascript sie korrigieren könnte — zwei Bilder für eine Marke.
@@ -22,6 +24,8 @@ import { WORTMARKEN } from "../lib/wortmarke.mjs";
   try {
     const t = localStorage.getItem("gw-theme");
     if (t) w.dataset.theme = t;
+    const g = localStorage.getItem("gw-schrift");
+    if (g === "klein" || g === "gross") w.dataset.schrift = g;
   } catch {}
   // Dieselbe Rechnung wie `wortmarkeDesTages()` in src/lib/wortmarke.mjs
   // und wie in der Quartz-Fassung: Tag im Monat, minus eins, modulo Pool.

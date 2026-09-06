@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 import "../styles/note.css";
 import "../styles/mobil.css";
 import Kopf from "../components/Kopf.astro";
@@ -26,6 +27,6 @@ import Suche from "../components/Suche.astro";
 </article>
 <Fusszeile />
 <Suche />
-<script src="/leser.js" is:inline></script>
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
 </body>
 </html>

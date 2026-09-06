@@ -1,6 +1,14 @@
 /**
  * Was die Seite über sich selbst weiß — an einem Ort.
  */
+/* Eine Marke je Build, hinten an den Skripten in public/ (`/leser.js?v=…`).
+   Cloudflare hält JS vier Stunden im Cache — ohne die Marke sieht der
+   Leser nach einem Deploy noch stundenlang das alte Verhalten zu neuem
+   HTML (06.09.2026: die Schriftgrad-Knöpfe standen da, taten aber nichts).
+   Die Astro-Bündel tragen ihren Hash selbst; nur das Handgeschriebene
+   in public/ braucht diese Hilfe. */
+export const BUILD = Date.now().toString(36);
+
 export const SITE = {
   name: "Gedankenwelten",
   url: "https://gedankenwelten.org",

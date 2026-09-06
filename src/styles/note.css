@@ -104,6 +104,8 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+html[data-schrift="klein"] { --schrift: .9; }
+html[data-schrift="gross"] { --schrift: 1.12; }
 
 body {
   margin: 0;
@@ -115,7 +117,12 @@ body {
      größere x-Höhe, darum ein Grad kleiner als Iowan (20,5 px). */
   font-family: "Literata", "Iowan Old Style", Charter, "Palatino Linotype", Palatino,
                "Book Antiqua", Georgia, serif;
-  font-size: 19.5px;
+  /* Drei Grade, wie am Lesegerät: --schrift ist der Faktor, den der
+     Leser wählt (Kopfleiste, gemerkt im Browser). Die Grundgröße ist seit
+     dem 06.09. einen Grad kleiner als vorher (19,5 px); wer es größer mag,
+     hat ihn als Stufe. Die Spaltenmaße hängen an rem, nicht an body —
+     der Satz wird enger oder weiter, die Seite bleibt, wo sie ist. */
+  font-size: calc(18.5px * var(--schrift, 1));
   font-optical-sizing: auto;
   line-height: 1.72;
   -webkit-font-smoothing: antialiased;
@@ -655,6 +662,24 @@ h1 {
   padding: .42rem .95rem; cursor: pointer; transition: all .2s;
 }
 .kopfleiste__licht:hover { color: var(--akzent); border-color: var(--akzent); }
+
+/* Der Schriftgrad: drei A in einer Pille, das gewählte dunkel. Die A
+   sind selbst gestuft, damit man sieht, was man bekommt. */
+.kopfleiste__grad {
+  display: inline-flex; align-items: baseline;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: 0 .35rem; height: 2.05rem; box-sizing: border-box;
+}
+.kopfleiste__grad button {
+  font-family: "Literata", Georgia, serif; font-weight: 500; line-height: 1;
+  color: var(--tinte-fern); background: none; border: 0; cursor: pointer;
+  padding: 0 .38rem; align-self: center; transition: color .2s;
+}
+.kopfleiste__grad button[data-schrift="klein"] { font-size: 11px; }
+.kopfleiste__grad button[data-schrift="mittel"] { font-size: 14px; }
+.kopfleiste__grad button[data-schrift="gross"] { font-size: 17px; }
+.kopfleiste__grad button:hover { color: var(--akzent); }
+.kopfleiste__grad button.ist { color: var(--tinte); }
 
 .kopfleiste__marke {
   display: inline-flex; align-items: center;

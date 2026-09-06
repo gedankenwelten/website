@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 /**
  * Die Suche — der dritte Zugang.
  *
@@ -36,4 +37,4 @@ import "../styles/suche.css";
   </div>
 </div>
 
-<script src="/suche.js" is:inline></script>
+<script src={`/suche.js?v=${BUILD}`} is:inline></script>

@@ -74,6 +74,15 @@ const rubriken = alleRubriken();
       <kbd class="suchfeld__taste">⌘K</kbd>
     </button>
 
+    {/* Der Schriftgrad — drei Stufen wie am Lesegerät, die mittlere ist
+        die Vorgabe. Was gewählt ist, merkt sich der Browser (gw-schrift);
+        gesetzt wird es im Vorspann, noch vor dem ersten Bild. */}
+    <div class="kopfleiste__grad" role="group" aria-label="Schriftgröße">
+      <button type="button" data-schrift="klein" aria-label="Schrift kleiner" title="Kleine Schrift">A</button>
+      <button type="button" data-schrift="mittel" aria-label="Schrift normal" title="Normale Schrift">A</button>
+      <button type="button" data-schrift="gross" aria-label="Schrift größer" title="Große Schrift">A</button>
+    </div>
+
     <button id="theme" class="kopfleiste__licht">Dunkel</button>
   </div>
 </header>

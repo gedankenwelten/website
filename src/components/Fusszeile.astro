@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 /**
  * Die Fußzeile — das Beiwerk, an einem Ort, leise.
  *
@@ -68,4 +69,4 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
   </form>
 </div>
 
-<script src="/rueckmeldung.js" is:inline></script>
+<script src={`/rueckmeldung.js?v=${BUILD}`} is:inline></script>

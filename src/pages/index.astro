@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 /**
  * Die Startseite — zwei Zugänge, einer davon der Grundzustand.
  *
@@ -739,7 +740,7 @@ const kurzMonat = (d) => {
 
 <Suche />
 
-<script src="/leser.js" is:inline></script>
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
 <script is:inline>
   /* Die Klappe über den Rubriken (nur Telefon): auf, zu, und nach jeder
      Wahl das Etikett nachziehen und wieder zu. */

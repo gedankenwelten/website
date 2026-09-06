@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 import "../styles/note.css";
 import "../styles/stern.css";
 import Stern from "../components/Stern.astro";
@@ -166,6 +167,6 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <Schau />
 <Suche />
 
-<script src="/leser.js" is:inline></script>
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 /**
  * Eine Rubrik in ganzer Breite.
  *
@@ -293,7 +294,7 @@ const zeitraum = b.ordnung !== "abc" && b.von && b.bis
 
 <Suche />
 
-<script src="/leser.js" is:inline></script>
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
 <script is:inline>
   /* Die Themen-Klappe (nur Telefon): auf, zu, gewähltes Thema als Etikett. */
   {

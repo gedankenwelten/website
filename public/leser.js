@@ -217,6 +217,28 @@ if (knopf) {
   };
 }
 
+/* ── Der Schriftgrad ──
+   Drei Stufen, gemerkt im Browser. Den Zustand setzt der Vorspann vor dem
+   ersten Bild; hier wird nur markiert, was gilt, und umgestellt. */
+// Nur die Knöpfe — `[data-schrift]` allein träfe auch <html>, das den
+// gewählten Grad trägt: Jeder Klick irgendwo auf der Seite liefe dann als
+// „Umschalten" bis dorthin hoch und schriebe Unsinn in den Speicher.
+const grade = [...document.querySelectorAll("button[data-schrift]")];
+if (grade.length) {
+  const zeigen = () => {
+    const g = document.documentElement.dataset.schrift || "mittel";
+    grade.forEach((b) => b.classList.toggle("ist", b.dataset.schrift === g));
+  };
+  zeigen();
+  grade.forEach((b) => b.addEventListener("click", () => {
+    const g = b.dataset.schrift;
+    if (g === "mittel") delete document.documentElement.dataset.schrift;
+    else document.documentElement.dataset.schrift = g;
+    try { g === "mittel" ? localStorage.removeItem("gw-schrift") : localStorage.setItem("gw-schrift", g); } catch {}
+    zeigen();
+  }));
+}
+
 /* ── Die eigene Spur ──
    Der Browser-Zurück-Knopf kann das auch — aber er zeigt nicht, wohin er
    führt. Hier steht der Titel der Station, von der man kam: man muss sich

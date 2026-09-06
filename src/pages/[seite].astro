@@ -1,4 +1,5 @@
 ---
+import { BUILD } from "../lib/site.mjs";
 /**
  * Eine Beiseite: Impressum, Datenschutz, MCP-Doku, Quellen-Index.
  * Das Blatt der Note, ohne Zeitleiste, ohne Nachbarschaft, ohne Stern —
@@ -41,6 +42,6 @@ const d = seite.data;
 <Fusszeile />
 <Schau />
 <Suche />
-<script src="/leser.js" is:inline></script>
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
 </body>
 </html>
