@@ -6,10 +6,18 @@
  * Feeds und der MCP-Server sind die zwei Wege, die Gedankenwelten ohne
  * Browser zu lesen. Dazu der eine Satz, der die Seite trägt. Keine
  * Spalten, keine Kästen — eine Zeile in der Stimme der Kennzeile.
+ *
+ * Und eine Tür: „Feedback". Umami sagt, wo Leser waren, nicht, was
+ * sie dachten. Der Link steht zwischen den anderen Wegen, ohne Knopf,
+ * ohne Aufforderung. Wer klickt, bekommt ein Feld über der Seite; ohne
+ * Skript ist der Link ein mailto. Was ankommt, landet in der Cortex-
+ * Inbox (Dienst `gedankenwelten-rueckmeldung` auf dem Pi).
  */
+import "../styles/rueckmeldung.css";
 import { SITE } from "../lib/site.mjs";
 const { rubrik = null } = Astro.props;
 const jahr = new Date().getFullYear();
+const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Feedback zu gedankenwelten.org");
 ---
 <footer class="fusszeile">
   <p class="fusszeile__satz">{SITE.satz}</p>
@@ -17,8 +25,44 @@ const jahr = new Date().getFullYear();
     <a href="/Feeds">RSS-Feeds</a>
     {rubrik && <a href={`/${rubrik}/index.xml`} title={`Feed der Rubrik ${rubrik}`}>{rubrik} abonnieren</a>}
     <a href="/MCP">MCP-Server</a>
+    <a href={mailto} data-rueckmeldung title="Etwas zur Seite sagen">Feedback</a>
     <a href="/Impressum">Impressum</a>
     <a href="/Datenschutz">Datenschutz</a>
     <span>© {jahr} Andreas Schmieder</span>
   </nav>
 </footer>
+
+<div class="rueck" id="rueck" hidden>
+  <div class="rueck__grund" data-rueck-zu></div>
+
+  <form class="rueck__blatt" id="rueckForm" role="dialog" aria-modal="true" aria-labelledby="rueckTitel" novalidate>
+    <div class="rueck__zeile">
+      <h2 id="rueckTitel">Feedback</h2>
+      <button class="rueck__zu" type="button" data-rueck-zu aria-label="Schließen">esc</button>
+    </div>
+
+    <p class="rueck__hinweis">
+      Was hat dich gestört, gefreut, gefehlt? Zur Seite selbst oder zu dem, was auf ihr steht.
+    </p>
+
+    <textarea id="rueckText" name="text" rows="6" maxlength="4000" required
+              placeholder="Schreib, was du denkst …" aria-label="Dein Feedback"></textarea>
+
+    <input id="rueckMail" name="mail" type="email" autocomplete="email" maxlength="200"
+           placeholder="Mail, falls du eine Antwort möchtest (freiwillig)" aria-label="Mail-Adresse, freiwillig">
+
+    {/* Für Menschen unsichtbar, für Bots ein Feld wie jedes andere. */}
+    <div class="rueck__honig" aria-hidden="true">
+      <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <div class="rueck__fuss">
+      <span class="rueck__klein">Mitgeschickt wird nur, welche Seite du gerade liest. Kein Name, keine IP, kein Cookie.</span>
+      <button class="rueck__senden" type="submit">Abschicken</button>
+    </div>
+
+    <p class="rueck__antwort" id="rueckAntwort" hidden></p>
+  </form>
+</div>
+
+<script src="/rueckmeldung.js" is:inline></script>

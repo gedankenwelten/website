@@ -1,0 +1,89 @@
+/* ══════════════════════════════════════════════════════════════════
+   Die Rückmeldung — eine leise Tür, aufgeschlagen über dem Blatt
+   ══════════════════════════════════════════════════════════════════
+   Gebaut wie die Suche: kein schwarzer Vorhang, das Papier tritt nur
+   zurück. Ein Feld, eine freiwillige Adresse, ein Knopf. Mehr braucht
+   ein Brief nicht. */
+
+.rueck { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; }
+.rueck[hidden] { display: none; }
+
+.rueck__grund {
+  position: absolute; inset: 0;
+  background: color-mix(in oklab, var(--papier) 78%, transparent);
+  backdrop-filter: blur(3px);
+  animation: rueckAuf .18s ease;
+}
+
+.rueck__blatt {
+  position: relative; margin: 9vh auto 0; align-self: flex-start;
+  width: min(38rem, calc(100vw - 2.4rem));
+  max-height: 84vh; overflow: auto;
+  display: flex; flex-direction: column; gap: .9rem;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: var(--schatten);
+  padding: 1.5rem 1.7rem 1.4rem;
+  animation: rueckHoch .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes rueckAuf { from { opacity: 0 } }
+@keyframes rueckHoch { from { opacity: 0; transform: translateY(-8px) } }
+
+.rueck__zeile { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.rueck__zeile h2 {
+  margin: 0; font-size: 1.35rem; font-weight: 600; letter-spacing: -.01em; color: var(--tinte);
+}
+
+.rueck__zu {
+  flex: 0 0 auto;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  background: none; border: 1px solid var(--linie); border-radius: 4px;
+  padding: .25rem .5rem; cursor: pointer; transition: all .2s;
+}
+.rueck__zu:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.rueck__hinweis {
+  margin: 0; font-size: .98rem; line-height: 1.55; font-style: italic; color: var(--tinte-leise);
+  text-wrap: pretty;
+}
+
+.rueck__blatt textarea,
+.rueck__blatt input[type="email"] {
+  width: 100%; box-sizing: border-box;
+  font-family: inherit; font-size: 1.02rem; line-height: 1.55; color: var(--tinte);
+  background: var(--papier-tief); border: 1px solid var(--linie); border-radius: 4px;
+  padding: .7rem .85rem; outline: none; transition: border-color .2s;
+}
+.rueck__blatt textarea { resize: vertical; min-height: 7.5rem; }
+.rueck__blatt input[type="email"] { font-size: .92rem; }
+.rueck__blatt textarea:focus,
+.rueck__blatt input[type="email"]:focus { border-color: var(--akzent); }
+.rueck__blatt ::placeholder { color: var(--tinte-fern); }
+
+/* Das Honigfeld: für Menschen nicht da, für Bots ein ganz normales Feld. */
+.rueck__honig { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+.rueck__fuss { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.rueck__klein {
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px; line-height: 1.5;
+  letter-spacing: .04em; color: var(--tinte-fern); max-width: 22rem;
+}
+.rueck__senden {
+  flex: 0 0 auto;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--papier); background: var(--akzent); border: 1px solid var(--akzent);
+  border-radius: 4px; padding: .55rem 1rem; cursor: pointer; transition: opacity .2s;
+}
+.rueck__senden:hover { opacity: .88; }
+.rueck__senden:disabled { opacity: .5; cursor: default; }
+
+.rueck__antwort { margin: 0; font-size: 1.02rem; line-height: 1.55; color: var(--tinte); }
+.rueck__antwort[hidden] { display: none; }
+.rueck__antwort.ist-fehler { color: var(--rot); }
+
+@media (max-width: 700px) {
+  .rueck__blatt { margin-top: 4vh; padding: 1.2rem 1.15rem 1.1rem; }
+  .rueck__fuss { flex-direction: column; align-items: stretch; }
+  .rueck__klein { max-width: none; }
+}
