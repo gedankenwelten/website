@@ -21,7 +21,6 @@
 import "../styles/rueckmeldung.css";
 import { SITE } from "../lib/site.mjs";
 const { rubrik = null, fest = false } = Astro.props;
-const jahr = new Date().getFullYear();
 const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Feedback zu gedankenwelten.org");
 ---
 <footer class={`fusszeile${fest ? " fusszeile--fest" : ""}`}>
@@ -33,7 +32,6 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
     <a href={mailto} data-rueckmeldung title="Etwas zur Seite sagen">Feedback</a>
     <a href="/Impressum">Impressum</a>
     <a href="/Datenschutz">Datenschutz</a>
-    <span>© {jahr} Andreas Schmieder</span>
   </nav>
 </footer>
 

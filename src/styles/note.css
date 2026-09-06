@@ -852,7 +852,6 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
   border-bottom: 1px solid transparent; transition: color .2s, border-color .2s;
 }
 .fusszeile__wege a:hover { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
-.fusszeile__wege span { margin-left: auto; }
 /* Die Note hat ihr eigenes Blatt mit festem Maß — die Fußzeile richtet
    sich dort nach ihm, nicht nach dem Fenster. */
 .blatt + .fusszeile { width: calc(var(--marge) + var(--luft) + var(--spalte) + var(--spalt) + var(--neben)); }
