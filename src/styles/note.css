@@ -112,8 +112,10 @@ html { scroll-behavior: smooth; }
 /* Der Grad wirkt auf die rem-Basis, damit auch Titel, Teaser und Karten
    mitgehen — nicht nur der Fließtext. Layoutmaße rechnen in --e (oben). */
 html { font-size: calc(100% * var(--schrift, 1)); }
-html[data-schrift="klein"] { --schrift: .9; }
-html[data-schrift="gross"] { --schrift: 1.12; }
+/* Die Stufen liegen bewusst weit auseinander (08.09.): mit .9 war „klein"
+   am großen Monitor kaum von „mittel" zu unterscheiden. */
+html[data-schrift="klein"] { --schrift: .82; }
+html[data-schrift="gross"] { --schrift: 1.16; }
 
 body {
   margin: 0;
@@ -818,9 +820,48 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 .tabelle td strong, .tabelle th strong { color: var(--tinte); font-weight: 600; }
 .tabelle a { color: var(--akzent); text-decoration: none; border-bottom: 1px solid var(--akzent-weich); }
 .tabelle code { font-size: .95em; }
-/* Eine reine Nummernspalte („#") soll nicht so breit sein wie ihr Kopf. */
-.tabelle td:first-child:has(+ td) { white-space: normal; }
-.tabelle th:first-child { width: 1%; }
+/* Eine reine Nummernspalte („#") soll nicht breiter sein als ihr Kopf.
+   Das Plugin setzt `tabelle--nr`, wenn der erste Kopf „#" oder „Nr." ist —
+   auf „Titel"-Spalten (Werkverzeichnisse der Vitas) oder leeren Köpfen
+   (Zeilenbeschriftung) darf die 1 % nie fallen, sonst bricht jeder
+   Buchtitel in fünf Zeilen um. */
+.tabelle--nr th:first-child { width: 1%; white-space: nowrap; }
+.tabelle--nr td:first-child { white-space: nowrap; }
+
+/* ── Quellen-Listen ──
+   „Weiterführende Quellen" und „Quellen" am Ende einer Note sind ein
+   Verzeichnis, kein Fließtext: Links mit kurzer Beschreibung dahinter,
+   gruppiert durch kursive Zwischenzeilen. Im Lese-Grad wirkten sie wie
+   ein weiterer Absatz und schoben die Note um eine Bildschirmhöhe.
+   Darum dasselbe Register wie die Tabellen — Sans, kleiner, die
+   Gruppen als Kolumnentitel, der Link in Tinte, die Erklärung zurück. */
+.quellen {
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: .84rem; line-height: 1.5;
+  color: var(--tinte-leise);
+}
+.quellen > p > em:only-child {
+  display: block; font-style: normal;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--tinte-fern);
+  margin-top: 1.6rem; padding-bottom: .4rem;
+  border-bottom: 1px solid var(--linie);
+}
+.quellen > p:first-child > em:only-child { margin-top: .4rem; }
+.quellen ul { list-style: none; padding: 0; margin: 0; }
+.quellen li {
+  padding: .58rem 0; margin: 0;
+  border-top: 1px solid color-mix(in oklab, var(--linie) 55%, transparent);
+}
+.quellen ul > li:first-child { border-top: 0; }
+.quellen li::marker { content: ""; }
+.quellen a {
+  color: var(--tinte); font-weight: 500; text-decoration: none;
+  border-bottom: 1px solid var(--akzent-weich);
+}
+.quellen a:hover { color: var(--akzent); border-bottom-color: var(--akzent); }
+.quellen em { color: var(--tinte); }
+.quellen code { font-size: .95em; }
 
 /* ══════════════════════════════════════════════════════════════════
    Schriftgrade auf dem großen Schirm
@@ -831,7 +872,9 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
   /* Mit der Spalte wächst der Grad mit. Sonst würde nur die Zeile länger,
      und Zeilenlänge ohne Schriftgrad ist genau die Verschlechterung, die
      man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
-  body { font-size: 20.5px; }
+  /* Der Lesergrad muss auch hier mitrechnen — als nackte 20,5 px hob die
+     Zeile den gewählten Faktor gerade auf dem großen Schirm wieder auf. */
+  body { font-size: calc(20.5px * var(--schrift, 1)); }
 
   /* Eine 32-rem-Spalte mit 12-px-Schrift ergab fünfundachtzig Zeichen je
      Zeile. Breiter heißt nicht automatisch besser lesbar; beides muss

@@ -44,6 +44,12 @@ const CALLOUT = {
 
 const BILD = /\.(jpe?g|png|webp|gif|svg|avif)$/i;
 
+/* Reiner Text einer mdast-Zelle (Links, Betonung usw. durchlaufen). */
+function zellenText(node) {
+  if (node.type === "text" || node.type === "inlineCode") return node.value;
+  return (node.children || []).map(zellenText).join("");
+}
+
 export default function remarkGedankenwelten() {
   return (tree, file) => {
     const fm = file.data?.astro?.frontmatter ?? {};
@@ -196,13 +202,44 @@ export default function remarkGedankenwelten() {
        Ziffern) über die CSS-Klasse. */
     visit(tree, "table", (node, i, eltern) => {
       if (!eltern || eltern.type === "tabelle") return;
+      /* Eine reine Nummernspalte („#", „1", leer) soll nicht breiter sein
+         als ihr Kopf; eine „Titel"-Spalte dagegen braucht den meisten
+         Platz. Das entscheidet sich am Kopftext — CSS kann ihn nicht
+         lesen, also markieren wir es hier. */
+      const kopf = node.children?.[0]?.children?.[0];
+      const kopfText = (kopf ? zellenText(kopf) : "").trim();
+      const klassen = ["tabelle"];
+      if (/^(#|nr\.?|№|\d+)$/i.test(kopfText)) klassen.push("tabelle--nr");
       eltern.children[i] = {
         type: "tabelle",
-        data: { hProperties: { className: ["tabelle"] } },
+        data: { hProperties: { className: klassen } },
         children: [node],
       };
       return SKIP;
     });
+
+    /* ── 2c. Quellen-Verzeichnisse bekommen ihr eigenes Register ────── */
+    /* Alles zwischen „## (Weiterführende) Quellen" und der nächsten
+       Überschrift gleicher Stufe ist ein Verzeichnis, kein Fließtext. */
+    {
+      const kinder = tree.children;
+      for (let i = 0; i < kinder.length; i++) {
+        const k = kinder[i];
+        if (k.type !== "heading" || k.depth !== 2) continue;
+        if (!/quellen/i.test(zellenText(k))) continue;
+        let j = i + 1;
+        while (j < kinder.length && !(kinder[j].type === "heading" && kinder[j].depth <= 2)
+               && kinder[j].type !== "thematicBreak") j++;
+        if (j === i + 1) continue;
+        const block = {
+          type: "quellen",
+          data: { hName: "div", hProperties: { className: ["quellen"] } },
+          children: kinder.slice(i + 1, j),
+        };
+        kinder.splice(i + 1, j - i - 1, block);
+        i += 1;
+      }
+    }
 
     /* ── 3. + 4. Callouts und O-Ton, in Dokumentreihenfolge ─────────── */
     visit(tree, (node) => {
