@@ -24,6 +24,18 @@
      stehen bleiben, darum rechnen die Layoutmaße in --e, dem *ungeskalten*
      rem: 41 * --e ist bei jedem Grad gleich breit. */
   --e: calc(1rem / var(--schrift, 1));
+  /* Das Lesemaß (08.09.): rem hängt an 16 px, der Fließtext an 18,5 px —
+     ein „.82rem" war darum nicht 82 % des Textes, sondern 71 %, und im
+     kleinen Grad standen Tabellen bei 10,8 px. Alle Nebengrößen rechnen
+     jetzt vom Lesegrad aus, nicht vom rem: --lese ist die Zeile selbst,
+     --lese-neben der Vorspann und die Kopfnoten (ein wenig zurück, nicht
+     halb so groß), --lese-raster Tabellen, Quellen, Details,
+     --lese-etikett die Kolumnentitel — mit Boden, unter den sie im
+     kleinen Grad nicht fallen. */
+  --lese:         calc(18.5px * var(--schrift, 1));
+  --lese-neben:   calc(.9 * var(--lese));
+  --lese-raster:  calc(.86 * var(--lese));
+  --lese-etikett: max(10px, calc(.6 * var(--lese)));
   --spalte:  calc(41 * var(--e));
   --marge:   calc(9.5 * var(--e));
   --neben:   calc(16 * var(--e));
@@ -132,7 +144,7 @@ body {
      dem 06.09. einen Grad kleiner als vorher (19,5 px); wer es größer mag,
      hat ihn als Stufe. Die Spaltenmaße hängen an rem, nicht an body —
      der Satz wird enger oder weiter, die Seite bleibt, wo sie ist. */
-  font-size: calc(18.5px * var(--schrift, 1));   /* in px, damit body nicht doppelt skaliert */
+  font-size: var(--lese);   /* in px (über --lese), damit body nicht doppelt skaliert */
   font-optical-sizing: auto;
   line-height: 1.72;
   -webkit-font-smoothing: antialiased;
@@ -269,7 +281,7 @@ h1 {
 .strang li { margin-bottom: .5rem; }
 .strang img { max-width: 100%; height: auto; border-radius: 3px; display: block; margin: 2.5rem 0; }
 .strang details {
-  font-family: "Inter", -apple-system, sans-serif; font-size: .82rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: var(--lese-raster);
   color: var(--tinte-leise); margin: 1.5rem 0; line-height: 1.6;
 }
 .strang details summary { cursor: pointer; opacity: .6; }
@@ -280,7 +292,7 @@ h1 {
   position: absolute; right: calc(100% + var(--luft)); top: .5em;
   width: var(--marge); text-align: right;
   font-family: "Inter", -apple-system, "Helvetica Neue", sans-serif;
-  font-size: 11.5px; font-variant-numeric: tabular-nums; letter-spacing: .04em;
+  font-size: max(11px, calc(.62 * var(--lese))); font-variant-numeric: tabular-nums; letter-spacing: .04em;
   color: var(--tinte-fern); cursor: pointer; user-select: none;
   transition: color .2s; white-space: nowrap;
 }
@@ -299,7 +311,7 @@ h1 {
 .guck.da { opacity: 1; transform: translateY(0) scale(1); }
 .guck img { width: 100%; display: block; margin: 0; border-radius: 0; }
 .guck figcaption {
-  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: var(--lese-etikett);
   letter-spacing: .04em; color: var(--tinte-leise); padding: .5rem .65rem .55rem;
 }
 
@@ -315,7 +327,7 @@ h1 {
 .oton em { font-style: italic; }
 .oton__horen {
   display: block; font-family: "Inter", -apple-system, sans-serif; font-style: normal;
-  font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: var(--lese-etikett); letter-spacing: .12em; text-transform: uppercase;
   color: var(--tinte-fern); margin-top: .85rem; transition: color .25s;
 }
 .oton:hover .oton__horen, .oton.klingt .oton__horen { color: var(--akzent); }
@@ -332,7 +344,7 @@ h1 {
 /* ── Kopfnoten (info/important/tip) ── */
 .kopfnote {
   border-top: 1px solid var(--linie); padding: 1.5rem 0 1.6rem;
-  font-size: .89rem; line-height: 1.68; color: var(--tinte-leise);
+  font-size: var(--lese-neben); line-height: 1.68; color: var(--tinte-leise);
 }
 .kopfnote + .kopfnote { border-top: 1px solid var(--linie); }
 .kopfnote:last-of-type { border-bottom: 1px solid var(--linie); }
@@ -342,14 +354,14 @@ h1 {
 
 .block-label {
   display: block; font-family: "Inter", -apple-system, sans-serif;
-  font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+  font-size: var(--lese-etikett); letter-spacing: .16em; text-transform: uppercase;
   color: var(--tinte-fern); margin-bottom: .7rem;
 }
 
 /* ── Eigene Stimme ── */
 .eigen {
   margin: 2.6rem 0; padding: 1.5rem 1.7rem; background: var(--papier-tief);
-  border-radius: 3px; font-size: .96rem; line-height: 1.66; color: var(--tinte-leise);
+  border-radius: 3px; font-size: var(--lese-neben); line-height: 1.66; color: var(--tinte-leise);
 }
 .eigen p:last-child { margin-bottom: 0; }
 .eigen p { margin: 0 0 .8rem; }
@@ -375,7 +387,7 @@ h1 {
   content: ""; width: 7px; height: 7px; border-radius: 50%;
   background: var(--tinte-fern); flex: 0 0 auto;
 }
-.befund p { font-size: .93rem; line-height: 1.65; color: var(--tinte-leise); margin-bottom: .8rem; }
+.befund p { font-size: var(--lese-neben); line-height: 1.65; color: var(--tinte-leise); margin-bottom: .8rem; }
 .befund--ja { border-left-color: var(--gruen); }
 .befund--ja .block-label { color: var(--gruen); }
 .befund--ja .block-label::before { background: var(--gruen); }
@@ -478,7 +490,7 @@ h1 {
   display: grid; grid-template-rows: 0fr;
   padding-left: calc(5px + .55rem);
   font-family: "Inter", -apple-system, sans-serif;
-  font-size: .78rem; line-height: 1.55; color: var(--tinte-leise);
+  font-size: calc(.8 * var(--lese)); line-height: 1.55; color: var(--tinte-leise);
   text-wrap: pretty; opacity: 0;
   transition: grid-template-rows .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease, padding-top .38s;
 }
@@ -753,11 +765,11 @@ h1 {
 details.malerhand {
   margin: .55rem 0 0; text-align: right;
   font-family: "Inter", -apple-system, sans-serif;
-  font-size: .78rem; line-height: 1.6; color: var(--tinte-leise);
+  font-size: var(--lese-raster); line-height: 1.6; color: var(--tinte-leise);
 }
 details.malerhand summary {
   display: inline-block; cursor: pointer; opacity: .45;
-  font-size: .82rem; padding: .1rem .3rem; border-radius: 4px;
+  font-size: inherit; padding: .1rem .3rem; border-radius: 4px;
   transition: opacity .25s, background .25s;
   list-style: none;
 }
@@ -777,7 +789,7 @@ details.malerhand p {
 }
 /* Der Prompt ist Werkzeug, kein Text — er darf leiser sein als die
    Begründung darüber. */
-details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
+details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
 
 /* ── Tabellen ──
    In den Notes stehen echte Datenblöcke: fünf Falsifikationsbedingungen
@@ -797,13 +809,13 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
 .tabelle table {
   width: 100%; border-collapse: collapse;
   font-family: "Inter", -apple-system, sans-serif;
-  font-size: .82rem; line-height: 1.45;
+  font-size: var(--lese-raster); line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
 .tabelle th {
   text-align: left; vertical-align: bottom;
   padding: 0 1rem .55rem 0;
-  font-size: 9.5px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+  font-size: var(--lese-etikett); font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
   color: var(--tinte-fern); border-bottom: 1px solid var(--linie);
   white-space: nowrap;
 }
@@ -837,12 +849,12 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
    Gruppen als Kolumnentitel, der Link in Tinte, die Erklärung zurück. */
 .quellen {
   font-family: "Inter", -apple-system, sans-serif;
-  font-size: .84rem; line-height: 1.5;
+  font-size: var(--lese-raster); line-height: 1.5;
   color: var(--tinte-leise);
 }
 .quellen > p > em:only-child {
   display: block; font-style: normal;
-  font-size: 9.5px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+  font-size: var(--lese-etikett); font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
   color: var(--tinte-fern);
   margin-top: 1.6rem; padding-bottom: .4rem;
   border-bottom: 1px solid var(--linie);
@@ -874,14 +886,14 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .74rem; }
      man vermeiden will — das Auge findet den Zeilenanfang nicht mehr. */
   /* Der Lesergrad muss auch hier mitrechnen — als nackte 20,5 px hob die
      Zeile den gewählten Faktor gerade auf dem großen Schirm wieder auf. */
-  body { font-size: calc(20.5px * var(--schrift, 1)); }
+  :root { --lese: calc(20.5px * var(--schrift, 1)); }
 
   /* Eine 32-rem-Spalte mit 12-px-Schrift ergab fünfundachtzig Zeichen je
      Zeile. Breiter heißt nicht automatisch besser lesbar; beides muss
      zusammen wachsen. */
   .verwandt__kopf  { font-size: 10px; }
   .verwandt__titel { font-size: 1.05rem; }
-  .verwandt__warum { font-size: .9rem; line-height: 1.62; }
+  .verwandt__warum { font-size: calc(.8 * var(--lese)); line-height: 1.62; }
   .verwandt__liste li { padding: .72rem 1.15rem; margin: 0 -1.15rem; }
   .verwandt__liste li + li::before { left: 1.15rem; right: 1.15rem; }
 }
