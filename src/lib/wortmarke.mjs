@@ -7,9 +7,11 @@
  * ergänzt, kopiert ihn herüber und trägt den Schlüssel hier nach.
  *
  * Sechs, weil der Pool durch drei teilbar sein soll: Dann geht er auf
- * dreißig Tage gleichmäßig auf.
+ * dreißig Tage gleichmäßig auf. Seit 13.09.2026 sieben — die siebte
+ * Hand (Matisse-Scherenschnitt) war Andreas wichtiger als die glatte
+ * Teilung; im Monat kommt jede Marke jetzt vier- bis fünfmal.
  */
-export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur"];
+export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt"];
 
 /**
  * Welche Marke an einem Tag gilt — dieselbe Rechnung wie in der
