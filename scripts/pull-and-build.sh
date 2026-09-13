@@ -38,6 +38,10 @@ if [ "$ALT_PROJ" != "$NEU_PROJ" ] || [ ! -d node_modules ]; then npm ci --silent
 # Repo — hier zeigt er auf den Service-Ordner. Ohne ihn bricht Vite beim
 # Kopieren von public/ ab (ENOENT, 05.09.).
 ln -sfn "$INHALT_REPO/content/assets" public/assets
+# Verkleinerte Banner (WebP) für die Karten — nur was fehlt; ohne sie greift
+# das Original (fünfmal schwerer, aber nicht kaputt). Der Ordner ist nicht im
+# Repo, jeder Klon baut ihn sich selbst (13.09.2026).
+GW_INHALT="$INHALT_REPO/content" nice -n 10 node scripts/vorschau.mjs 2>&1 | tail -1 || echo "$LOG: Vorschau übersprungen"
 rm -rf dist
 GW_INHALT="$INHALT_REPO/content" NOINDEX=0 nice -n 10 ionice -c2 -n7 npm run build --silent
 [ -f dist/index.html ] || { echo "$LOG: Build unvollständig — kein Swap"; exit 1; }

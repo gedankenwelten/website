@@ -18,7 +18,9 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-const QUELLE = path.join(process.env.HOME, "Gedankenwelten", "content", "assets");
+// Auf dem Mac liegt der Inhalt unter ~/Gedankenwelten/content, auf dem Pi im
+// Service-Ordner — `GW_INHALT` sagt es, wie beim Build (13.09.2026).
+const QUELLE = path.join(process.env.GW_INHALT || path.join(process.env.HOME, "Gedankenwelten", "content"), "assets");
 const ZIEL = path.join(import.meta.dirname, "..", "public", "vorschau");
 const ALLE = process.argv.includes("--alle");
 
