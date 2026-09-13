@@ -521,6 +521,7 @@
   }
   .kachel:first-child { border-top: 0; padding-top: .2rem; }
   .kachel[hidden] { display: none; }
+  .wiederkehr { margin: .4rem 0; }
   /* Der Link löst sich als Kasten auf, seine Kinder setzen sich ins
      Raster der Zeile; anklickbar bleiben sie. */
   .kachel__weg { display: contents; }
@@ -538,15 +539,18 @@
 }
 
 /* ── Die Wiederkehr ──
-   Zwei reservierte Plätze über dem Gitter: Wiedergelesen (kuratiert)
-   und Gefunden (gelesen), jede Woche andere, mit ihrem echten Datum.
-   Nie mehr als zwei — das Neue darunter soll nicht verschwinden. */
+   Zwei reservierte Plätze als eine Zeile im Gitter, nach den ersten
+   zwölf Karten: Wiedergelesen (kuratiert) und Gefunden (gelesen), jede
+   Woche andere, mit ihrem echten Datum. Nicht oben — sonst empfinge
+   die Seite jeden Besucher mit demselben Bild. Nie mehr als zwei. */
 .wiederkehr {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  margin: 0 0 1.6rem;
+  margin: 0;
 }
+.wiederkehr[hidden] { display: none; }
 .wiederkehr[data-karten="1"] { grid-template-columns: minmax(0, 1fr); }
 .wiederkehr__karte {
   display: grid;
@@ -561,7 +565,7 @@
   text-decoration: none;
   min-width: 0;
 }
-.wiederkehr__bild { display: block; aspect-ratio: 12 / 5; overflow: hidden; border-radius: 4px; }
+.wiederkehr__bild { display: block; min-width: 0; aspect-ratio: 12 / 5; overflow: hidden; border-radius: 4px; }
 .wiederkehr__bild img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
 .wiederkehr__karte:hover .wiederkehr__bild img { transform: scale(1.03); }
 .wiederkehr__text { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
@@ -582,6 +586,8 @@
   .wiederkehr { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
-  .wiederkehr__karte { grid-template-columns: 1fr; gap: .7rem; }
+  /* minmax(0, …), nicht 1fr: Sonst zwingt das 1200 px breite Bild die
+     Spalte auf seine Mindestbreite und die Karte läuft rechts hinaus. */
+  .wiederkehr__karte { grid-template-columns: minmax(0, 1fr); gap: .7rem; }
   .wiederkehr__titel { font-size: 1.05rem; }
 }

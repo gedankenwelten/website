@@ -82,6 +82,11 @@ const wiederkehr = wiederkehrDieserWoche();
    stünde sie doppelt. Nie mehr als diese zwei Karten: Das Neue darunter
    soll nicht ins Nirwana. */
 const gefunden = gefundenDieserWoche(new Date(), new Set(wiederkehr ? [wiederkehr.note.id] : []));
+/* Sie stehen nicht oben — wer die Seite betritt, sähe sonst jede Woche
+   dasselbe Bild zuerst. Sie kommen als eine Zeile mitten im Feld, nach
+   dieser Zahl Karten: Das Neue zuerst, dann ein Blick zurück. Zwölf,
+   weil das bei drei Spalten wie bei zweien volle Reihen lässt. */
+const WIEDERKEHR_NACH = 12;
 const vorn = [
   wiederkehr && { art: "Wiedergelesen", note: wiederkehr.note, satz: wiederkehr.warum ?? wiederkehr.note.beschreibung },
   gefunden && { art: "Gefunden", note: gefunden.note, satz: gefunden.note.beschreibung },
@@ -231,31 +236,10 @@ const kurzMonat = (d) => {
       <button type="button" id="verwandtZu">Zurück ins Feld</button>
     </p>
 
-    {vorn.length > 0 && (
-      <aside class="wiederkehr" aria-label="Wiedergelesen und Gefunden" data-karten={vorn.length}>
-        {vorn.map((k) => (
-          <a class="wiederkehr__karte" href={k.note.url}>
-            <span class="wiederkehr__bild">
-              <img src={k.note.vorschau ?? rubrikBild(k.note.rubrik)} alt=""
-                   width="1200" height="500" loading="eager" decoding="async">
-            </span>
-            <span class="wiederkehr__text">
-              <span class="wiederkehr__kennung">
-                <b>{k.art}</b>
-                <span class={`regal__punkt regal__punkt--${k.note.rubrik.toLowerCase()}`}></span>
-                {k.note.rubrik}
-                {k.note.datum && <em>{langDatum(k.note.datum)}</em>}
-              </span>
-              <span class="wiederkehr__titel">{k.note.titel}</span>
-              {k.satz && <span class="wiederkehr__warum">{k.satz}</span>}
-            </span>
-          </a>
-        ))}
-      </aside>
-    )}
 
     <ol class="feld__gitter" id="gitter">
       {feld.map((n, i) => (
+        <>
         <li class="kachel" data-rubrik={n.rubrik} data-platz={i}
             data-nah={nachbarschaft[i].length ? nachbarschaft[i].join(",") : null}
             data-titel={n.titel}
@@ -322,6 +306,29 @@ const kurzMonat = (d) => {
             )}
           </div>
         </li>
+          {i === WIEDERKEHR_NACH - 1 && vorn.length > 0 && (
+            <li class="wiederkehr" id="wiederkehr" aria-label="Wiedergelesen und Gefunden" data-karten={vorn.length}>
+              {vorn.map((k) => (
+                <a class="wiederkehr__karte" href={k.note.url}>
+                  <span class="wiederkehr__bild">
+                    <img src={k.note.vorschau ?? rubrikBild(k.note.rubrik)} alt=""
+                         width="1200" height="500" loading="lazy" decoding="async">
+                  </span>
+                  <span class="wiederkehr__text">
+                    <span class="wiederkehr__kennung">
+                      <b>{k.art}</b>
+                      <span class={`regal__punkt regal__punkt--${k.note.rubrik.toLowerCase()}`}></span>
+                      {k.note.rubrik}
+                      {k.note.datum && <em>{langDatum(k.note.datum)}</em>}
+                    </span>
+                    <span class="wiederkehr__titel">{k.note.titel}</span>
+                    {k.satz && <span class="wiederkehr__warum">{k.satz}</span>}
+                  </span>
+                </a>
+              ))}
+            </li>
+          )}
+        </>
       ))}
     </ol>
 
@@ -460,6 +467,7 @@ const kurzMonat = (d) => {
   const stand = document.getElementById("standAnzeige");
   const balken = document.getElementById("verwandtschaft");
   const balkenTitel = document.getElementById("verwandtschaftTitel");
+  const wiederkehrZeile = document.getElementById("wiederkehr");
   const PORTION = 48;
   let rubrik = "";      // "" heißt: alles
   let gezeigt = PORTION;
@@ -480,12 +488,16 @@ const kurzMonat = (d) => {
         k.style.order = i === quelle ? -1 : 0;
         k.classList.toggle("kachel--quelle", i === quelle);
       });
+      if (wiederkehrZeile) wiederkehrZeile.hidden = true;
       mehr.hidden = true;
       stand.textContent = `${nah.size} verwandt`;
       kappungPruefen();
       return;
     }
 
+    // Die Wiederkehr-Zeile gehört zum Grundzustand: Wer eine Rubrik
+    // wählt, will diese Rubrik sehen, nicht den Blick zurück.
+    if (wiederkehrZeile) wiederkehrZeile.hidden = !!rubrik;
     let passend = 0, sichtbar = 0;
     for (const k of kacheln) {
       const trifft = !rubrik || k.dataset.rubrik === rubrik;
