@@ -65,7 +65,11 @@ let index = null;
 let vorschauen = null;
 function hatVorschau(datei) {
   if (!vorschauen) {
-    const ordner = path.join(import.meta.dirname, "..", "..", "public", "vorschau");
+    // Vom Projektstamm aus, nicht von `import.meta.dirname`: beim Prerender
+    // bündelt Astro dieses Modul nach `.astro/.prerender/chunks/`, und von
+    // dort zeigte `../../public` ins Leere — kein einziges Banner bekam je
+    // seine Vorschau, still (13.09.2026).
+    const ordner = path.join(process.cwd(), "public", "vorschau");
     vorschauen = new Set(fs.existsSync(ordner) ? fs.readdirSync(ordner) : []);
   }
   return vorschauen.has(datei.replace(/\.[^.]+$/, "") + ".webp");
