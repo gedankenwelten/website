@@ -539,10 +539,10 @@
 }
 
 /* ── Die Wiederkehr ──
-   Zwei reservierte Plätze als eine Zeile im Gitter, nach den ersten
-   zwölf Karten: Wiedergelesen (kuratiert) und Gefunden (gelesen), jede
-   Woche andere, mit ihrem echten Datum. Nicht oben — sonst empfinge
-   die Seite jeden Besucher mit demselben Bild. Nie mehr als zwei. */
+   Drei Zeilen zu je zwei Karten im Gitter, nach neun, achtzehn und
+   siebenundzwanzig Karten: Wiedergelesen + Gefunden, dann die
+   Meistgelesenen der Woche und des Monats, dann Jahr und seit Beginn.
+   Nicht oben — sonst empfinge die Seite jeden mit demselben Bild. */
 .wiederkehr {
   grid-column: 1 / -1;
   display: grid;

@@ -15,6 +15,36 @@ import { datumVon } from "./datum.mjs";
 /* Der Markdown-Pool. Auf dem Mac liegt er unter ~/Gedankenwelten/content,
    auf dem Pi unter ~/services/gedankenwelten/content — `GW_INHALT` sagt
    es, wenn es woanders ist. */
+/* Ein Auszug für Karten, wenn `description:` fehlt (327 ältere Notes,
+   Stand 09/2026): der „Worum es geht"-Callout, sonst der erste Absatz
+   Prosa — keine Überschrift, kein Callout, kein Bild, keine Quelle-Zeile,
+   nichts aus <details>. Gekürzt am Satzende. Kein Ersatz für die
+   Beschreibung: Die trägt ein Urteil, der Auszug nur den Anfang. */
+export function auszugVon(rumpf) {
+  const ohneDetails = String(rumpf ?? "").replace(/<details>[\s\S]*?<\/details>/g, "");
+  const abstract = /^>\s*\[!abstract\][^\n]*\n((?:>[^\n]*\n?)+)/m.exec(ohneDetails);
+  let text = abstract ? abstract[1].replace(/^>[ \t]?/gm, "") : null;
+  if (!text) {
+    for (const block of ohneDetails.split(/\n[ \t]*\n/)) {
+      const z = block.trim();
+      if (!z || /^(#|>|!\[|---|\||<|Quelle:|Gesprächspartner|\*Prompt|→|-\s|\d+\.\s)/.test(z)) continue;
+      text = z; break;
+    }
+  }
+  if (!text) return null;
+  const rein = text
+    .replace(/\[▶[^\]]*\]\([^)]*\)\s*[—–-]?\s*/g, "")
+    .replace(/!\[\[[^\]]*\]\]/g, "")
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, a, b) => b || a)
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
+  if (!rein) return null;
+  if (rein.length <= 240) return rein;
+  const schnitt = rein.slice(0, 240);
+  const ende = Math.max(schnitt.lastIndexOf(". "), schnitt.lastIndexOf("! "), schnitt.lastIndexOf("? "));
+  return ende > 80 ? schnitt.slice(0, ende + 1) : schnitt.slice(0, schnitt.lastIndexOf(" ")) + " …";
+}
+
 export const INHALT = process.env.GW_INHALT || path.join(
   process.env.HOME,
   "Gedankenwelten",
@@ -91,7 +121,13 @@ export function ladeIndex() {
          einem Drittel. Es steht als Einbettung im Text; die Note-Seite
          zieht es beim Rendern in den Kopf, die Startseite braucht es
          schon hier. */
-      const bannerEmbed = /!\[\[([^\]|\n]*banner[^\]|\n]*?)(?:\|[^\]\n]*)?\]\]/i.exec(rumpf);
+      /* Das Banner ist die erste eingebettete Bilddatei vor der ersten
+         Überschrift — nicht der Dateiname entscheidet, sondern der Platz
+         im Kopf. 18 Notes tragen frühe Banner ohne das Wort im Namen
+         (Vipassana-Reihe, Goenka, Marx, Wendy Brown); die fielen sonst
+         still auf das Rubrikbild zurück (13.09.2026). */
+      const kopf = rumpf.split(/\n#{2,6}\s/, 1)[0];
+      const bannerEmbed = /!\[\[([^\]|\n]+?\.(?:jpe?g|png|webp|gif|avif))(?:\|[^\]\n]*)?\]\]/i.exec(kopf);
       const bannerDatei = bannerEmbed ? bannerEmbed[1].split("/").pop().trim() : null;
       const banner = bannerDatei ? `/assets/${encodeURIComponent(bannerDatei)}` : null;
       // Für Streifen und Kacheln reicht die verkleinerte Fassung —
@@ -140,6 +176,7 @@ export function ladeIndex() {
         url: noteUrl(rubrik, basis),
         titel: fm.title ?? basis,
         beschreibung: fm.description ?? null,
+        auszug: auszugVon(rumpf),
         datum: datumVon(fm, basis),
         banner,
         vorschau,

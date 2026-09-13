@@ -8,8 +8,9 @@
  * Substanz dazukam; ein hochdatierter Lieblingstext wäre eine Lüge an die
  * paar, die das Datum lesen.
  *
- * Also zwei Karten über dem Gitter, und nie mehr als zwei — das Neue
- * darunter soll nicht verschwinden:
+ * Also Karten *im* Gitter, nie oben (sonst empfinge die Seite jeden mit
+ * demselben Bild), je zwei pro Zeile, nach neun, achtzehn und
+ * siebenundzwanzig Karten — das Neue dazwischen soll nicht verschwinden:
  *
  *   **Wiedergelesen** — aus dem Pool `Wiederkehr.md` im Vault, von Hand
  *   gepflegt, eine Zeile pro Note mit einem Satz, warum. Die Uhr ist die
@@ -22,6 +23,11 @@
  *   nicht für sich (Andreas: „Vitas außen vor, eher die Notes der
  *   Personen"). Notes jünger als zwei Wochen sind ausgeschlossen — die
  *   stehen ohnehin oben. Unter den Meistgelesenen rotiert die Woche.
+ *
+ *   **Meistgelesen** — vier Zeiträume (Woche, Monat, Jahr, seit Beginn),
+ *   je die eine Note mit den meisten Aufrufen, ohne Rotation; was eine
+ *   frühere Karte schon zeigt, überspringt die nächste (Andreas, 13.09.:
+ *   „damit haben wir 3 mal 2 notes").
  *
  * Die Maschine rotiert, der Mensch kuratiert.
  */
@@ -49,7 +55,9 @@ export function ladeWiederkehr() {
   if (!fs.existsSync(POOL)) return [];
   const text = fs.readFileSync(POOL, "utf8");
   const eintraege = [];
-  for (const m of text.matchAll(/^-\s*(⭐\s*)?\[\[([^\]|\n]+)(?:\|[^\]\n]*)?\]\]\s*(?:[—–-]\s*(.+))?$/gm)) {
+  // [ \t], nicht \s: \s fräße den Zeilenumbruch, und eine Zeile ohne Satz
+  // bekäme die nächste Zeile als ihren Satz.
+  for (const m of text.matchAll(/^-[ \t]*(⭐[ \t]*)?\[\[([^\]|\n]+)(?:\|[^\]\n]*)?\]\][ \t]*(?:[—–-][ \t]*(.+))?$/gm)) {
     const note = findeNote(m[2]);
     if (!note) continue;                                // ein Tippfehler darf den Build nicht kippen
     eintraege.push({
@@ -77,6 +85,16 @@ export function ladeGelesen() {
   if (!fs.existsSync(GELESEN)) return { stand: null, tage: 0, pfade: [] };
   try { return JSON.parse(fs.readFileSync(GELESEN, "utf8")); }
   catch { return { stand: null, tage: 0, pfade: [] }; }
+}
+
+/** Die Pfade eines Zeitraums (`woche` · `monat` · `jahr` · `immer`) —
+ *  eine ältere `gelesen.json` ohne Zeiträume kennt nur den Monat. */
+function pfadeFuer(zeitraum) {
+  const g = ladeGelesen();
+  const z = g.zeitraeume?.[zeitraum];
+  if (z) return { pfade: z.pfade ?? [], tage: z.tage, stand: g.stand };
+  if (zeitraum === "monat") return { pfade: g.pfade ?? [], tage: g.tage, stand: g.stand };
+  return { pfade: [], tage: null, stand: g.stand };
 }
 
 /**
@@ -119,20 +137,33 @@ function aufrufeJeNote(pfade) {
   return summe;
 }
 
-/** Die gefundene Note dieser Woche — oder null, ohne Daten. */
-export function gefundenDieserWoche(heute = new Date(), ohne = new Set()) {
-  const { pfade, tage, stand } = ladeGelesen();
-  if (!pfade?.length) return null;
+/** Die Meistgelesenen eines Pfad-Satzes, absteigend — ohne die Jungen,
+ *  ohne die schon Gezeigten. */
+function rangliste(pfade, heute, ohne) {
   const idx = ladeIndex();
   const nachId = new Map(idx.alle.map((n) => [n.id, n]));
   const grenze = new Date(heute.getTime() - JUNG_TAGE * 86400000).toISOString().slice(0, 10);
-  const reihe = [...aufrufeJeNote(pfade)]
+  return [...aufrufeJeNote(pfade)]
     .map(([id, aufrufe]) => ({ note: nachId.get(id), aufrufe }))
     .filter((e) => e.note && !ohne.has(e.note.id))
     .filter((e) => !e.note.datum || e.note.datum < grenze)
-    .sort((a, b) => b.aufrufe - a.aufrufe)
-    .slice(0, KREIS);
+    .sort((a, b) => b.aufrufe - a.aufrufe);
+}
+
+/** Die gefundene Note dieser Woche — oder null, ohne Daten. */
+export function gefundenDieserWoche(heute = new Date(), ohne = new Set()) {
+  const { pfade, tage, stand } = pfadeFuer("monat");
+  if (!pfade.length) return null;
+  const reihe = rangliste(pfade, heute, ohne).slice(0, KREIS);
   if (!reihe.length) return null;
   const e = reihe[wochenzahl(heute) % reihe.length];
   return { ...e, tage, stand };
+}
+
+/** Die eine meistgelesene Note eines Zeitraums — oder null, ohne Daten. */
+export function meistgelesen(zeitraum, ohne = new Set(), heute = new Date()) {
+  const { pfade, tage, stand } = pfadeFuer(zeitraum);
+  if (!pfade.length) return null;
+  const e = rangliste(pfade, heute, ohne)[0];
+  return e ? { ...e, tage, stand, zeitraum } : null;
 }

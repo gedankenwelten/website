@@ -343,12 +343,15 @@ export default function remarkGedankenwelten() {
       (n) => !(n.type === "heading" && n.depth === 2 && text(n).trim().toLowerCase() === "inhalt"),
     );
 
-    // Das Banner gehört in den Kopf, nicht in den Text
+    // Das Banner gehört in den Kopf, nicht in den Text. Es ist das erste
+    // allein stehende Bild vor der ersten Überschrift — der Dateiname muss
+    // nicht „banner" heißen (die frühen PNG-Banner tun das nicht, 13.09.2026).
     for (let i = 0; i < Math.min(4, tree.children.length); i++) {
       const k = tree.children[i];
+      if (k.type === "heading") break;
       const bild = k.type === "paragraph" && k.children?.length === 1 && k.children[0].type === "image"
         ? k.children[0] : (k.type === "image" ? k : null);
-      if (bild && /banner/i.test(bild.url)) {
+      if (bild && /\.(?:jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i.test(bild.url)) {
         fm.banner = bild.url;
         tree.children.splice(i, 1);
         break;

@@ -22,7 +22,7 @@ import { alleFaeden, alleWege } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken } from "../lib/rubriken.mjs";
-import { wiederkehrDieserWoche, gefundenDieserWoche } from "../lib/wiederkehr.mjs";
+import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen } from "../lib/wiederkehr.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -73,24 +73,30 @@ const feld = [...inhaltlich].sort((a, b) =>
    denselben Speicher zu, statt fünfhundert Wege ein zweites Mal zu suchen. */
 const wege = alleWege(7);
 
-/* Die Wiederkehr: eine Note aus dem Pool, jede Woche eine andere — mit
-   ihrem echten Datum, deshalb ohne jede Konkurrenz zum Feld darunter.
-   Wer den Pool pflegen will: `Wiederkehr.md` im Vault. */
-const wiederkehr = wiederkehrDieserWoche();
-/* Und daneben, was gelesen wird: die Note, zu der die Suche die Leser in
-   den letzten dreißig Tagen gebracht hat — älter als zwei Wochen, sonst
-   stünde sie doppelt. Nie mehr als diese zwei Karten: Das Neue darunter
-   soll nicht ins Nirwana. */
-const gefunden = gefundenDieserWoche(new Date(), new Set(wiederkehr ? [wiederkehr.note.id] : []));
-/* Sie stehen nicht oben — wer die Seite betritt, sähe sonst jede Woche
-   dasselbe Bild zuerst. Sie kommen als eine Zeile mitten im Feld, nach
-   dieser Zahl Karten: Das Neue zuerst, dann ein Blick zurück. Zwölf,
-   weil das bei drei Spalten wie bei zweien volle Reihen lässt. */
-const WIEDERKEHR_NACH = 12;
-const vorn = [
-  wiederkehr && { art: "Wiedergelesen", note: wiederkehr.note, satz: wiederkehr.warum ?? wiederkehr.note.beschreibung },
-  gefunden && { art: "Gefunden", note: gefunden.note, satz: gefunden.note.beschreibung },
-].filter(Boolean);
+/* Die Wiederkehr: drei Zeilen zu je zwei Karten, mitten im Feld — nicht
+   oben, sonst sähe, wer die Seite betritt, jede Woche dasselbe Bild zuerst.
+   Nach neun Karten (drei volle Reihen am Schreibtisch) *Wiedergelesen*
+   (Pool `Wiederkehr.md`, jede Woche eine andere, mit echtem Datum) und
+   *Gefunden* (wohin die Suche die Leser in dreißig Tagen brachte, älter
+   als zwei Wochen); nach achtzehn die Meistgelesenen der Woche und des
+   Monats, nach siebenundzwanzig die des Jahres und seit Beginn. Was eine
+   Karte schon zeigt, überspringt die nächste. */
+const WIEDERKEHR_NACH = [9, 18, 27];
+const gezeigt = new Set();
+const nimm = (art, e, satz) => {
+  if (!e) return null;
+  gezeigt.add(e.note.id);
+  // Satz aus dem Pool, sonst die Beschreibung, sonst der Anfang der Note.
+  return { art, note: e.note, satz: satz ?? e.note.beschreibung ?? e.note.auszug };
+};
+const heute = new Date();
+const wiederkehr = wiederkehrDieserWoche(heute);
+const zeilen = [
+  [nimm("Wiedergelesen", wiederkehr, wiederkehr?.warum), nimm("Gefunden", gefundenDieserWoche(heute, gezeigt))],
+  [nimm("Meistgelesen · Woche", meistgelesen("woche", gezeigt, heute)), nimm("Meistgelesen · Monat", meistgelesen("monat", gezeigt, heute))],
+  [nimm("Meistgelesen · Jahr", meistgelesen("jahr", gezeigt, heute)), nimm("Meistgelesen · Insgesamt", meistgelesen("immer", gezeigt, heute))],
+].map((z) => z.filter(Boolean));
+const zeileNach = new Map(WIEDERKEHR_NACH.map((n, i) => [n, zeilen[i]]).filter(([, z]) => z.length));
 
 const platz = new Map(feld.map((n, i) => [n.id, i]));
 const nachbarschaft = feld.map((n) => {
@@ -306,9 +312,9 @@ const kurzMonat = (d) => {
             )}
           </div>
         </li>
-          {i === WIEDERKEHR_NACH - 1 && vorn.length > 0 && (
-            <li class="wiederkehr" id="wiederkehr" aria-label="Wiedergelesen und Gefunden" data-karten={vorn.length}>
-              {vorn.map((k) => (
+          {zeileNach.has(i + 1) && (
+            <li class="wiederkehr" aria-label={zeileNach.get(i + 1).map((k) => k.art).join(" und ")} data-karten={zeileNach.get(i + 1).length}>
+              {zeileNach.get(i + 1).map((k) => (
                 <a class="wiederkehr__karte" href={k.note.url}>
                   <span class="wiederkehr__bild">
                     <img src={k.note.vorschau ?? rubrikBild(k.note.rubrik)} alt=""
@@ -467,7 +473,7 @@ const kurzMonat = (d) => {
   const stand = document.getElementById("standAnzeige");
   const balken = document.getElementById("verwandtschaft");
   const balkenTitel = document.getElementById("verwandtschaftTitel");
-  const wiederkehrZeile = document.getElementById("wiederkehr");
+  const wiederkehrZeilen = [...document.querySelectorAll(".wiederkehr")];
   const PORTION = 48;
   let rubrik = "";      // "" heißt: alles
   let gezeigt = PORTION;
@@ -488,16 +494,16 @@ const kurzMonat = (d) => {
         k.style.order = i === quelle ? -1 : 0;
         k.classList.toggle("kachel--quelle", i === quelle);
       });
-      if (wiederkehrZeile) wiederkehrZeile.hidden = true;
+      for (const z of wiederkehrZeilen) z.hidden = true;
       mehr.hidden = true;
       stand.textContent = `${nah.size} verwandt`;
       kappungPruefen();
       return;
     }
 
-    // Die Wiederkehr-Zeile gehört zum Grundzustand: Wer eine Rubrik
+    // Die Wiederkehr-Zeilen gehören zum Grundzustand: Wer eine Rubrik
     // wählt, will diese Rubrik sehen, nicht den Blick zurück.
-    if (wiederkehrZeile) wiederkehrZeile.hidden = !!rubrik;
+    for (const z of wiederkehrZeilen) z.hidden = !!rubrik;
     let passend = 0, sichtbar = 0;
     for (const k of kacheln) {
       const trifft = !rubrik || k.dataset.rubrik === rubrik;
