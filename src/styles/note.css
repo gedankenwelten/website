@@ -997,3 +997,20 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
 }
 .feed__kopieren:hover { color: var(--akzent); border-color: var(--akzent); }
 .feed__kopieren.ist-kopiert { color: var(--papier); background: var(--akzent); border-color: var(--akzent); }
+
+/* ── Von hier einen Faden gehen ──
+   Ein Knopf zwischen Text und Stern, in der Sprache der Lenkung auf der
+   Startseite: Rahmen, kein Füllton, Akzent erst beim Berühren. */
+.faden-von-hier {
+  margin: 2.6rem auto 0; width: var(--spalte, auto); max-width: 100%;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .9rem;
+  font-family: "Inter", -apple-system, sans-serif;
+}
+.faden-von-hier a {
+  display: inline-block; padding: .42rem .85rem;
+  border: 1px solid var(--tinte-fern); border-radius: 999px;
+  font-size: .82rem; letter-spacing: .02em; color: var(--tinte);
+  text-decoration: none; transition: color .2s, border-color .2s;
+}
+.faden-von-hier a:hover { color: var(--akzent); border-color: var(--akzent); }
+.faden-von-hier span { font-size: .78rem; color: var(--tinte-fern); }

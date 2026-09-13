@@ -21,6 +21,10 @@
    nebeneinander auf dem Telefon. */
 
 @media (max-width: 1179px) {
+  /* Sicherheitsnetz: Was doch einmal über den Rand ragt, darf die Seite
+     nicht seitwärts scrollbar machen. `clip` statt `hidden` — hidden
+     machte html zum Scrollcontainer und bräche sticky-Verhalten. */
+  html, body { overflow-x: clip; }
 
   /* ── Grundmaße ── */
   :root { --spalte: auto; --marge: 0px; --neben: 0px; --luft: 0px; --spalt: 0px; }

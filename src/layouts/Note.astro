@@ -3,6 +3,8 @@ import { BUILD } from "../lib/site.mjs";
 import "../styles/note.css";
 import "../styles/stern.css";
 import Stern from "../components/Stern.astro";
+import { alleWege } from "../lib/faden.mjs";
+const wege = alleWege(7);
 import { filterbareThemen } from "../lib/rubriken.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
 import Suche from "../components/Suche.astro";
@@ -143,6 +145,17 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
         </ol>
       </div>
     </aside>
+  )}
+
+  {/* Von hier weitergehen. Wer über die Suche mitten in eine Note
+      gekommen ist — und das ist der häufigste Weg —, soll von dort einen
+      Faden gehen können, nicht erst zurück ins Feld. Der Weg ist längst
+      gerechnet (`faeden.json`); die Startseite webt ihn bei `?faden=`. */}
+  {wege.has(note.id) && (
+    <p class="faden-von-hier" data-pagefind-ignore>
+      <a href={`/?faden=${encodeURIComponent(note.id)}`}>Von hier einen Faden gehen</a>
+      <span>{wege.get(note.id).length} Stationen, rückwärts durch den Bestand</span>
+    </p>
   )}
 
   <Stern id={note.id} />

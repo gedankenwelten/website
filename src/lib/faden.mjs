@@ -167,11 +167,36 @@ export function spinne(start, laenge = 7) {
       k.art === "quelle" && !benutzt.has(nid) && !g.katalog.has(nid)
       && nach.get(nid)?.datum <= hier.datum);
 
+    /* Zwei Durchgänge: erst streng rückwärts in der Zeit; nur wenn das
+       in eine Sackgasse führt, darf der Faden umkehren. Sieben gut
+       vernetzte Notes (Ziegler-Heidegger mit 37 Verbindungen, Laclau,
+       Stremlau/Göpel …) hatten sonst gar keinen Weg: Alle ihre Nachbarn
+       sind jünger. Die Umkehr bleibt Ausnahme — jeder Schritt wird
+       zuerst rückwärts versucht, das Hin-und-Her kommt nicht zurück. */
+    /* Ein Blick voraus: Wer von einem Kandidaten nicht weiterkäme, ist
+       keine Station, sondern ein Ende. Die Heidegger-Vita etwa hat nur
+       einen Nachbarn — die Heidegger-Note, die man gerade verlässt; der
+       Faden trat hinein und brach nach zwei Stationen ab. Solche Enden
+       sind erst erlaubt, wenn der Weg ohnehin voll ist. */
+    const fuehrtWeiter = (nid) => {
+      if (stationen.length + 2 >= laenge) return true;
+      const k = nach.get(nid);
+      for (const w of new Set([...(g.hinaus.get(nid) ?? []), ...(g.herein.get(nid) ?? [])])) {
+        if (benutzt.has(w) || w === hier.id || g.katalog.has(w)) continue;
+        if (k?.rubrik === "DenkerVita" && nach.get(w)?.rubrik === "DenkerVita") continue;
+        return true;
+      }
+      return false;
+    };
+
+    for (const umkehr of [false, true]) {
+    if (bester) break;
     for (const [nid, kante] of stern) {
       if (gibtFund && kante.art !== "quelle") continue;
       if (benutzt.has(nid) || g.katalog.has(nid)) continue;
       const kandidat = nach.get(nid);
       if (!kandidat) continue;
+      if (!fuehrtWeiter(nid)) continue;
 
       /* Der Faden läuft rückwärts durch die Zeit — das ist sein Zweck.
          Als weicher Bonus taugt das nicht: Die ältesten Notes sind
@@ -179,11 +204,12 @@ export function spinne(start, laenge = 7) {
          Versuch sofort in den März und von dort wieder nach vorn. Also
          eine harte Schranke. Wo sie in eine Sackgasse führt, endet der
          Faden lieber früher, als vorzugeben, er ginge weiter. */
-      if (kandidat.datum && hier.datum && kandidat.datum > hier.datum) continue;
+      if (!umkehr && kandidat.datum && hier.datum && kandidat.datum > hier.datum) continue;
       if (lage.vitaVerboten && kandidat.rubrik === "DenkerVita") continue;
 
       const w = bewerte(hier, kandidat, kante, lage);
       if (w > bestwert) { bestwert = w; bester = { kandidat, kante }; }
+    }
     }
     if (!bester) break;
 

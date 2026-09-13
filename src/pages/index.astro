@@ -692,16 +692,16 @@ const kurzMonat = (d) => {
 
   async function fadenAbHier(id, knopf) {
     if (!wegeDaten) {
-      knopf.classList.add("griff--laedt");
+      knopf?.classList.add("griff--laedt");
       try {
         wegeDaten = await (await fetch("/faeden.json")).json();
       } catch {
         // Ehrlich sagen, dass es nicht ging, statt stumm nichts zu tun.
-        knopf.classList.remove("griff--laedt");
-        knopf.lastChild.textContent = " nicht erreichbar";
+        knopf?.classList.remove("griff--laedt");
+        if (knopf) knopf.lastChild.textContent = " nicht erreichbar";
         return;
       }
-      knopf.classList.remove("griff--laedt");
+      knopf?.classList.remove("griff--laedt");
     }
     const weg = wegeDaten.f[id];
     if (!weg) return;
@@ -739,6 +739,20 @@ const kurzMonat = (d) => {
     ansichtSetzen("faden", false);   // nicht merken: das war ein Ausflug, keine Wahl
     scrollTo({ top: 0, behavior: "smooth" });
     leisteBauen(teil);
+  }
+
+  /* ══ Von einer Note aus ══
+     Der Knopf am Fuß jeder Note führt hierher mit `?faden=<Kennung>`:
+     Wer eine Note über die Suche gefunden hat, soll von dort weitergehen
+     können, nicht erst über eine Karte im Feld (13.09., Andreas). Der
+     Parameter wird nach dem Start aus der Adresse genommen — ein Neuladen
+     zeigt das Feld, nicht denselben Ausflug noch einmal. */
+  {
+    const gewuenscht = new URL(location.href).searchParams.get("faden");
+    if (gewuenscht) {
+      history.replaceState(null, "", location.pathname);
+      fadenAbHier(gewuenscht, null);
+    }
   }
 
   /* ══ Ansicht: Feld oder Faden ══

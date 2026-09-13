@@ -339,7 +339,11 @@
    das Auge ordnet es der zu, die es zuerst gelesen hat. Nebeneinander
    gibt es nichts zu deuten — und es kostet halb so viel Strecke. */
 .station__karte {
-  display: grid; grid-template-columns: 14rem 1fr;
+  /* `minmax(0, 1fr)`, nicht `1fr`: Ein bloßes 1fr darf nie unter seinen
+     Mindestinhalt schrumpfen — bei einem langen Titel auf dem Telefon
+     wuchs die Textspalte über den Rand und die ganze Seite wurde
+     seitwärts scrollbar (13.09., Andreas). */
+  display: grid; grid-template-columns: 14rem minmax(0, 1fr);
   /* Nur zwischen den Spalten. `gap` allein gilt auch für die Zeilen und
      riss den Titel von seinem Teaser weg — die beiden gehören eng
      zusammen, der Teaser sagt ja, worum es in genau diesem Titel geht. */
@@ -452,10 +456,17 @@
   .griff__wort { max-width: 8rem; opacity: 1; }
   .station { width: auto; }
   .start__nochmal, .faden__fuss { width: auto; }
-
+  /* Kein Kind der Station darf breiter sein als seine Spalte. */
+  .station__titel, .station__teaser, .schritt, .station .kennung { min-width: 0; }
+  .station .kennung { flex-wrap: wrap; }
 }
 
 @media (max-width: 700px) {
+  /* Bild neben dem Titel bleibt (02.08.), aber schmaler — 14 rem wären
+     mehr als die halbe Breite eines Telefons. */
+  .station__karte { grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: .9rem; }
+  .station__bild { height: 64px; }
+  .station__titel { font-size: 1.1rem; }
   .wortmarke, .wortmarke:has([data-stil]) { height: 3.1rem; }
   .wortmarke__bild { height: 3.1rem; }
   .wortmarke__bild[data-stil="sumie"]    { height: 3.85rem; }
