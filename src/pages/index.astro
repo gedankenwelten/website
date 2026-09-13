@@ -589,6 +589,21 @@ const kurzMonat = (d) => {
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
 
+  /* ── Auf dem Telefon von selbst nachlegen ──
+     Ein Knopf am Ende einer Spalte ist auf dem Schirm mit der Maus ein
+     Halt, mit dem Daumen ein Hindernis (13.09., Andreas). Kommt der Knopf
+     in Sicht, tut er, was der Klick täte — die Karten stehen ja längst im
+     Dokument, es wird nur umgeblendet. Der Knopf bleibt stehen: Wer ohne
+     Beobachter unterwegs ist oder ihn erreicht, bevor die Rechnung fertig
+     ist, drückt ihn wie bisher. Am Schreibtisch bleibt es beim Klick —
+     dort ist das Ende der Seite ein Ort, an dem man ankommen darf. */
+  if ("IntersectionObserver" in window && matchMedia("(max-width: 1179px)").matches) {
+    new IntersectionObserver((eintraege) => {
+      if (!eintraege.some((e) => e.isIntersecting) || mehr.hidden || quelle !== null) return;
+      gezeigt += PORTION; auslegen();
+    }, { rootMargin: "0px 0px 900px 0px" }).observe(mehr);
+  }
+
   /* ══ Den Platz im Feld behalten ══
      Wer sich durch dreihundert Karten gescrollt hat, eine Note öffnet und
      zurückkommt, soll dort stehen, wo er war — und nicht wieder oben.
