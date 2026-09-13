@@ -525,3 +525,52 @@
   .feld__fuss { margin-top: 2rem; padding-top: 1.4rem; }
   .verwandtschaft { margin: 0 0 1rem; }
 }
+
+/* ── Die Wiederkehr ──
+   Zwei reservierte Plätze über dem Gitter: Wiedergelesen (kuratiert)
+   und Gefunden (gelesen), jede Woche andere, mit ihrem echten Datum.
+   Nie mehr als zwei — das Neue darunter soll nicht verschwinden. */
+.wiederkehr {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 0 1.6rem;
+}
+.wiederkehr[data-karten="1"] { grid-template-columns: minmax(0, 1fr); }
+.wiederkehr__karte {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 1rem;
+  align-items: center;
+  padding: .8rem;
+  border: 1px solid var(--linie);
+  border-radius: 6px;
+  background: var(--papier-tief);
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.wiederkehr__bild { display: block; aspect-ratio: 12 / 5; overflow: hidden; border-radius: 4px; }
+.wiederkehr__bild img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.wiederkehr__karte:hover .wiederkehr__bild img { transform: scale(1.03); }
+.wiederkehr__text { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.wiederkehr__kennung {
+  display: flex; align-items: center; gap: .45rem; flex-wrap: wrap;
+  font-size: var(--lese-etikett); color: var(--tinte-leise);
+  letter-spacing: .02em;
+}
+.wiederkehr__kennung b { color: var(--akzent); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.wiederkehr__kennung em { font-style: normal; color: var(--tinte-fern); }
+.wiederkehr__titel { font-size: 1.15rem; line-height: 1.25; color: var(--tinte); }
+.wiederkehr__karte:hover .wiederkehr__titel { color: var(--akzent); }
+.wiederkehr__warum {
+  font-size: var(--lese-neben); line-height: 1.5; color: var(--tinte-leise);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+@media (max-width: 1179px) {
+  .wiederkehr { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .wiederkehr__karte { grid-template-columns: 1fr; gap: .7rem; }
+  .wiederkehr__titel { font-size: 1.05rem; }
+}

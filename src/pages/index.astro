@@ -22,6 +22,7 @@ import { alleFaeden, alleWege } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken } from "../lib/rubriken.mjs";
+import { wiederkehrDieserWoche, gefundenDieserWoche } from "../lib/wiederkehr.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -71,6 +72,20 @@ const feld = [...inhaltlich].sort((a, b) =>
    das einmal für den ganzen Bestand; `faeden.json` daneben greift auf
    denselben Speicher zu, statt fünfhundert Wege ein zweites Mal zu suchen. */
 const wege = alleWege(7);
+
+/* Die Wiederkehr: eine Note aus dem Pool, jede Woche eine andere — mit
+   ihrem echten Datum, deshalb ohne jede Konkurrenz zum Feld darunter.
+   Wer den Pool pflegen will: `Wiederkehr.md` im Vault. */
+const wiederkehr = wiederkehrDieserWoche();
+/* Und daneben, was gelesen wird: die Note, zu der die Suche die Leser in
+   den letzten dreißig Tagen gebracht hat — älter als zwei Wochen, sonst
+   stünde sie doppelt. Nie mehr als diese zwei Karten: Das Neue darunter
+   soll nicht ins Nirwana. */
+const gefunden = gefundenDieserWoche(new Date(), new Set(wiederkehr ? [wiederkehr.note.id] : []));
+const vorn = [
+  wiederkehr && { art: "Wiedergelesen", note: wiederkehr.note, satz: wiederkehr.warum ?? wiederkehr.note.beschreibung },
+  gefunden && { art: "Gefunden", note: gefunden.note, satz: gefunden.note.beschreibung },
+].filter(Boolean);
 
 const platz = new Map(feld.map((n, i) => [n.id, i]));
 const nachbarschaft = feld.map((n) => {
@@ -215,6 +230,29 @@ const kurzMonat = (d) => {
       <b id="verwandtschaftTitel"></b>
       <button type="button" id="verwandtZu">Zurück ins Feld</button>
     </p>
+
+    {vorn.length > 0 && (
+      <aside class="wiederkehr" aria-label="Wiedergelesen und Gefunden" data-karten={vorn.length}>
+        {vorn.map((k) => (
+          <a class="wiederkehr__karte" href={k.note.url}>
+            <span class="wiederkehr__bild">
+              <img src={k.note.vorschau ?? rubrikBild(k.note.rubrik)} alt=""
+                   width="1200" height="500" loading="eager" decoding="async">
+            </span>
+            <span class="wiederkehr__text">
+              <span class="wiederkehr__kennung">
+                <b>{k.art}</b>
+                <span class={`regal__punkt regal__punkt--${k.note.rubrik.toLowerCase()}`}></span>
+                {k.note.rubrik}
+                {k.note.datum && <em>{langDatum(k.note.datum)}</em>}
+              </span>
+              <span class="wiederkehr__titel">{k.note.titel}</span>
+              {k.satz && <span class="wiederkehr__warum">{k.satz}</span>}
+            </span>
+          </a>
+        ))}
+      </aside>
+    )}
 
     <ol class="feld__gitter" id="gitter">
       {feld.map((n, i) => (
