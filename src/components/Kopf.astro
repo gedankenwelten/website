@@ -53,7 +53,11 @@ const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
 <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — alle Notes`} href={`${SITE.url}/index.xml`}>
 {rubrik && <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — ${rubrik}`} href={`${SITE.url}/${rubrik}/index.xml`}>}
 
-{/* Umami: cookielos, ohne IP, ohne Profil — dieselbe Instanz wie bisher. */}
-<script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id}></script>
+{/* Umami: cookielos, ohne IP, ohne Profil — dieselbe Instanz wie bisher.
+    So wenig wie möglich wissen: Bildschirmgröße und Sprache verlassen den Browser
+    nicht (Datenschutzerklärung, 14.09.2026). Gerätetyp und Stadt bleiben — der eine
+    kommt aus der Browser-Kennung, die andere von Cloudflare. */}
+<script is:inline>window.umamiKnapp = (_typ, p) => { delete p.screen; delete p.language; return p; };</script>
+<script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id} data-before-send="umamiKnapp"></script>
 
 <Vorspann />
