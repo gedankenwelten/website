@@ -646,6 +646,67 @@ window.gwSchau = (() => {
   }
 }
 
+/* ── Die Marke fliegt in die Kopfleiste ──
+   Nur auf der Startseite. Oben steht der Name einmal, gemalt; die Kopfleiste
+   schweigt. Beim Scrollen fliegt das Bild im Takt der Hand nach oben und
+   setzt sich klein an den Platz des Wortes — die Marke des Tages geht mit,
+   solange man auf der Startseite ist. Zurückscrollen holt sie wieder heraus
+   (Andreas' Idee, 16.09.2026). Wer weniger Bewegung eingestellt hat, sieht
+   beides wie bisher: oben das Bild, in der Kopfleiste das Wort. */
+{
+  const bild = document.getElementById("wortmarke");
+  const marke = bild?.closest(".wortmarke");
+  const wort = document.querySelector(".kopfleiste__marke-wort");
+  const ruhig = matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (bild && marke && wort && !ruhig.matches) {
+    let A = null, B = null, D = 1, geplant = false;
+    const glatt = (x) => x * x * (3 - 2 * x);
+
+    // Start (Bild bei scrollY 0, in Seitenkoordinaten) und Ziel (das Wort
+    // in der festen Kopfleiste, in Fensterkoordinaten) einmal ausmessen.
+    const messen = () => {
+      if (!marke.classList.contains("hat-bild")) return;
+      marke.classList.add("fliegt");
+      bild.style.transform = "";
+      const a = bild.getBoundingClientRect(), b = wort.getBoundingClientRect();
+      const kopf = document.getElementById("kopfleiste").getBoundingClientRect();
+      A = { x: a.left, y: a.top + scrollY, w: a.width, h: a.height };
+      // Ziel: so hoch, wie die Kopfleiste Luft lässt (die Pinselschriften
+      // tragen Rand um das Wort), aber nie breiter als der Platz des Wortes
+      // bis zur Rubrikwahl.
+      const ende = Math.min(kopf.height * .8 / a.height, (b.width + 4) / a.width);
+      B = { x: b.left, mitte: kopf.top + kopf.height / 2, s: ende };
+      wort.style.opacity = "0";
+      // Der Flug dauert anderthalb Mal den Weg nach oben: Die Marke bleibt
+      // erst einen Moment stehen, dann gleitet sie — nicht nur mitgerissen.
+      D = Math.max(1, (A.y - kopf.top) * 1.5);
+      zeichnen();
+    };
+
+    const zeichnen = () => {
+      geplant = false;
+      if (!A || !A.w) return;
+      const p = Math.min(1, scrollY / D);
+      const e = glatt(Math.max(0, p));
+      const s = 1 + (B.s - 1) * e;
+      const links = A.x + (B.x - A.x) * e;
+      const mitte = (A.y + A.h / 2) + (B.mitte - A.y - A.h / 2) * e;
+      const dx = links - A.x;
+      const dy = mitte - s * A.h / 2 - (A.y - scrollY);
+      bild.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${s.toFixed(4)})`;
+    };
+    const bitte = () => { if (!geplant) { geplant = true; requestAnimationFrame(zeichnen); } };
+
+    addEventListener("scroll", bitte, { passive: true });
+    addEventListener("resize", messen);
+    // Das Bild kommt nach diesem Skript oder wechselt mit dem Thema die Quelle.
+    bild.addEventListener("load", () => requestAnimationFrame(messen));
+    if (bild.complete && bild.naturalWidth) requestAnimationFrame(messen);
+    document.fonts?.ready.then(messen);
+  }
+}
+
 /* ── Die Kopfleiste bekommt ihren Grund ──
    Oben liegt sie ohne Kante im Papier. Sobald Text unter ihr durchläuft,
    braucht sie einen Untergrund, sonst liefe der Satz durch die Marke. */

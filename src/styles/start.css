@@ -56,6 +56,16 @@
 .wortmarke:has([data-stil="sumie"]),
 .wortmarke:has([data-stil="aquarell"]) { height: 5.45rem; }
 .wortmarke:has([data-stil="aether"])   { height: 4.9rem; }
+
+/* Die Marke fliegt in die Kopfleiste (leser.js): Beim Scrollen wandert das
+   Bild nach oben, schrumpft auf das Wort in der Kopfleiste und geht dort in
+   die Schrift über. Nur `transform` und `opacity`, nichts, was das Layout
+   anfasst: Die Zeile behält ihre Höhe, der Rest der Seite merkt nichts.
+   Über der Kopfleiste (z 70), damit sie nicht unter deren Grund verschwindet. */
+.wortmarke.fliegt .wortmarke__bild {
+  position: relative; z-index: 75; transform-origin: 0 0;
+  will-change: transform, opacity; pointer-events: none;
+}
 .start__satz {
   font-size: 1.05rem; line-height: 1.5; color: var(--tinte-leise);
   font-style: italic; margin: 0; max-width: 38rem; text-wrap: pretty;
