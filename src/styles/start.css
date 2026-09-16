@@ -165,6 +165,27 @@
 }
 .wolke__liste.ist-figur .wolke__wort i { position: absolute; left: 100%; top: -.2em; margin-left: .15rem; }
 .wolke__echos { position: absolute; inset: 0; }
+
+/* Das Sammeln (themenwolke.js): Solange die Figur noch nicht steht, bleibt
+   die Liste auf dem großen Schirm unsichtbar — kein Fließtext, der umspringt.
+   Dann kommen die Wörter aus leichter Zerstreuung, verschwommen und
+   unsichtbar, und gleiten an ihren Platz; `--verz` ordnet sie von der Mitte
+   nach außen, die Echos zuletzt. */
+@media (min-width: 1180px) {
+  .wolke__liste.mit-figur:not(.ist-figur):not(.ohne-figur) { visibility: hidden; }
+}
+.wolke__liste.sammelt .wolke__wort,
+.wolke__liste.sammelt .wolke__echo {
+  transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(.9);
+  opacity: 0; filter: blur(4px); transition: none;
+}
+.wolke__liste.setzt .wolke__wort,
+.wolke__liste.setzt .wolke__echo {
+  transition:
+    transform 1.2s cubic-bezier(.16, .84, .3, 1) var(--verz, 0s),
+    opacity 1s ease var(--verz, 0s),
+    filter 1.2s ease var(--verz, 0s);
+}
 .wolke__echo {
   position: absolute; padding: 0; border: 0; background: none; cursor: pointer;
   font-family: "Literata", Georgia, serif; font-weight: 400; line-height: 1; white-space: nowrap;

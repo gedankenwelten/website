@@ -190,22 +190,30 @@
     return echos;
   }
 
-  async function legen() {
-    if (wolke.hidden || !gross.matches) { aufheben(); return; }
-    if (!(await geladen))  return;
-    await document.fonts?.ready;
+  /* ── Rechnen ──
+     Getrennt vom Zeigen: Die Figur wird schon im Leerlauf nach dem Laden
+     gerechnet, damit der Klick auf „Themen" sofort die Bewegung zeigt statt
+     einer halben Sekunde Fließtext, der dann umspringt (Andreas, 17.09.). */
+  let rechnung = null;       // { schluessel, bw, bh, bestes, echos }
 
+  const masse = () => {
     // Die Figur ist höher als ein Bildschirm: klein gedrängt würden die
     // Wörter unlesbar. Breite folgt dem Seitenverhältnis der Silhouette.
+    // Gemessen am Elternteil — die Wolke selbst hat versteckt keine Breite.
     const verhaeltnis = maske.naturalWidth / maske.naturalHeight;
     let bh = Math.min(1100, Math.max(780, innerHeight * 1.12));
     let bw = bh * verhaeltnis;
-    const platzDa = wolke.clientWidth;
+    const platzDa = wolke.parentElement.clientWidth;
     if (bw > platzDa) { bw = platzDa; bh = bw / verhaeltnis; }
-    bw = Math.round(bw); bh = Math.round(bh);
+    return [Math.round(bw), Math.round(bh)];
+  };
 
+  async function rechnen() {
+    if (!gross.matches || !(await geladen)) return null;
+    await document.fonts?.ready;
+    const [bw, bh] = masse();
     const schluessel = `${bw}x${bh}`;
-    if (schluessel === gelegtFuer) return;
+    if (rechnung?.schluessel === schluessel) return rechnung;
 
     const r = rasterFuer(bw, bh);
     let lo = 0.2, hi = 2.2, bestes = null;
@@ -215,40 +223,104 @@
       if (p) { bestes = p; lo = mitte; } else { hi = mitte; }
     }
     bestes ??= legeMit(lo, r);
-    if (!bestes) { aufheben(); return; }
-
-    liste.classList.add("ist-figur");
-    liste.style.width = `${bw}px`;
-    liste.style.height = `${bh}px`;
-    for (const { w, px, x, y } of bestes) {
-      w.el.style.fontSize = `${px.toFixed(1)}px`;
-      w.el.style.left = `${x.toFixed(0)}px`;
-      w.el.style.top = `${y.toFixed(0)}px`;
-    }
-
+    if (!bestes) return null;
     const kleinstes = Math.min(...bestes.map((b) => b.px));
     const echos = auffuellen(r, bestes.belegt, Math.max(kleinstes, 9));
+    // Wo die Figur ihren Schwerpunkt hat — von dort aus sammeln sich die Wörter.
+    const mx = bestes.reduce((a, b) => a + b.x, 0) / bestes.length;
+    const my = bestes.reduce((a, b) => a + b.y, 0) / bestes.length;
+    rechnung = { schluessel, bw, bh, bestes, echos, mx, my };
+    return rechnung;
+  }
+
+  /* ── Zeigen ──
+     Die Wörter sammeln sich zur Figur: Jedes steht schon an seinem Platz,
+     kommt aber leicht zerstreut, verschwommen und unsichtbar von außen herein
+     und gleitet hinein — von der Mitte nach außen, zuerst die Themen, zuletzt
+     die Echos, mit denen sich der Umriss abzeichnet. Zweieinhalb Sekunden —
+     die Figur darf sich Zeit lassen, sie ist ein Denker. */
+  const RUHIG = matchMedia("(prefers-reduced-motion: reduce)");
+  let z = 11;
+  const zufall = () => (z = (z * 16807) % 2147483647) / 2147483647;
+
+  function anlegen(el, x, y, px, rn, verz) {
+    el.style.left = `${x.toFixed(0)}px`;
+    el.style.top = `${y.toFixed(0)}px`;
+    el.style.fontSize = `${px.toFixed(1)}px`;
+    if (!rn) return;
+    const dx = x - rn.mx, dy = y - rn.my;
+    const d = Math.hypot(dx, dy) || 1;
+    const weit = 28 + zufall() * 60;
+    el.style.setProperty("--dx", `${(dx / d * weit + (zufall() - .5) * 24).toFixed(0)}px`);
+    el.style.setProperty("--dy", `${(dy / d * weit + (zufall() - .5) * 24).toFixed(0)}px`);
+    el.style.setProperty("--verz", `${verz.toFixed(3)}s`);
+  }
+
+  let aufraeumen = null;
+
+  async function zeigen(bewegt) {
+    if (wolke.hidden) return;
+    if (!gross.matches) { aufheben(); liste.classList.add("ohne-figur"); return; }
+    const rn = await rechnen();
+    if (!rn) { aufheben(); liste.classList.add("ohne-figur"); return; }
+    if (wolke.hidden) return;
+    if (rn.schluessel === gelegtFuer && !bewegt) return;
+
+    const animieren = bewegt && !RUHIG.matches;
+    const weiteste = Math.max(...rn.bestes.map((b) => Math.hypot(b.x - rn.mx, b.y - rn.my))) || 1;
+    const nah = (x, y) => Math.hypot(x - rn.mx, y - rn.my) / weiteste;
+
+    liste.classList.remove("ohne-figur");
+    liste.classList.add("ist-figur");
+    liste.style.width = `${rn.bw}px`;
+    liste.style.height = `${rn.bh}px`;
+
+    clearTimeout(aufraeumen);
+    liste.classList.remove("setzt");
+    if (animieren) liste.classList.add("sammelt");
+
+    for (const { w, px, x, y } of rn.bestes) {
+      anlegen(w.el, x, y, px, animieren && rn, nah(x, y) * .6 + zufall() * .1);
+    }
     const teile = document.createDocumentFragment();
-    for (const { w, px, x, y } of echos) {
+    for (const { w, px, x, y } of rn.echos) {
       const b = document.createElement("button");
       b.type = "button";
       b.tabIndex = -1;
       b.className = "wolke__echo";
       b.dataset.thema = w.el.dataset.thema;
       b.textContent = w.el.firstChild.textContent;
-      b.style.cssText = `left:${x}px;top:${y}px;font-size:${px.toFixed(1)}px;--farbe:${w.el.style.getPropertyValue("--farbe")}`;
+      b.style.setProperty("--farbe", w.el.style.getPropertyValue("--farbe"));
+      anlegen(b, x, y, px, animieren && rn, .55 + Math.min(1, nah(x, y)) * .6 + zufall() * .15);
       teile.append(b);
     }
     echoFeld.replaceChildren(teile);
     if (!echoFeld.isConnected) liste.append(echoFeld);
-    gelegtFuer = schluessel;
+    gelegtFuer = rn.schluessel;
+
+    if (animieren) {
+      void liste.offsetWidth;            // Ausgangslage erst malen lassen
+      liste.classList.add("setzt");
+      liste.classList.remove("sammelt");
+      // Danach die Verzögerungen weg — sonst reagierte ein Wort beim
+      // Überfahren mit der Maus erst nach seiner Auftrittspause.
+      aufraeumen = setTimeout(() => liste.classList.remove("setzt"), 2700);
+    }
   }
 
+  // Das Skript läuft: Auf dem großen Schirm wartet die Liste unsichtbar,
+  // bis die Figur steht, statt erst als Fließtext aufzublitzen (start.css).
+  liste.classList.add("mit-figur");
+
+  // Im Leerlauf vorrechnen.
+  const vorrechnen = () => (window.requestIdleCallback ?? setTimeout)(() => rechnen(), { timeout: 2500 });
+  if (document.readyState === "complete") vorrechnen(); else addEventListener("load", vorrechnen);
+
+  // Aufgehen: sofort und mit Bewegung. Größe ändern: neu legen, ohne Auftritt.
+  new MutationObserver(() => { if (!wolke.hidden) zeigen(true); })
+    .observe(wolke, { attributes: true, attributeFilter: ["hidden"] });
   let wartet = null;
-  const bald = () => { clearTimeout(wartet); wartet = setTimeout(legen, 120); };
-  new ResizeObserver(bald).observe(wolke);
+  const bald = () => { clearTimeout(wartet); wartet = setTimeout(() => zeigen(false), 150); };
   addEventListener("resize", bald);
   gross.addEventListener?.("change", bald);
-  // Aufgehen der Wolke (hidden fällt) meldet der ResizeObserver; sicherheitshalber auch so:
-  new MutationObserver(bald).observe(wolke, { attributes: true, attributeFilter: ["hidden"] });
 })();
