@@ -124,6 +124,26 @@
    sagt wessen Nachbarschaft man sieht, stünde hinter der Marke. */
 .feld { scroll-margin-top: calc(var(--kopf) + 1.4rem); }
 
+/* ══════════════  Der große Schirm  ══════════════
+   Platz ist da (Andreas, 16.09.2026): Der Satz über die Notes braucht keine
+   eigene Zeile, er steht rechts neben der Marke und geht beim Scrollen aus
+   (leser.js). Die Lenkung bleibt unter der Kopfleiste stehen — wer weit
+   unten ist, filtert, ohne erst zurück nach oben zu müssen. Wo sie ansteht,
+   verschmelzen Kopfleiste und Lenkung zu einer Fläche mit einer Kante.
+   Sprungziele rechnen die Höhe der Lenkung mit ein (--lenkung, leser.js). */
+@media (min-width: 1180px) {
+  .start__kopf { display: flex; align-items: flex-end; justify-content: space-between; gap: 3rem; }
+  .start__kopf .wortmarke { margin-bottom: 0; }
+  .start__satz { max-width: 24rem; text-align: right; font-size: .98rem; padding-bottom: .3rem; }
+  .lenkung {
+    position: sticky; top: var(--kopf); z-index: 60;
+    background: var(--papier);
+    padding-top: .9rem; margin-top: -.9rem;
+  }
+  .feld, .faden { scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
+  body.lenkung-steht .kopfleiste { border-bottom-color: transparent; }
+}
+
 /* Drei je Zeile, fest. Vier hatten mehr Bestand auf einen Blick, aber die
    Karte war dann zu schmal für das, worauf es ankommt: „Worum es geht"
    blieb ein Anriss. Bei dreien passt der Satz fast immer ganz hinein —

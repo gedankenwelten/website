@@ -660,14 +660,35 @@ window.gwSchau = (() => {
   const ruhig = matchMedia("(prefers-reduced-motion: reduce)");
 
   if (bild && marke && wort && !ruhig.matches) {
-    let A = null, B = null, D = 1, geplant = false;
+    let A = null, B = null, D = 1, geplant = false, angedockt = false;
     const glatt = (x) => x * x * (3 - 2 * x);
+
+    // Angekommen, steht die Marke wirklich fest (position: fixed) und wird
+    // nicht mehr bei jedem Scrollschritt nachgerechnet. Mit transform allein
+    // lief sie auf dem iPhone ständig hinterher — Safari meldet das Scrollen
+    // verzögert —, und es kostete bei jedem Bild Rechenzeit (Andreas, 16.09.).
+    const andocken = (ja) => {
+      if (ja === angedockt) return;
+      angedockt = ja;
+      const st = bild.style;
+      if (ja) {
+        st.transform = "";
+        st.position = "fixed";
+        st.left = `${B.x}px`;
+        st.top = `${B.mitte - B.s * A.h / 2}px`;
+        st.width = `${A.w * B.s}px`;
+        st.height = `${A.h * B.s}px`;
+      } else {
+        st.position = st.left = st.top = st.width = st.height = "";
+      }
+    };
 
     // Start (Bild bei scrollY 0, in Seitenkoordinaten) und Ziel (das Wort
     // in der festen Kopfleiste, in Fensterkoordinaten) einmal ausmessen.
     const messen = () => {
       if (!marke.classList.contains("hat-bild")) return;
       marke.classList.add("fliegt");
+      andocken(false);
       bild.style.transform = "";
       const a = bild.getBoundingClientRect(), b = wort.getBoundingClientRect();
       const kopf = document.getElementById("kopfleiste").getBoundingClientRect();
@@ -688,6 +709,8 @@ window.gwSchau = (() => {
       geplant = false;
       if (!A || !A.w) return;
       const p = Math.min(1, scrollY / D);
+      if (p >= 1) { andocken(true); return; }
+      andocken(false);
       const e = glatt(Math.max(0, p));
       const s = 1 + (B.s - 1) * e;
       const links = A.x + (B.x - A.x) * e;
@@ -704,6 +727,35 @@ window.gwSchau = (() => {
     bild.addEventListener("load", () => requestAnimationFrame(messen));
     if (bild.complete && bild.naturalWidth) requestAnimationFrame(messen);
     document.fonts?.ready.then(messen);
+  }
+}
+
+/* ── Die Lenkung bleibt stehen ──
+   Startseite, großer Schirm (start.css). Hier nur zwei Handgriffe: die Höhe
+   der Lenkung als --lenkung für die Sprungziele, und die Frage, ob sie gerade
+   ansteht — dann verliert die Kopfleiste ihre Kante, und beide sind eine
+   Fläche. Der Satz über die Notes geht auf den ersten 140 Pixeln aus. */
+{
+  const lenkung = document.getElementById("lenkung");
+  const satz = document.querySelector(".start__satz");
+  const kopfleiste = document.getElementById("kopfleiste");
+  const gross = matchMedia("(min-width: 1180px)");
+
+  if (lenkung && kopfleiste) {
+    const hoehe = () => document.documentElement.style.setProperty("--lenkung", `${lenkung.offsetHeight}px`);
+    new ResizeObserver(hoehe).observe(lenkung);
+    hoehe();
+
+    let geplant = false;
+    const stand = () => {
+      geplant = false;
+      const steht = gross.matches && lenkung.getBoundingClientRect().top <= kopfleiste.offsetHeight + 1;
+      document.body.classList.toggle("lenkung-steht", steht);
+      if (satz) satz.style.opacity = gross.matches ? String(Math.max(0, 1 - scrollY / 140)) : "";
+    };
+    addEventListener("scroll", () => { if (!geplant) { geplant = true; requestAnimationFrame(stand); } }, { passive: true });
+    addEventListener("resize", stand);
+    stand();
   }
 }
 

@@ -603,6 +603,11 @@ const kurzMonat = (d) => {
     for (const c of document.querySelectorAll(".chip")) c.classList.toggle("ist-gewaehlt", c === chip);
     // Eine Rubrik zu wählen heißt, das Feld wieder sehen zu wollen.
     welle(() => { quelle = null; balken.hidden = true; auslegen(); });
+    // Steht die Lenkung (großer Schirm, weit unten), zurück an den Anfang
+    // des Feldes — sonst stünde man mitten in der neuen Auswahl.
+    if (document.body.classList.contains("lenkung-steht")) {
+      document.getElementById("feld").scrollIntoView({ block: "start", behavior: "smooth" });
+    }
   });
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
