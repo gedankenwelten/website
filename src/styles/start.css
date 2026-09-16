@@ -153,6 +153,25 @@
 .lenkung__knopf[aria-pressed="true"] { color: var(--papier); background: var(--tinte); border-color: var(--tinte); }
 #themenbalken button + button { margin-left: .4rem; }
 
+/* Der Denker (themenwolke.js, großer Schirm): Die Liste wird zur Figur, die
+   Wörter stehen absolut an ihren gerechneten Plätzen. Die Zahl schwebt
+   neben dem Wort, damit sie beim Legen keinen Platz braucht. Kein
+   Hintergrund: Die Gestalt entsteht nur aus den Wörtern, man soll sie
+   erahnen, nicht sehen (Andreas). */
+.wolke__liste.ist-figur { position: relative; display: block; margin: 0 auto; max-width: none; }
+.wolke__liste.ist-figur li { display: contents; }
+.wolke__liste.ist-figur .wolke__wort {
+  position: absolute; padding: 0; line-height: 1; white-space: nowrap;
+}
+.wolke__liste.ist-figur .wolke__wort i { position: absolute; left: 100%; top: -.2em; margin-left: .15rem; }
+.wolke__echos { position: absolute; inset: 0; }
+.wolke__echo {
+  position: absolute; padding: 0; border: 0; background: none; cursor: pointer;
+  font-family: "Literata", Georgia, serif; font-weight: 400; line-height: 1; white-space: nowrap;
+  color: var(--farbe, var(--tinte)); opacity: .58; transition: opacity .15s, color .15s;
+}
+.wolke__echo:hover { opacity: 1; color: var(--akzent); }
+
 /* ══════════════  Das Feld  ══════════════ */
 /* Die Kopfleiste liegt fest über der Seite — ohne diesen Abstand
    scrollte `scrollIntoView` das Feld genau darunter, und die Zeile, die
