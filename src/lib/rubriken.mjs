@@ -233,6 +233,43 @@ function bündeln(posten, schluesselVon) {
   return baender;
 }
 
+/**
+ * Die Themenwolke der Startseite — die Tags über alle Rubriken hinweg.
+ *
+ * Gab es in der Quartz-Fassung schon (07.06.2026) und fehlte nach dem
+ * Umzug; seitdem kannte man Themen nur innerhalb einer Rubrik (16.09.,
+ * Andreas). Gezählt wird, was trennt: kein Jahr, kein Autor, kein
+ * Typ-Tag einer Rubrik (`vipassana` ausgenommen — außerhalb seiner Rubrik
+ * ist es ein Thema). Ein Tag kommt ab drei Notes in die Wolke, darunter
+ * ist er ein Etikett. `grad` (0–1, logarithmisch) setzt die Größe,
+ * `rubrik` ist die, in der das Thema am häufigsten steht — seine Farbe.
+ */
+export function themenwolke(notes, mindestens = 3) {
+  const typ = new Set(Object.values(EIGENER_TAG).flat().filter((t) => t !== "vipassana"));
+  const zaehlung = new Map();
+  for (const n of notes) {
+    const eigene = new Set(EIGENER_TAG[n.rubrik] ?? []);
+    for (const t of new Set(n.tags)) {
+      if (STUMME_TAGS.has(t) || typ.has(t) || eigene.has(t) || /^year-\d{4}$/.test(t)) continue;
+      const z = zaehlung.get(t) ?? { anzahl: 0, rubriken: new Map() };
+      z.anzahl++;
+      z.rubriken.set(n.rubrik, (z.rubriken.get(n.rubrik) ?? 0) + 1);
+      zaehlung.set(t, z);
+    }
+  }
+  const themen = [...zaehlung].filter(([, z]) => z.anzahl >= mindestens);
+  const max = Math.max(mindestens, ...themen.map(([, z]) => z.anzahl));
+  const log = (c) => Math.log(c - mindestens + 1) / Math.log(max - mindestens + 1 || 2);
+  return themen
+    .map(([name, z]) => ({
+      name,
+      anzahl: z.anzahl,
+      grad: log(z.anzahl),
+      rubrik: [...z.rubriken].sort((a, b) => b[1] - a[1])[0][0],
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+}
+
 /** Für den Fuß jeder Rubrikseite: wohin es von hier aus weitergeht. */
 export function alleRubriken() {
   return Object.keys(RUBRIKEN_INFO)

@@ -118,6 +118,41 @@
 .lenkung__knopf:hover { color: var(--akzent); border-color: var(--akzent); }
 .lenkung__knopf--wechsel { color: var(--tinte); border-color: var(--tinte-fern); }
 
+/* ══════════════  Die Themenwolke  ══════════════
+   Statt des Feldes, wenn „Themen" gedrückt ist (index.astro). Alphabetisch
+   wie ein Register, aber im Fluss: Die Größe sagt, wie oft ein Thema
+   vorkommt, die Farbe, in welcher Rubrik es am meisten steht. Die Zahl
+   erscheint erst unter dem Zeiger — sonst wäre es eine Tabelle. */
+.wolke { margin: 0 0 3.2rem; scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
+.wolke[hidden], [data-wolke] .feld, [data-ansicht="faden"] .wolke { display: none; }
+.wolke__satz {
+  font-size: .95rem; font-style: italic; color: var(--tinte-leise);
+  margin: 0 auto 2rem; max-width: 40rem; text-align: center; text-wrap: balance;
+}
+.wolke__liste {
+  list-style: none; margin: 0 auto; padding: 0; max-width: 72rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
+  gap: .2rem 1.05rem; line-height: 1.2;
+}
+.wolke__wort {
+  font-family: "Literata", Georgia, serif;
+  font-size: calc(.82rem + var(--grad) * 1.9rem);
+  font-weight: calc(380 + var(--grad) * 240);
+  letter-spacing: -.01em; color: var(--farbe, var(--tinte));
+  opacity: calc(.62 + var(--grad) * .38);
+  background: none; border: 0; padding: .12rem .1rem; cursor: pointer;
+  transition: color .18s, opacity .18s;
+}
+.wolke__wort i {
+  font-family: "Inter", -apple-system, sans-serif; font-style: normal;
+  font-size: 10px; font-weight: 400; color: var(--tinte-fern);
+  margin-left: .2rem; vertical-align: super; opacity: 0; transition: opacity .18s;
+}
+.wolke__wort:hover, .wolke__wort:focus-visible { color: var(--akzent); opacity: 1; }
+.wolke__wort:hover i, .wolke__wort:focus-visible i { opacity: 1; }
+.lenkung__knopf[aria-pressed="true"] { color: var(--papier); background: var(--tinte); border-color: var(--tinte); }
+#themenbalken button + button { margin-left: .4rem; }
+
 /* ══════════════  Das Feld  ══════════════ */
 /* Die Kopfleiste liegt fest über der Seite — ohne diesen Abstand
    scrollte `scrollIntoView` das Feld genau darunter, und die Zeile, die
@@ -523,6 +558,8 @@
   .wortmarke:has([data-stil="sumie"]), .wortmarke:has([data-stil="aquarell"]) { height: 3.85rem; }
   .wortmarke:has([data-stil="aether"]) { height: 3.45rem; }
   .start__satz { font-size: .95rem; }
+  .wolke__wort { font-size: calc(.8rem + var(--grad) * 1.15rem); }
+  .wolke__liste { gap: .15rem .8rem; }
   .feld__gitter { grid-template-columns: 1fr; row-gap: 2.2rem; }
   .kachel__titel { font-size: 1.15rem; }
   .lenkung__ansicht { flex-wrap: wrap; }

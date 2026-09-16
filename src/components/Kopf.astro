@@ -61,7 +61,7 @@ const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
     schweigt Umami in diesem Browser (sein eigener Schalter `umami.disabled`).
     Für Andreas' eigene Geräte — und für jeden, der es möchte; steht so in der
     Datenschutzerklärung. ?wieder-zaehlen macht es rückgängig. */}
-<script is:inline>try { const q = new URLSearchParams(location.search); if (q.has("nicht-zaehlen")) localStorage.setItem("umami.disabled", "1"); if (q.has("wieder-zaehlen")) localStorage.removeItem("umami.disabled"); } catch {}</script>
+<script is:inline>try { const u = new URL(location.href), q = u.searchParams; if (q.has("nicht-zaehlen")) localStorage.setItem("umami.disabled", "1"); if (q.has("wieder-zaehlen")) localStorage.removeItem("umami.disabled"); if (q.has("nicht-zaehlen") || q.has("wieder-zaehlen")) { q.delete("nicht-zaehlen"); q.delete("wieder-zaehlen"); history.replaceState(null, "", u.pathname + (q.size ? "?" + q : "") + u.hash); } } catch {}</script>
 <script is:inline>window.umamiKnapp = (_typ, p) => { delete p.screen; delete p.language; return p; };</script>
 <script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id} data-before-send="umamiKnapp"></script>
 
