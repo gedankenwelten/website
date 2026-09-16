@@ -132,9 +132,27 @@
    verschmelzen Kopfleiste und Lenkung zu einer Fläche mit einer Kante.
    Sprungziele rechnen die Höhe der Lenkung mit ein (--lenkung, leser.js). */
 @media (min-width: 1180px) {
-  .start__kopf { display: flex; align-items: flex-end; justify-content: space-between; gap: 3rem; }
-  .start__kopf .wortmarke { margin-bottom: 0; }
-  .start__satz { max-width: 24rem; text-align: right; font-size: .98rem; padding-bottom: .3rem; }
+  /* Die Marke groß in der Mitte, der Satz klein rechts — sie fliegt ohnehin
+     gleich in die Kopfleiste, oben darf sie Auftakt sein. Anderthalbmal die
+     alte Höhe: Die Bilder sind 200–340 px hoch gerendert, das trägt noch. */
+  .start__kopf {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: end;
+    column-gap: 2rem; margin: 2.2rem 0 2.8rem;
+  }
+  .start__kopf .wortmarke { grid-column: 2; grid-row: 1; margin: 0; justify-content: center; }
+  .start__kopf .wortmarke, .start__kopf .wortmarke__bild { height: 6.6rem; }
+  .start__kopf .wortmarke__wort { font-size: 4.6rem; }
+  .start__kopf .wortmarke__bild[data-stil="sumie"],
+  .start__kopf .wortmarke:has([data-stil="sumie"])    { height: 8.2rem; }
+  .start__kopf .wortmarke__bild[data-stil="aquarell"],
+  .start__kopf .wortmarke:has([data-stil="aquarell"]) { height: 8rem; }
+  .start__kopf .wortmarke__bild[data-stil="aether"],
+  .start__kopf .wortmarke:has([data-stil="aether"])   { height: 7.35rem; }
+  .start__satz {
+    grid-column: 3; grid-row: 1; justify-self: end; align-self: end;
+    max-width: 16rem; text-align: right; font-size: .8rem; line-height: 1.45;
+    padding-bottom: .6rem;
+  }
   .lenkung {
     position: sticky; top: var(--kopf); z-index: 60;
     background: var(--papier);
