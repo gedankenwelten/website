@@ -126,6 +126,37 @@
 
 @media (max-width: 700px) {
   :root { --lese: calc(17px * var(--schrift, 1)); }
+
+  /* ── Kopfleiste auf dem Telefon ──
+     Eine Zeile reicht nicht für alles: Marke, Rubrikwahl, Suche, drei A
+     und „Dunkel" brauchten gut 430 px, und die Rubrikwahl lag über der
+     Lupe. Oben bleiben Marke, Rubrik, Lupe und ein „Aa"; Schriftgrad
+     und Licht klappen darunter auf. Hält bis 360 px Breite. */
+  .kopfleiste__weg { gap: .4rem; }
+  .kopfleiste__werkzeug { gap: .4rem; }
+  .rubrikwahl__knopf { padding: .42rem .5rem; }
+  .suchfeld { width: 2.2rem; height: 2.2rem; padding: 0; justify-content: center; }
+  .suchfeld__lupe { width: 14px; height: 14px; }
+
+  .anzeige { display: block; position: relative; }
+  .anzeige__knopf {
+    display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; padding: 0;
+    font-family: "Literata", Georgia, serif; font-size: 14px; font-weight: 500;
+    color: var(--tinte-leise); background: var(--papier);
+    border: 1px solid var(--linie); border-radius: 100px; cursor: pointer;
+  }
+  .anzeige[data-offen] .anzeige__knopf { color: var(--akzent); border-color: var(--akzent); }
+  .anzeige__feld { display: none; }
+  .anzeige[data-offen] .anzeige__feld {
+    display: flex; align-items: center; gap: .5rem;
+    position: absolute; top: calc(100% + .5rem); right: 0; z-index: 80;
+    padding: .5rem; background: var(--papier);
+    border: 1px solid var(--linie); border-radius: 6px; box-shadow: var(--schatten);
+  }
+  .anzeige__feld .kopfleiste__grad { height: 2.2rem; padding: 0 .35rem; }
+  .anzeige__feld .kopfleiste__grad button { padding: 0 .45rem; }
+  .anzeige__feld .kopfleiste__licht { padding: .5rem .9rem; white-space: nowrap; }
+
   body { line-height: 1.65; }
   h1 { font-size: 1.85rem; letter-spacing: -.015em; }
   .standfirst { font-size: 1.08rem; }
@@ -138,4 +169,15 @@
   .stern-buehne__blatt { max-height: 84vh; }
   .marken-zeile { font-size: 10px; }
   .feed { flex-direction: column; align-items: flex-start; gap: .7rem; }
+}
+
+
+/* Schmale Telefone (360–389 px): mit der längsten Rubrik („Geistesblitz")
+   fehlten sonst rund 15 px. Etwas kleinere Marke, engere Sperrung, weniger
+   Rand — gemessen bleiben bei 360 px noch 6 px zwischen Rubrik und Lupe. */
+@media (max-width: 389px) {
+  .kopfleiste { padding: 0 .75rem; }
+  .kopfleiste__marke { font-size: 14.5px; }
+  .rubrikwahl__knopf { letter-spacing: .04em; padding: .42rem .4rem; }
+  .kopfleiste__weg, .kopfleiste__werkzeug { gap: .3rem; }
 }

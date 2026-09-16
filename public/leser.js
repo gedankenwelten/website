@@ -624,6 +624,28 @@ window.gwSchau = (() => {
   }
 }
 
+/* ── Schrift und Licht auf dem Telefon ──
+   Dort liegen Schriftgrad und Hell/Dunkel hinter einem „Aa". Offen bleibt
+   es, solange man darin tippt — man soll sehen, was die Wahl bewirkt. Auf
+   dem Desktop ist der Knopf unsichtbar und das hier tut nichts. */
+{
+  const anzeige = document.getElementById("anzeige");
+  const knopf = anzeige?.querySelector(".anzeige__knopf");
+
+  if (anzeige && knopf) {
+    const stellen = (offen) => {
+      anzeige.toggleAttribute("data-offen", offen);
+      knopf.setAttribute("aria-expanded", String(offen));
+    };
+    knopf.addEventListener("click", (e) => {
+      e.stopPropagation();
+      stellen(!anzeige.hasAttribute("data-offen"));
+    });
+    addEventListener("click", (e) => { if (!anzeige.contains(e.target)) stellen(false); });
+    addEventListener("keydown", (e) => { if (e.key === "Escape") stellen(false); });
+  }
+}
+
 /* ── Die Kopfleiste bekommt ihren Grund ──
    Oben liegt sie ohne Kante im Papier. Sobald Text unter ihr durchläuft,
    braucht sie einen Untergrund, sonst liefe der Satz durch die Marke. */

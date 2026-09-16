@@ -685,6 +685,11 @@ h1 {
 }
 .kopfleiste__licht:hover { color: var(--akzent); border-color: var(--akzent); }
 
+/* Schrift und Licht: auf dem Desktop offen in der Leiste — das Gehäuse
+   trägt nichts bei, der Aa-Knopf existiert erst auf dem Telefon (mobil.css). */
+.anzeige, .anzeige__feld { display: contents; }
+.anzeige__knopf { display: none; }
+
 /* Der Schriftgrad: drei A in einer Pille, das gewählte dunkel. Die A
    sind selbst gestuft, damit man sieht, was man bekommt. */
 .kopfleiste__grad {
@@ -958,6 +963,12 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
 /* ── Beiseiten ── */
 .blatt--beiseite { padding-top: calc(var(--kopf) + 3rem); padding-bottom: 4rem; }
 .blatt--beiseite .kennung { margin-top: 0; }
+/* In der Note tritt ein Link zurück, der Text soll tragen. Auf den Seiten
+   beiseite (Datenschutz, Impressum, MCP, Feeds) sind Links Werkzeuge: der
+   Schalter „nicht gezählt werden" wurde in der Textfarbe nicht als Link
+   erkannt (Andreas, 16.09.2026). Darum hier in der Akzentfarbe. */
+.blatt--beiseite .strang a:not(.ts) { color: var(--akzent); border-bottom-color: var(--akzent-weich); }
+.blatt--beiseite .strang a:not(.ts):hover { border-bottom-color: var(--akzent); }
 .blatt--beiseite .strang h2 {
   /* Auf den Beiseiten gliedert ## wirklich — keine leise Rubrikmarke */
   font-family: inherit; font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em;

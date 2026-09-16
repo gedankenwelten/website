@@ -74,15 +74,27 @@ const rubriken = alleRubriken();
       <kbd class="suchfeld__taste">⌘K</kbd>
     </button>
 
-    {/* Der Schriftgrad — drei Stufen wie am Lesegerät, die mittlere ist
-        die Vorgabe. Was gewählt ist, merkt sich der Browser (gw-schrift);
-        gesetzt wird es im Vorspann, noch vor dem ersten Bild. */}
-    <div class="kopfleiste__grad" role="group" aria-label="Schriftgröße">
-      <button type="button" data-schrift="klein" aria-label="Schrift kleiner" title="Kleine Schrift">A</button>
-      <button type="button" data-schrift="mittel" aria-label="Schrift normal" title="Normale Schrift">A</button>
-      <button type="button" data-schrift="gross" aria-label="Schrift größer" title="Große Schrift">A</button>
-    </div>
+    {/* Schrift und Licht. Auf dem Desktop stehen sie offen in der Leiste
+        (das Gehäuse ist dort `display: contents`, also unsichtbar). Auf dem
+        Telefon reicht eine Zeile nicht für Marke, Rubrik, Suche, drei A und
+        „Dunkel" — die Rubrikwahl schob sich über Lupe und Schriftgrad, und
+        die Suche war nicht mehr zu treffen (Andreas, 16.09.2026). Dort
+        klappen beide hinter ein „Aa" wie in der Leseansicht des Browsers. */}
+    <div class="anzeige" id="anzeige">
+      <button class="anzeige__knopf" type="button" aria-expanded="false"
+              aria-controls="anzeigeFeld" aria-label="Schrift und Licht">Aa</button>
+      <div class="anzeige__feld" id="anzeigeFeld">
+        {/* Der Schriftgrad — drei Stufen wie am Lesegerät, die mittlere ist
+            die Vorgabe. Was gewählt ist, merkt sich der Browser (gw-schrift);
+            gesetzt wird es im Vorspann, noch vor dem ersten Bild. */}
+        <div class="kopfleiste__grad" role="group" aria-label="Schriftgröße">
+          <button type="button" data-schrift="klein" aria-label="Schrift kleiner" title="Kleine Schrift">A</button>
+          <button type="button" data-schrift="mittel" aria-label="Schrift normal" title="Normale Schrift">A</button>
+          <button type="button" data-schrift="gross" aria-label="Schrift größer" title="Große Schrift">A</button>
+        </div>
 
-    <button id="theme" class="kopfleiste__licht">Dunkel</button>
+        <button id="theme" class="kopfleiste__licht">Dunkel</button>
+      </div>
+    </div>
   </div>
 </header>
