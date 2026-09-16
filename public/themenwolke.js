@@ -247,6 +247,8 @@
     el.style.left = `${x.toFixed(0)}px`;
     el.style.top = `${y.toFixed(0)}px`;
     el.style.fontSize = `${px.toFixed(1)}px`;
+    // Beim Überfahren auf mindestens ~24 px, kleine Echos also stärker (start.css).
+    el.style.setProperty("--zoom", Math.max(1.25, 24 / px).toFixed(2));
     if (!rn) return;
     const dx = x - rn.mx, dy = y - rn.my;
     const d = Math.hypot(dx, dy) || 1;

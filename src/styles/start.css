@@ -196,6 +196,22 @@
 }
 .wolke__echo:hover { opacity: 1; color: var(--akzent); }
 
+/* Zoom beim Überfahren: Viele Wörter der Figur sind klein, manche kaum
+   lesbar (Andreas). Das Wort wächst auf mindestens ~24 px (--zoom aus
+   themenwolke.js), bekommt Papiergrund und liegt über den Nachbarn. */
+.wolke__liste.ist-figur .wolke__wort,
+.wolke__echo {
+  transform-origin: center; border-radius: 3px;
+  transition: transform .2s cubic-bezier(.2, .8, .2, 1), color .18s, opacity .18s, box-shadow .2s;
+}
+.wolke__liste.ist-figur .wolke__wort:hover,
+.wolke__liste.ist-figur .wolke__wort:focus-visible,
+.wolke__echo:hover {
+  transform: scale(var(--zoom, 1.3)); z-index: 5; opacity: 1;
+  background: var(--papier);
+  box-shadow: 0 0 0 .3em var(--papier), 0 .35em 1.2em color-mix(in oklab, var(--tinte) 16%, transparent);
+}
+
 /* ══════════════  Das Feld  ══════════════ */
 /* Die Kopfleiste liegt fest über der Seite — ohne diesen Abstand
    scrollte `scrollIntoView` das Feld genau darunter, und die Zeile, die
