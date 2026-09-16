@@ -291,7 +291,10 @@
       b.tabIndex = -1;
       b.className = "wolke__echo";
       b.dataset.thema = w.el.dataset.thema;
-      b.textContent = w.el.firstChild.textContent;
+      const text = document.createElement("span");
+      text.className = "wolke__text";
+      text.textContent = w.el.firstChild.textContent;
+      b.append(text);
       b.style.setProperty("--farbe", w.el.style.getPropertyValue("--farbe"));
       anlegen(b, x, y, px, animieren && rn, .55 + Math.min(1, nah(x, y)) * .6 + zufall() * .15);
       teile.append(b);

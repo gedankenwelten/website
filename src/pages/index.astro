@@ -248,7 +248,7 @@ const kurzMonat = (d) => {
           <button type="button" class="wolke__wort" data-thema={t.name}
                   style={`--grad:${t.grad.toFixed(3)};--farbe:var(--r-${t.rubrik.toLowerCase()})`}
                   title={`${t.anzahl} Notes · am meisten in ${t.rubrik}`}>
-            {t.name.replace(/-/g, " ")}<i>{t.anzahl}</i>
+            <span class="wolke__text">{t.name.replace(/-/g, " ")}</span><i>{t.anzahl}</i>
           </button>
         </li>
       ))}

@@ -198,17 +198,23 @@
 
 /* Zoom beim Überfahren: Viele Wörter der Figur sind klein, manche kaum
    lesbar (Andreas). Das Wort wächst auf mindestens ~24 px (--zoom aus
-   themenwolke.js) und liegt über den Nachbarn — frei, ohne Grund dahinter. */
-.wolke__liste.ist-figur .wolke__wort,
-.wolke__echo {
+   themenwolke.js) und liegt über den Nachbarn — frei, ohne Grund dahinter.
+   Es wächst nur der Schriftzug (.wolke__text), nicht der Knopf, und der
+   Schriftzug fängt keine Maus: Die Fläche, die auf den Zeiger reagiert,
+   bleibt so groß wie das Wort an seinem Platz. Sonst deckte das vergrößerte
+   Wort die Nachbarn zu, und man müsste erst hinaus, um das nächste zu
+   treffen (Andreas, 17.09.). */
+.wolke__text { display: inline-block; pointer-events: none; }
+.wolke__liste.ist-figur .wolke__text {
   transform-origin: center;
-  transition: transform .2s cubic-bezier(.2, .8, .2, 1), color .18s, opacity .18s;
+  transition: transform .2s cubic-bezier(.2, .8, .2, 1);
 }
 .wolke__liste.ist-figur .wolke__wort:hover,
 .wolke__liste.ist-figur .wolke__wort:focus-visible,
-.wolke__echo:hover {
-  transform: scale(var(--zoom, 1.3)); z-index: 5; opacity: 1;
-}
+.wolke__echo:hover { z-index: 5; opacity: 1; }
+.wolke__liste.ist-figur .wolke__wort:hover .wolke__text,
+.wolke__liste.ist-figur .wolke__wort:focus-visible .wolke__text,
+.wolke__echo:hover .wolke__text { transform: scale(var(--zoom, 1.3)); }
 
 /* ══════════════  Das Feld  ══════════════ */
 /* Die Kopfleiste liegt fest über der Seite — ohne diesen Abstand
