@@ -46,3 +46,56 @@
   });
   addEventListener("pagehide", senden);
 })();
+
+/* Die Hörzeit — ob der Begleiter-Player benutzt wurde und wie lange er lief.
+
+   Ein Klick auf eine Zeitmarke sagt noch nicht, dass jemand zugehört hat.
+   Gezählt werden darum die Sekunden, in denen das Video wirklich spielt,
+   dazu, wodurch es angestoßen wurde: ein O-Ton-Zitat, eine Zeitmarke im
+   Rand oder der Begleiter selbst. Blieb der Player blockiert, steht das mit
+   dabei. Gesendet wird, wie beim Lesen, ein Ereignis „hoeren" beim Verlassen.
+
+   Absichtlich ohne Griff in `leser.js`: Den Zustand meldet der YouTube-Iframe
+   ohnehin per postMessage an die Seite, die Klicks fangen wir im
+   Capture-Durchgang ab, bevor der Player sie bekommt. So hängt die Messung
+   an keiner Variable des Players, und der Player an keiner der Messung. */
+
+(() => {
+  const begleiter = document.getElementById("begleiter");
+  if (!begleiter) return;
+
+  const SPIELT = 1;
+  let zustand = -1, sekunden = 0, zitate = 0, marken = 0, direkt = 0, gesendet = "";
+
+  addEventListener("click", (e) => {
+    const ziel = e.target.closest?.(".oton[data-t], .ts, #begleiter");
+    if (!ziel) return;
+    if (ziel.matches(".oton")) zitate++;
+    else if (ziel.matches(".ts")) marken++;
+    else if (!begleiter.classList.contains("offen")) direkt++;
+  }, { capture: true });
+
+  addEventListener("message", (e) => {
+    if (!/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(e.origin)) return;
+    let d;
+    try { d = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch { return; }
+    if (d?.event === "onStateChange" && typeof d.info === "number") zustand = d.info;
+    else if (typeof d?.info?.playerState === "number") zustand = d.info.playerState;
+  });
+
+  setInterval(() => { if (zustand === SPIELT) sekunden++; }, 1000);
+
+  const senden = () => {
+    const starts = zitate + marken + direkt;
+    if (!starts || !window.umami) return;
+    const blockiert = document.querySelector(".begleiter__ersatz") ? 1 : 0;
+    const stand = `${sekunden}/${starts}/${blockiert}`;
+    if (stand === gesendet) return;
+    gesendet = stand;
+    window.umami.track("hoeren", { sekunden, zitate, marken, direkt, blockiert });
+  };
+  addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") senden();
+  });
+  addEventListener("pagehide", senden);
+})();
