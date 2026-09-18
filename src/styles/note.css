@@ -184,6 +184,13 @@ body {
   transition: top .85s cubic-bezier(.65,0,.25,1);
   pointer-events: none; z-index: 2;
 }
+/* Wo ein weiteres Video beginnt, bricht die Linie ab: eine kleine Lücke
+   mit zwei Kappen — sichtbar anders als eine Marke. */
+.rail__naht {
+  position: absolute; left: calc(2.3rem - 3px); width: 7px; height: 12px; margin-top: -6px;
+  background: var(--papier); border-top: 1px solid var(--tinte-fern); border-bottom: 1px solid var(--tinte-fern);
+  z-index: 1;
+}
 .hoerzeiger {
   position: absolute; left: 1.72rem; width: 7px; height: 7px; margin-top: -3px;
   border-radius: 50%; border: 1.5px solid var(--akzent); background: var(--papier);

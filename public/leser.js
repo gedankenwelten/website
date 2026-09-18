@@ -36,24 +36,65 @@ let hoerzeigerSetzen = () => {};
 if (rail && anker.length) {
   const DAUER = Number(rail.dataset.dauer) || 1;
   const oben = 88, unten = 88;
-  const yVon = (t) => `calc(${oben}px + (100% - ${oben + unten}px) * ${t / DAUER})`;
-  const marken = new Map();
+  const haupt = document.getElementById("begleiter")?.dataset.video;
+  const vid = (a) => a.dataset.v || haupt;
 
-  [...new Set(anker.map((a) => +a.dataset.t))].sort((a, b) => a - b).forEach((t) => {
+  /* Zitiert eine Note mehrere Videos, bekommt jedes seinen Abschnitt auf
+     der Leiste — in der Reihenfolge, in der der Text sie aufschlägt. Auf
+     *einer* Skala landeten die Marken eines kurzen Zweitvideos (0:46) oben
+     beim Anfang des Hauptvideos, und der Zeiger sprang am Ende der Note
+     zurück an den Anfang. Die Länge eines Abschnitts ist die späteste
+     zitierte Stelle; ein kurzer bekommt eine Mindesthöhe, damit man ihn
+     sieht. */
+  const videos = [...new Set(anker.map(vid))];
+  const laenge = new Map(videos.map((v) => [v, videos.length === 1 ? DAUER
+    : Math.max(60, ...anker.filter((a) => vid(a) === v).map((a) => +a.dataset.t)) * 1.02]));
+  const NAHT = videos.length > 1 ? 0.03 : 0;
+  const summe = [...laenge.values()].reduce((x, y) => x + y, 0);
+  const roh = videos.map((v) => Math.max(laenge.get(v) / summe, 0.07));
+  const platz = 1 - NAHT * (videos.length - 1);
+  const anteil = new Map(videos.map((v, i) => [v, roh[i] / roh.reduce((x, y) => x + y, 0) * platz]));
+  const beginn = new Map();
+  videos.reduce((pos, v) => { beginn.set(v, pos); return pos + anteil.get(v) + NAHT; }, 0);
+
+  const yVon = (t, v = videos[0]) => {
+    const f = (beginn.get(v) ?? 0) + (anteil.get(v) ?? 1) * Math.min(1, t / (laenge.get(v) || DAUER));
+    return `calc(${oben}px + (100% - ${oben + unten}px) * ${f})`;
+  };
+  const marken = new Map();
+  const schluessel = (t, v) => `${v}|${t}`;
+
+  // Die Nähte: ein Strich quer über die Leiste, wo das nächste Video beginnt.
+  videos.slice(1).forEach((v, i) => {
+    const n = document.createElement("div");
+    n.className = "rail__naht";
+    n.style.top = `calc(${oben}px + (100% - ${oben + unten}px) * ${beginn.get(v) - NAHT / 2})`;
+    n.title = `${i + 2}. Video`;
+    rail.appendChild(n);
+  });
+  if (videos.length > 1) {
+    const kappe = rail.querySelector(".rail__cap--unten");
+    if (kappe) kappe.textContent = `${videos.length} Videos`;
+  }
+
+  const gesehen = new Set();
+  anker.forEach((a) => {
+    const t = +a.dataset.t, v = vid(a), k = schluessel(t, v);
+    if (gesehen.has(k)) return;
+    gesehen.add(k);
     const m = document.createElement("div");
     m.className = "mark";
-    m.style.top = yVon(t);
+    m.style.top = yVon(t, v);
     m.title = mmss(t);
-    m.onclick = () => anker.find((a) => +a.dataset.t === t)
-      ?.scrollIntoView({ block: "center" });
+    m.onclick = () => a.scrollIntoView({ block: "center" });
     rail.appendChild(m);
-    marken.set(t, m);
+    marken.set(k, m);
   });
 
   const zeiger = document.createElement("div");
   zeiger.className = "zeiger";
   zeiger.innerHTML = '<span class="zeiger__zeit"></span>';
-  zeiger.style.top = yVon(+anker[0].dataset.t);
+  zeiger.style.top = yVon(+anker[0].dataset.t, vid(anker[0]));
   rail.appendChild(zeiger);
   const zeigerZeit = zeiger.querySelector(".zeiger__zeit");
 
@@ -62,10 +103,10 @@ if (rail && anker.length) {
     const beste = lesestelle();
     if (!beste || beste === aktiv) return;
     aktiv = beste;
-    const t = +beste.dataset.t;
+    const t = +beste.dataset.t, v = vid(beste);
     marken.forEach((m) => m.classList.remove("ist"));
-    marken.get(t)?.classList.add("ist");
-    zeiger.style.top = yVon(t);
+    marken.get(schluessel(t, v))?.classList.add("ist");
+    zeiger.style.top = yVon(t, v);
     zeigerZeit.textContent = mmss(t);
   };
   addEventListener("scroll", verfolgen, { passive: true });
@@ -78,9 +119,10 @@ if (rail && anker.length) {
   hz.className = "hoerzeiger";
   hz.title = "Hier läuft das Gespräch gerade";
   rail.appendChild(hz);
-  hoerzeigerSetzen = (t) => {
-    hz.classList.toggle("da", t != null);
-    if (t != null) hz.style.top = yVon(Math.min(t, DAUER));
+  hoerzeigerSetzen = (t, v) => {
+    const da = t != null && beginn.has(v);
+    hz.classList.toggle("da", da);
+    if (da) hz.style.top = yVon(t, v);
   };
 }
 
@@ -318,7 +360,7 @@ if (begleiter) {
     if (!bereit || !begleiter.classList.contains("offen") || player.getPlayerState?.() !== 1) return;
     const jetzt = player.getCurrentTime();
     beiZeit.textContent = mmss(jetzt);
-    hoerzeigerSetzen(laeuft === begleiter.dataset.video ? jetzt : null);
+    hoerzeigerSetzen(jetzt, laeuft);
     // Ein Zitat mit Ende behält seine Hervorhebung, bis es verklungen ist.
     if (stoppUhr) return;
     const m = markeZuZeit(jetzt, laeuft);
