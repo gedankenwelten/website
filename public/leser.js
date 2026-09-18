@@ -198,6 +198,7 @@ function hin(t, v) {
 
 async function spielen(t, quelle, ende = null, v = null) {
   if (!begleiter) return;
+  pause = null;
   v = v || begleiter.dataset.video;
   begleiter.classList.add("offen");
   beiZeit.textContent = mmss(t);
@@ -239,8 +240,14 @@ async function spielen(t, quelle, ende = null, v = null) {
   }
 }
 
+/* Beim Schließen merken, wo man las. Wer danach nicht weitergescrollt hat,
+   will beim Wiederöffnen weiterhören, wo er angehalten hat — nicht an den
+   Anfang des Abschnitts zurück. Wer weitergelesen hat, will dort hören. */
+let pause = null;
+
 function schliessen() {
   if (!begleiter) return;
+  if (begleiter.classList.contains("offen") && bereit) pause = { stelle: lesestelle() };
   begleiter.classList.remove("offen");
   player?.pauseVideo?.();
   clearInterval(stoppUhr);
@@ -252,6 +259,13 @@ function schliessen() {
    Strecke hören will, meint diese Stelle, nicht die erste Marke. */
 function amLesenOeffnen() {
   const a = lesestelle();
+  if (pause && pause.stelle === a && player?.playVideo) {
+    pause = null;
+    begleiter.classList.add("offen");
+    klingtT = null;          // das Mitlesen setzt die Marke gleich wieder
+    player.playVideo();
+    return;
+  }
   if (a) spielen(+a.dataset.t, a, null, a.dataset.v);
 }
 
