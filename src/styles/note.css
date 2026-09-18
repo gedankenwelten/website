@@ -568,10 +568,13 @@ h1 {
   color: var(--tinte-leise); font-size: 1rem; transition: opacity .22s;
 }
 .begleiter.offen .begleiter__knopf { opacity: 0; pointer-events: none; }
-@media (hover: hover) { .begleiter__knopf { padding: 0 .55rem .5rem 0; } }
-/* Die Taste steht klein im Knopf, damit man sie findet, ohne zu suchen. */
+/* Mit Maus eine Pille: ▶ und die Taste nebeneinander, damit man das
+   Kürzel findet, ohne zu suchen. Am Telefon bleibt der runde Knopf. */
+@media (hover: hover) {
+  .begleiter:not(.offen) { width: 4.9rem; }
+  .begleiter__knopf { gap: .55rem; }
+}
 .begleiter__taste {
-  position: absolute; right: .3rem; bottom: .3rem;
   font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 600; line-height: 1;
   color: var(--tinte-leise);
   padding: 2px 4px; border: 1px solid var(--linie); border-radius: 3px; background: var(--papier);
