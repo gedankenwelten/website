@@ -568,6 +568,16 @@ h1 {
   color: var(--tinte-leise); font-size: 1rem; transition: opacity .22s;
 }
 .begleiter.offen .begleiter__knopf { opacity: 0; pointer-events: none; }
+@media (hover: hover) { .begleiter__knopf { padding: 0 .55rem .5rem 0; } }
+/* Die Taste steht klein im Knopf, damit man sie findet, ohne zu suchen. */
+.begleiter__taste {
+  position: absolute; right: .3rem; bottom: .3rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 600; line-height: 1;
+  color: var(--tinte-leise);
+  padding: 2px 4px; border: 1px solid var(--linie); border-radius: 3px; background: var(--papier);
+}
+.begleiter:hover .begleiter__taste { color: var(--akzent); border-color: var(--akzent-weich); }
+@media (hover: none) { .begleiter__taste { display: none; } }
 .begleiter__buehne {
   position: absolute; inset: 0; opacity: 0; transition: opacity .3s .18s;
   display: flex; flex-direction: column;

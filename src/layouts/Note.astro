@@ -173,7 +173,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 {kopf.video && (
   <div class="begleiter" id="begleiter" data-video={kopf.video} data-taste="p"
        title="Hören, wo du gerade liest — Taste P">
-    <div class="begleiter__knopf">▶</div>
+    <div class="begleiter__knopf">▶<kbd class="begleiter__taste" aria-hidden="true">P</kbd></div>
     <div class="begleiter__buehne">
       <div id="buehne"></div>
       <div class="begleiter__leiste">
