@@ -16,7 +16,7 @@
  */
 import { alleRubriken } from "../lib/rubriken.mjs";
 
-const { rubrik = null } = Astro.props;
+const { rubrik = null, teilen = false } = Astro.props;
 const rubriken = alleRubriken();
 ---
 <header class="kopfleiste" id="kopfleiste">
@@ -80,6 +80,19 @@ const rubriken = alleRubriken();
         „Dunkel" — die Rubrikwahl schob sich über Lupe und Schriftgrad, und
         die Suche war nicht mehr zu treffen (Andreas, 16.09.2026). Dort
         klappen beide hinter ein „Aa" wie in der Leseansicht des Browsers. */}
+    {/* Teilen — auf dem Telefon das eigene Teilen-Menü des Geräts
+        (WhatsApp, Signal, Mail, AirDrop …), am Rechner die Adresse in die
+        Zwischenablage. Keine Knöpfe fremder Netzwerke: die kämen mit
+        Skripten und Tracking, und das Menü des Geräts kann ohnehin mehr. */}
+    {teilen && (
+      <button class="teilen" type="button" data-teilen="kopf" aria-label="Diese Note teilen" title="Teilen">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 1.8v8.4M5.2 4.4 8 1.6l2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.4 6.6H4a1 1 0 0 0-1 1v5.8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7.6a1 1 0 0 0-1-1h-1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    )}
+
     <div class="anzeige" id="anzeige">
       <button class="anzeige__knopf" type="button" aria-expanded="false"
               aria-controls="anzeigeFeld" aria-label="Schrift und Licht">Aa</button>

@@ -17,7 +17,11 @@ const {
 } = Astro.props;
 
 const voll = titel ? `${titel} · ${SITE.name}` : SITE.name;
-const hier = new URL(Astro.url.pathname, SITE.url).href;
+// Die saubere Adresse, wie die Sitemap sie nennt. Astro baut Dateien
+// (`/Denker/X.html`); der Canonical trug die Endung mit und widersprach
+// damit der Sitemap — und jedem geteilten Link hing sie an.
+const pfad = Astro.url.pathname.replace(/(?:\/index)?\.html$/, "") || "/";
+const hier = new URL(pfad, SITE.url).href;
 const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
 ---
 <meta charset="utf-8">

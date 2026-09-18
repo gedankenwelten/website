@@ -1025,3 +1025,28 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
 }
 .faden-von-hier a:hover { color: var(--akzent); border-color: var(--akzent); }
 .faden-von-hier span { font-size: .78rem; color: var(--tinte-fern); }
+.teilen-fuss {
+  font: inherit; font-size: .82rem; letter-spacing: .02em; color: var(--tinte);
+  background: none; padding: .42rem .85rem; cursor: pointer;
+  border: 1px solid var(--tinte-fern); border-radius: 999px; transition: color .2s, border-color .2s;
+}
+.teilen-fuss:hover { color: var(--akzent); border-color: var(--akzent); }
+
+/* ── Teilen in der Kopfleiste ── rund wie das „Aa" auf dem Telefon. */
+.teilen {
+  display: inline-grid; place-items: center; width: 2.05rem; height: 2.05rem; padding: 0;
+  color: var(--tinte-leise); background: var(--papier); cursor: pointer;
+  border: 1px solid var(--linie); border-radius: 100px; transition: color .2s, border-color .2s;
+}
+.teilen svg { width: 14px; height: 14px; }
+/* Nur mit echter Maus — ein Finger hinterlässt sonst einen Hover, der bleibt. */
+@media (hover: hover) { .teilen:hover { color: var(--akzent); border-color: var(--akzent); } }
+
+/* Die Rückmeldung, wenn nur kopiert wurde (Rechner ohne Teilen-Menü). */
+.teilen-hinweis {
+  position: fixed; left: 50%; bottom: 1.6rem; z-index: 120; transform: translate(-50%, .6rem);
+  font-family: "Inter", -apple-system, sans-serif; font-size: .82rem; color: var(--papier);
+  background: var(--tinte); padding: .5rem 1rem; border-radius: 999px;
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+}
+.teilen-hinweis.da { opacity: 1; transform: translate(-50%, 0); }

@@ -851,3 +851,61 @@ if (matchMedia("(max-width: 1179px)").matches) {
     addEventListener("resize", mittig, { passive: true });
   }
 }
+
+/* ── Teilen ──
+   Auf dem Telefon öffnet `navigator.share` das Teilen-Menü des Geräts;
+   wo es fehlt (die meisten Rechner), kommt die Adresse in die
+   Zwischenablage. Geteilt wird immer die saubere Adresse aus dem
+   Canonical — ohne `.html`, ohne `?nicht-zaehlen`, ohne Anker —, damit
+   der Empfänger gezählt wird und die Vorschaukarte trägt. Gemessen wird
+   nur, dass geteilt wurde und von wo; nie, mit wem. */
+(() => {
+  const knoepfe = document.querySelectorAll("[data-teilen]");
+  if (!knoepfe.length) return;
+
+  const url = document.querySelector('link[rel="canonical"]')?.href
+    ?? location.origin + location.pathname.replace(/\.html$/, "");
+  const titel = document.querySelector('meta[property="og:title"]')?.content ?? document.title;
+
+  let hinweis = null, frist = null;
+  const zeigen = (text) => {
+    if (!hinweis) {
+      hinweis = document.createElement("div");
+      hinweis.className = "teilen-hinweis";
+      hinweis.setAttribute("role", "status");
+      document.body.appendChild(hinweis);
+    }
+    hinweis.textContent = text;
+    hinweis.classList.add("da");
+    clearTimeout(frist);
+    frist = setTimeout(() => hinweis.classList.remove("da"), 2200);
+  };
+  const zaehlen = (ort, weg) => { try { window.umami?.track("teilen", { ort, weg }); } catch {} };
+
+  knoepfe.forEach((k) => k.addEventListener("click", async () => {
+    const ort = k.dataset.teilen;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: titel, url });
+        zaehlen(ort, "menue");
+      } catch (e) {
+        // Abbrechen im Menü ist kein Fehler — nur still bleiben.
+        if (e?.name !== "AbortError") kopieren(ort);
+      }
+      return;
+    }
+    kopieren(ort);
+  }));
+
+  async function kopieren(ort) {
+    try {
+      await navigator.clipboard.writeText(url);
+      zeigen("Link kopiert");
+      zaehlen(ort, "kopie");
+    } catch {
+      // Ohne Zwischenablage (unsicherer Kontext, alter Browser): die
+      // Adresse wenigstens zeigen, damit man sie von Hand nehmen kann.
+      zeigen(url);
+    }
+  }
+})();

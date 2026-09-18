@@ -50,7 +50,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 </head>
 <body>
 
-<Kopfleiste rubrik={rubrik} />
+<Kopfleiste rubrik={rubrik} teilen />
 
 {dauer > 0 && (
   <div class="rail" id="rail" data-dauer={dauer}>
@@ -151,12 +151,18 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       gekommen ist — und das ist der häufigste Weg —, soll von dort einen
       Faden gehen können, nicht erst zurück ins Feld. Der Weg ist längst
       gerechnet (`faeden.json`); die Startseite webt ihn bei `?faden=`. */}
-  {wege.has(note.id) && (
-    <p class="faden-von-hier" data-pagefind-ignore>
-      <a href={`/?faden=${encodeURIComponent(note.id)}`}>Von hier einen Faden gehen</a>
-      <span>{wege.get(note.id).length} Stationen, rückwärts durch den Bestand</span>
-    </p>
-  )}
+  {/* Am Ende noch einmal Teilen — hier, nach dem Weiterdenken, entsteht
+      der Impuls, jemandem die Note zu geben. Oben in der Leiste steht der
+      Knopf für den, der schon beim ersten Absatz weiß, wem er sie schickt. */}
+  <p class="faden-von-hier" data-pagefind-ignore>
+    {wege.has(note.id) && (
+      <>
+        <a href={`/?faden=${encodeURIComponent(note.id)}`}>Von hier einen Faden gehen</a>
+        <span>{wege.get(note.id).length} Stationen, rückwärts durch den Bestand</span>
+      </>
+    )}
+    <button class="teilen-fuss" type="button" data-teilen="fuss">Diese Note teilen</button>
+  </p>
 
   <Stern id={note.id} />
 </article>

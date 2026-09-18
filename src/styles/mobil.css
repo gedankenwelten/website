@@ -138,6 +138,7 @@
   .suchfeld { width: 2.2rem; height: 2.2rem; padding: 0; justify-content: center; }
   .suchfeld__lupe { width: 14px; height: 14px; }
 
+  .teilen { width: 2.2rem; height: 2.2rem; }
   .anzeige { display: block; position: relative; }
   .anzeige__knopf {
     display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; padding: 0;
