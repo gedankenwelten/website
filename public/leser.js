@@ -29,6 +29,10 @@ function lesestelle() {
   return beste || zuletzt || anker[0] || null;
 }
 
+/* Der Hörzeiger in der Zeitleiste — gesetzt vom Begleiter, gezeichnet hier,
+   wo die Leiste ihre Maße kennt. Ohne Leiste (Telefon) tut er nichts. */
+let hoerzeigerSetzen = () => {};
+
 if (rail && anker.length) {
   const DAUER = Number(rail.dataset.dauer) || 1;
   const oben = 88, unten = 88;
@@ -66,6 +70,18 @@ if (rail && anker.length) {
   };
   addEventListener("scroll", verfolgen, { passive: true });
   verfolgen();
+
+  /* Zwei Zeiger, zwei Fragen: der volle zeigt, wo man *liest*, der hohle,
+     wo man *hört*. Laufen sie auseinander, sieht man es, ohne dass die
+     Seite einem das Lesen aus der Hand nimmt. */
+  const hz = document.createElement("div");
+  hz.className = "hoerzeiger";
+  hz.title = "Hier läuft das Gespräch gerade";
+  rail.appendChild(hz);
+  hoerzeigerSetzen = (t) => {
+    hz.classList.toggle("da", t != null);
+    if (t != null) hz.style.top = yVon(Math.min(t, DAUER));
+  };
 }
 
 /* ── Vorschaubild am Zeitstempel ──
@@ -187,6 +203,7 @@ async function spielen(t, quelle, ende = null, v = null) {
   beiZeit.textContent = mmss(t);
   document.querySelectorAll(".klingt").forEach((e) => e.classList.remove("klingt"));
   quelle?.classList.add("klingt");
+  klingtT = t;
   document.querySelectorAll(`.ts[data-t="${t}"]`).forEach((e) => {
     if ((e.dataset.v || begleiter.dataset.video) === v) e.classList.add("klingt");
   });
@@ -228,6 +245,7 @@ function schliessen() {
   player?.pauseVideo?.();
   clearInterval(stoppUhr);
   document.querySelectorAll(".klingt").forEach((el) => el.classList.remove("klingt"));
+  hoerzeigerSetzen(null);
 }
 
 /* Auf, wo man gerade liest — nicht am Anfang des Gesprächs. Wer auf halber
@@ -263,6 +281,83 @@ if (begleiter && anker.length) {
         || document.querySelector(".stern-buehne.offen, #rubrikwahl[data-offen], #anzeige[data-offen], dialog[open]");
       if (!anderes) schliessen();
     }
+  });
+}
+
+/* ── Mitlesen ──
+   Läuft das Video, wandert die Hervorhebung mit: Die Marke am Rand, deren
+   Zeit gerade dran ist, leuchtet — und in der Zeitleiste gleitet der
+   Hörzeiger. Gescrollt wird nicht; wer liest, soll nicht geschoben werden.
+   Wer hinterher will, klickt unten im Player auf die Zeit. */
+let klingtT = null;
+function markeZuZeit(jetzt, v) {
+  let beste = null;
+  for (const a of anker) {
+    if (!a.matches(".ts, .oton") || (a.dataset.v || begleiter.dataset.video) !== v) continue;
+    const t = +a.dataset.t;
+    if (t <= jetzt + 0.5 && (!beste || t > +beste.dataset.t)) beste = a;
+  }
+  return beste;
+}
+if (begleiter) {
+  setInterval(() => {
+    if (!bereit || !begleiter.classList.contains("offen") || player.getPlayerState?.() !== 1) return;
+    const jetzt = player.getCurrentTime();
+    beiZeit.textContent = mmss(jetzt);
+    hoerzeigerSetzen(laeuft === begleiter.dataset.video ? jetzt : null);
+    // Ein Zitat mit Ende behält seine Hervorhebung, bis es verklungen ist.
+    if (stoppUhr) return;
+    const m = markeZuZeit(jetzt, laeuft);
+    if (!m || +m.dataset.t === klingtT) return;
+    klingtT = +m.dataset.t;
+    document.querySelectorAll(".klingt").forEach((e) => e.classList.remove("klingt"));
+    document.querySelectorAll(`.ts[data-t="${klingtT}"]`).forEach((e) => {
+      if ((e.dataset.v || begleiter.dataset.video) === laeuft) e.classList.add("klingt");
+    });
+  }, 500);
+
+  /* Die Zeit unten im Player führt zur Stelle im Text, die gerade klingt. */
+  beiZeit.closest("span").classList.add("begleiter__hin");
+  beiZeit.closest("span").title = "Zur Stelle im Text";
+  beiZeit.closest("span").addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.querySelector(".klingt")?.scrollIntoView({ block: "center", behavior: "smooth" });
+  });
+}
+
+/* ── Pfeiltasten ──
+   Bei offenem Player: ← / → spult zehn Sekunden, wie man es von jedem
+   Player kennt — die kleine Bewegung, die nichts verrückt. Mit Shift geht
+   es eine ganze Marke weiter, in der Reihenfolge des Textes, nicht der
+   Zeit (die Note ist eine Komposition, und man geht ihren Weg); dann rollt
+   der Text mit. */
+if (begleiter && anker.length) {
+  const folge = anker.filter((a) => a.matches(".ts, .oton"));
+  addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    if (!begleiter.classList.contains("offen") || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    const vor = e.key === "ArrowRight";
+
+    if (!e.shiftKey) {
+      if (!bereit || !player?.getCurrentTime) return;
+      e.preventDefault();
+      const ziel = Math.max(0, player.getCurrentTime() + (vor ? 10 : -10));
+      player.seekTo(ziel, true);
+      beiZeit.textContent = mmss(ziel);
+      // Wer aus einem Zitat herausspult, will weiterhören — nicht am Zitatende angehalten werden.
+      clearInterval(stoppUhr); stoppUhr = null;
+      return;
+    }
+
+    const jetzt = document.querySelector(".oton.klingt, .ts.klingt") || lesestelle();
+    let i = folge.indexOf(jetzt);
+    if (i < 0) i = folge.indexOf(lesestelle());
+    const ziel = folge[i + (vor ? 1 : -1)];
+    if (!ziel) return;
+    e.preventDefault();
+    ziel.scrollIntoView({ block: "center", behavior: "smooth" });
+    spielen(+ziel.dataset.t, ziel, ziel.dataset.ende ? +ziel.dataset.ende : null, ziel.dataset.v);
   });
 }
 

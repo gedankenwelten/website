@@ -184,6 +184,13 @@ body {
   transition: top .85s cubic-bezier(.65,0,.25,1);
   pointer-events: none; z-index: 2;
 }
+.hoerzeiger {
+  position: absolute; left: 1.72rem; width: 7px; height: 7px; margin-top: -3px;
+  border-radius: 50%; border: 1.5px solid var(--akzent); background: var(--papier);
+  opacity: 0; transition: top .5s linear, opacity .4s;
+  pointer-events: none; z-index: 1;
+}
+.hoerzeiger.da { opacity: 1; }
 .zeiger__zeit {
   position: absolute; left: 1.9rem; top: 50%; transform: translateY(-50%);
   font-size: 10.5px; letter-spacing: .06em; color: var(--akzent);
@@ -575,6 +582,8 @@ h1 {
   color: var(--tinte-leise); background: var(--papier); border-top: 1px solid var(--linie);
 }
 .begleiter__leiste b { color: var(--akzent); font-variant-numeric: tabular-nums; }
+.begleiter__hin { cursor: pointer; padding: .15rem .45rem; margin-left: -.45rem; border-radius: 3px; }
+.begleiter__hin:hover { background: var(--papier-tief); }
 .begleiter__ersatz {
   flex: 1; display: flex; flex-direction: column; justify-content: center;
   gap: .8rem; padding: 1.4rem 1.5rem; background: var(--papier-tief);
