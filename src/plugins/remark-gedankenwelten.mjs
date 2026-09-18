@@ -53,7 +53,7 @@ function zellenText(node) {
 export default function remarkGedankenwelten() {
   return (tree, file) => {
     const fm = file.data?.astro?.frontmatter ?? {};
-    let letzterT = null;
+    let letzterT = null, letzterV = null;
     const fehlLinks = [];
 
     // Die Video-Kennung muss VOR den Zitaten feststehen — ohne sie lässt sich
@@ -79,6 +79,11 @@ export default function remarkGedankenwelten() {
         if (!Number.isFinite(t)) return;
 
         const eigen = { className: ["ts"], "data-t": String(t) };
+        // Zeigt die Marke in ein anderes Video als das der Note, nimmt sie
+        // dessen Kennung mit — sonst spielte der Begleiter die richtige
+        // Sekunde im falschen Video (18 Notes zitieren mehrere Videos).
+        const v = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/.exec(node.url ?? "")?.[1];
+        if (v && v !== fm.video) eigen["data-v"] = v;
         // Mehrere Zeitstempel im selben Absatz stapeln sich, statt sich zu decken
         if (n > 0) eigen.style = `top:calc(.5em + ${(n * 1.55).toFixed(2)}em)`;
         // Der Knoten hört auf, ein Link zu sein — sonst greift der HTML-Wandler
@@ -246,6 +251,7 @@ export default function remarkGedankenwelten() {
       // Zeitstempel merken, während wir durchlaufen — der O-Ton erbt ihn
       if (node.data?.hProperties?.["data-t"]) {
         letzterT = Number(node.data.hProperties["data-t"]);
+        letzterV = node.data.hProperties["data-v"] ?? null;
         return;
       }
       if (node.type !== "blockquote") return;
@@ -276,6 +282,7 @@ export default function remarkGedankenwelten() {
       // Kein Callout → gesprochenes Wort. Hörbar machen.
       const eigen = { className: ["oton"] };
       if (letzterT != null) eigen["data-t"] = String(letzterT);
+      if (letzterT != null && letzterV) eigen["data-v"] = letzterV;
 
       // Kennen wir das Ende der Passage, spielt das Zitat genau seinen Satz
       // und hält an — dann heißt es „Hören". Kennen wir es nicht, steigt man
@@ -284,7 +291,7 @@ export default function remarkGedankenwelten() {
       let ende = null;
       if (letzterT != null && fm.video) {
         const roh = text(node).replace(/^\s*/, "");
-        ende = ZITAT_ENDEN[zitatSchluessel(fm.video, letzterT, roh)] ?? null;
+        ende = ZITAT_ENDEN[zitatSchluessel(letzterV ?? fm.video, letzterT, roh)] ?? null;
         if (ende != null) eigen["data-ende"] = String(ende);
       }
 

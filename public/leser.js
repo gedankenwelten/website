@@ -75,7 +75,7 @@ document.querySelectorAll(".ts").forEach((ts) => {
     // beim Klick bereitliegt, bleibt das Gestenfenster intakt.
     apiLaden().catch(() => {});
     const t = ts.dataset.t;
-    guckBild.src = `/frames/${videoId}/${t}.jpg`;
+    guckBild.src = `/frames/${ts.dataset.v || videoId}/${t}.jpg`;
     guckZeit.textContent = `bei ${mmss(+t)} — klicken zum Hören`;
     const r = ts.getBoundingClientRect();
     guck.style.left = Math.max(80, r.left - 216) + "px";
@@ -83,20 +83,22 @@ document.querySelectorAll(".ts").forEach((ts) => {
     guck.classList.add("da");
   });
   ts.addEventListener("mouseleave", () => guck.classList.remove("da"));
-  ts.addEventListener("click", () => spielen(+ts.dataset.t, ts));
+  ts.addEventListener("click", () => spielen(+ts.dataset.t, ts, null, ts.dataset.v));
 });
 
 document.querySelectorAll(".oton[data-t]").forEach((q) => {
   q.addEventListener("click", () =>
-    spielen(+q.dataset.t, q, q.dataset.ende ? +q.dataset.ende : null));
+    spielen(+q.dataset.t, q, q.dataset.ende ? +q.dataset.ende : null, q.dataset.v));
 });
 
 /* ── Begleiter-Player ──
    Lädt erst beim ersten Klick — vorher liegt hier kein YouTube-Byte und kein
-   Cookie. Danach echtes seekTo() statt Neuladen, damit der Lesefluss hält. */
+   Cookie. Danach echtes seekTo() statt Neuladen, damit der Lesefluss hält.
+   Zitiert eine Note mehrere Videos, trägt jede fremde Marke `data-v`; dann
+   wechselt der Player das Video, statt im falschen die Sekunde zu suchen. */
 const begleiter = document.getElementById("begleiter");
 const beiZeit = document.getElementById("beiZeit");
-let player = null, bereit = false, wartet = null;
+let player = null, bereit = false, wartet = null, laeuft = null;
 
 let apiVersprechen = null;
 
@@ -118,10 +120,10 @@ function apiLaden() {
 }
 
 /** Wenn der Player nicht kommt: sagen, was los ist, und den Weg offen lassen. */
-function ersatzweg(t) {
+function ersatzweg(t, v) {
   const buehne = document.getElementById("buehne");
   if (!buehne) return;
-  const url = `https://www.youtube.com/watch?v=${begleiter.dataset.video}&t=${t}`;
+  const url = `https://www.youtube.com/watch?v=${v}&t=${t}`;
   buehne.innerHTML =
     '<div class="begleiter__ersatz">Der YouTube-Player wird auf diesem Gerät blockiert ' +
     '— vermutlich durch einen Inhaltsblocker.<br>' +
@@ -146,48 +148,57 @@ function bisStoppen(ende) {
   }, 200);
 }
 
-async function spielen(t, quelle, ende = null) {
+/** Ans Ziel: im laufenden Video spulen, in einem anderen erst wechseln. */
+function hin(t, v) {
+  if (v === laeuft) { player.seekTo(t, true); player.playVideo(); }
+  else { player.loadVideoById({ videoId: v, startSeconds: t }); laeuft = v; }
+}
+
+async function spielen(t, quelle, ende = null, v = null) {
   if (!begleiter) return;
+  v = v || begleiter.dataset.video;
   begleiter.classList.add("offen");
   beiZeit.textContent = mmss(t);
   document.querySelectorAll(".klingt").forEach((e) => e.classList.remove("klingt"));
   quelle?.classList.add("klingt");
-  document.querySelectorAll(`.ts[data-t="${t}"]`).forEach((e) => e.classList.add("klingt"));
+  document.querySelectorAll(`.ts[data-t="${t}"]`).forEach((e) => {
+    if ((e.dataset.v || begleiter.dataset.video) === v) e.classList.add("klingt");
+  });
 
   try {
     await apiLaden();
   } catch {
-    ersatzweg(t);
+    ersatzweg(t, v);
     return;
   }
 
   if (!player) {
-    wartet = { t, ende };
+    wartet = { t, ende, v };
+    laeuft = v;
     player = new YT.Player("buehne", {
-      videoId: begleiter.dataset.video,
+      videoId: v,
       host: "https://www.youtube-nocookie.com",
       playerVars: { start: t, autoplay: 1, rel: 0, modestbranding: 1 },
       events: {
         onReady: () => {
           bereit = true;
-          if (wartet !== null) { player.seekTo(wartet.t, true); player.playVideo(); }
+          if (wartet !== null) hin(wartet.t, wartet.v);
           bisStoppen(wartet ? wartet.ende : ende);
           wartet = null;
         },
       },
     });
   } else if (bereit) {
-    player.seekTo(t, true);
-    player.playVideo();
+    hin(t, v);
     bisStoppen(ende);
   } else {
-    wartet = { t, ende };
+    wartet = { t, ende, v };
   }
 }
 
 begleiter?.addEventListener("click", () => {
   if (!begleiter.classList.contains("offen") && anker.length) {
-    spielen(+anker[0].dataset.t, null);
+    spielen(+anker[0].dataset.t, null, null, anker[0].dataset.v);
   }
 });
 document.getElementById("zu")?.addEventListener("click", (e) => {
