@@ -70,9 +70,19 @@
   addEventListener("click", (e) => {
     const ziel = e.target.closest?.(".oton[data-t], .ts, #begleiter");
     if (!ziel) return;
+    // Dieselbe Marke noch einmal schließt den Begleiter — das ist kein Start.
+    if (begleiter.classList.contains("offen") && ziel.classList.contains("klingt")) return;
     if (ziel.matches(".oton")) zitate++;
     else if (ziel.matches(".ts")) marken++;
     else if (!begleiter.classList.contains("offen")) direkt++;
+  }, { capture: true });
+
+  // Das Tastenkürzel öffnet ihn wie der ▶-Knopf: ein direkter Start. Im
+  // Capture-Durchgang, also bevor leser.js ihn aufklappt.
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+    if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    if (e.key.toLowerCase() === (begleiter.dataset.taste || "p") && !begleiter.classList.contains("offen")) direkt++;
   }, { capture: true });
 
   addEventListener("message", (e) => {

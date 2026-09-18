@@ -11,6 +11,24 @@ const anker = [...document.querySelectorAll("[data-t]")];
    Die Marken sitzen auf ihrer Position IM GESPRÄCH, nicht im Text. Beim
    Scrollen springt der Zeiger — und macht sichtbar, dass eine Note eine
    Komposition ist und keine Mitschrift. */
+/* ── Die Lesestelle ──
+   Die Marke, an der das Auge gerade ruht: die nächste an der Lesezeile
+   (etwas über der Mitte). Steht keine im Fenster, gilt die letzte, an der
+   man schon vorbei ist — man liest ja in ihrem Abschnitt weiter. Zeitleiste,
+   Tastenkürzel und ▶-Knopf fragen alle hier nach, damit sie dasselbe meinen. */
+function lesestelle() {
+  const mitte = innerHeight * 0.42;
+  let beste = null, dist = Infinity, zuletzt = null;
+  for (const a of anker) {
+    const r = a.getBoundingClientRect();
+    if (r.top < mitte) zuletzt = a;
+    if (r.top > innerHeight || r.bottom < 0) continue;
+    const d = Math.abs(r.top - mitte);
+    if (d < dist) { dist = d; beste = a; }
+  }
+  return beste || zuletzt || anker[0] || null;
+}
+
 if (rail && anker.length) {
   const DAUER = Number(rail.dataset.dauer) || 1;
   const oben = 88, unten = 88;
@@ -37,14 +55,7 @@ if (rail && anker.length) {
 
   let aktiv = null;
   const verfolgen = () => {
-    const mitte = innerHeight * 0.42;
-    let beste = null, dist = Infinity;
-    for (const a of anker) {
-      const r = a.getBoundingClientRect();
-      if (r.top > innerHeight || r.bottom < 0) continue;
-      const d = Math.abs(r.top - mitte);
-      if (d < dist) { dist = d; beste = a; }
-    }
+    const beste = lesestelle();
     if (!beste || beste === aktiv) return;
     aktiv = beste;
     const t = +beste.dataset.t;
@@ -76,20 +87,35 @@ document.querySelectorAll(".ts").forEach((ts) => {
     apiLaden().catch(() => {});
     const t = ts.dataset.t;
     guckBild.src = `/frames/${ts.dataset.v || videoId}/${t}.jpg`;
-    guckZeit.textContent = `bei ${mmss(+t)} — klicken zum Hören`;
+    guckZeit.textContent = begleiter?.classList.contains("offen") && ts.classList.contains("klingt")
+      ? `bei ${mmss(+t)} — klicken schließt`
+      : `bei ${mmss(+t)} — klicken zum Hören`;
     const r = ts.getBoundingClientRect();
     guck.style.left = Math.max(80, r.left - 216) + "px";
     guck.style.top = Math.min(innerHeight - 186, Math.max(12, r.top - 14)) + "px";
     guck.classList.add("da");
   });
   ts.addEventListener("mouseleave", () => guck.classList.remove("da"));
-  ts.addEventListener("click", () => spielen(+ts.dataset.t, ts, null, ts.dataset.v));
+  ts.addEventListener("click", () => {
+    if (klingtSchon(ts)) { schliessen(); guck.classList.remove("da"); return; }
+    spielen(+ts.dataset.t, ts, null, ts.dataset.v);
+  });
 });
 
 document.querySelectorAll(".oton[data-t]").forEach((q) => {
-  q.addEventListener("click", () =>
-    spielen(+q.dataset.t, q, q.dataset.ende ? +q.dataset.ende : null, q.dataset.v));
+  q.addEventListener("click", () => {
+    if (klingtSchon(q)) return schliessen();
+    spielen(+q.dataset.t, q, q.dataset.ende ? +q.dataset.ende : null, q.dataset.v);
+  });
 });
+
+/* Dieselbe Marke noch einmal: dann will man ihn weghaben — der Weg nach
+   rechts unten zum „schließen" ist weit, die Marke liegt unter der Hand.
+   Ein verklungenes Zitat (am Ende angehalten, nicht mehr `klingt`) spielt
+   dagegen wieder von vorn. */
+function klingtSchon(el) {
+  return begleiter?.classList.contains("offen") && el.classList.contains("klingt");
+}
 
 /* ── Begleiter-Player ──
    Lädt erst beim ersten Klick — vorher liegt hier kein YouTube-Byte und kein
@@ -196,17 +222,49 @@ async function spielen(t, quelle, ende = null, v = null) {
   }
 }
 
+function schliessen() {
+  if (!begleiter) return;
+  begleiter.classList.remove("offen");
+  player?.pauseVideo?.();
+  clearInterval(stoppUhr);
+  document.querySelectorAll(".klingt").forEach((el) => el.classList.remove("klingt"));
+}
+
+/* Auf, wo man gerade liest — nicht am Anfang des Gesprächs. Wer auf halber
+   Strecke hören will, meint diese Stelle, nicht die erste Marke. */
+function amLesenOeffnen() {
+  const a = lesestelle();
+  if (a) spielen(+a.dataset.t, a, null, a.dataset.v);
+}
+
 begleiter?.addEventListener("click", () => {
-  if (!begleiter.classList.contains("offen") && anker.length) {
-    spielen(+anker[0].dataset.t, null, null, anker[0].dataset.v);
-  }
+  if (!begleiter.classList.contains("offen")) amLesenOeffnen();
 });
 document.getElementById("zu")?.addEventListener("click", (e) => {
   e.stopPropagation();
-  begleiter.classList.remove("offen");
-  player?.pauseVideo?.();
-  document.querySelectorAll(".klingt").forEach((el) => el.classList.remove("klingt"));
+  schliessen();
 });
+
+/* ── Das Tastenkürzel ──
+   Eine Taste auf, dieselbe Taste zu. Auf geht es an der Lesestelle — dort,
+   wo der Zeiger in der Zeitleiste gerade steht. Esc schließt auch, aber nur,
+   wenn nichts anderes offen ist, das Esc für sich meint (Vorschau, Stern). */
+if (begleiter && anker.length) {
+  const TASTE = begleiter.dataset.taste || "p";
+  const tippt = (el) => el?.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false])");
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || e.defaultPrevented || tippt(e.target)) return;
+    if (e.key.toLowerCase() === TASTE) {
+      e.preventDefault();
+      begleiter.classList.contains("offen") ? schliessen() : amLesenOeffnen();
+    } else if (e.key === "Escape" && begleiter.classList.contains("offen")) {
+      const schau = document.getElementById("schau");
+      const anderes = (schau && !schau.hidden)
+        || document.querySelector(".stern-buehne.offen, #rubrikwahl[data-offen], #anzeige[data-offen], dialog[open]");
+      if (!anderes) schliessen();
+    }
+  });
+}
 
 /* ── Hell / Dunkel ──
    Das Thema selbst setzt der Vorspann im Kopf, noch vor dem ersten Bild —

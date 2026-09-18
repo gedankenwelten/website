@@ -581,6 +581,12 @@ h1 {
 .begleiter__ersatz a:hover { text-decoration: underline; }
 .begleiter__zu { margin-left: auto; cursor: pointer; padding: .15rem .45rem; border-radius: 3px; }
 .begleiter__zu:hover { background: var(--papier-tief); }
+.begleiter__zu kbd {
+  font: inherit; font-size: 9.5px; margin-left: .35em; padding: 0 .35em;
+  border: 1px solid var(--linie); border-radius: 3px; color: var(--tinte-fern);
+}
+/* Auf dem Telefon gibt es keine Taste — dann auch keinen Hinweis darauf. */
+@media (hover: none) { .begleiter__zu kbd { display: none; } }
 
 /* ── Schalter ── */
 .schalter { position: fixed; top: 1.6rem; right: 1.7rem; z-index: 70; display: flex; gap: .45rem; }

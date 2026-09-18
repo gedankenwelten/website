@@ -171,13 +171,14 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
 
 {kopf.video && (
-  <div class="begleiter" id="begleiter" data-video={kopf.video}>
+  <div class="begleiter" id="begleiter" data-video={kopf.video} data-taste="p"
+       title="Hören, wo du gerade liest — Taste P">
     <div class="begleiter__knopf">▶</div>
     <div class="begleiter__buehne">
       <div id="buehne"></div>
       <div class="begleiter__leiste">
         <span>bei <b id="beiZeit">0:00</b></span>
-        <span class="begleiter__zu" id="zu">schließen</span>
+        <span class="begleiter__zu" id="zu" title="Taste P oder Esc — oder die Marke noch einmal klicken">schließen <kbd>P</kbd></span>
       </div>
     </div>
   </div>
