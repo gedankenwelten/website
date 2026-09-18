@@ -88,6 +88,9 @@
 
   /* Der Begleiter: als Blatt über die volle Breite, unten. */
   .begleiter { right: .9rem; bottom: calc(.9rem + env(safe-area-inset-bottom)); }
+  /* Zugeklappt ein Daumenziel: größer als am Rechner, wo die Maus genau trifft. */
+  .begleiter:not(.offen) { width: 3.7rem; height: 3.7rem; }
+  .begleiter__knopf { font-size: 1.3rem; padding-left: .15rem; }
   .begleiter.offen {
     width: calc(100vw - 1.8rem); height: calc((100vw - 1.8rem) * 9 / 16 + 2.6rem);
     left: .9rem; right: .9rem;
