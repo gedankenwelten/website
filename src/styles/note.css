@@ -559,6 +559,10 @@ h1 {
   display: flex; flex-direction: column;
 }
 .begleiter.offen .begleiter__buehne { opacity: 1; }
+/* Zugeklappt ist die Bühne unsichtbar, läge aber mit dem YouTube-Iframe noch
+   über dem ▶ — und ein Klick ins Iframe erreicht die Seite nie. Nach dem
+   ersten Schließen war der Knopf damit tot. */
+.begleiter:not(.offen) .begleiter__buehne { pointer-events: none; }
 .begleiter__buehne iframe { width: 100%; flex: 1; border: 0; display: block; background: #000; }
 /* Im Normalfall ersetzt YouTube diesen Container durch das Iframe. Bleibt er
    stehen (Ausweg bei blockiertem Player), muss er die Höhe selbst füllen.
