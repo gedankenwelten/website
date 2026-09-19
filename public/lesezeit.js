@@ -109,3 +109,30 @@
   });
   addEventListener("pagehide", senden);
 })();
+
+/* Der Weg hinaus — wer eine Note über einen Link nach draußen verlässt.
+
+   Wer nach einer halben Minute geht, kann aufgegeben haben oder zum Video,
+   zum Buch, zur Studie gewechselt sein. Für Umami sieht beides gleich aus.
+   Gezählt wird darum der Klick auf einen Link zu einer anderen Website, und
+   nur ihr Name (youtube.com, genialokal.de, doi.org), nicht die Adresse.
+   Zeitmarken und Zitate zählen nur, wo es keinen Begleiter-Player gibt —
+   wo er sie übernimmt, verlassen sie die Seite nicht. */
+
+(() => {
+  if (!document.querySelector("article.blatt")) return;
+
+  const hinaus = (e) => {
+    if (e.type === "auxclick" && e.button !== 1) return;
+    const a = e.target.closest?.("a[href]");
+    if (!a || e.defaultPrevented) return;
+    if (document.getElementById("begleiter") && a.closest(".oton, .ts, #begleiter")) return;
+    let url;
+    try { url = new URL(a.href, location.href); } catch { return; }
+    if (!/^https?:$/.test(url.protocol) || url.hostname === location.hostname) return;
+    if (!window.umami) return;
+    window.umami.track("hinaus", { ziel: url.hostname.replace(/^www\./, "") });
+  };
+  addEventListener("click", hinaus);
+  addEventListener("auxclick", hinaus);
+})();
