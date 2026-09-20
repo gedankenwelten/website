@@ -232,6 +232,15 @@ function bisStoppen(ende) {
   }, 200);
 }
 
+/* Auf und zu an einer Stelle: Der Begleiter öffnet nicht nur sich selbst,
+   die Seite weiß es mit. Auf dem kleinen Schirm liegt er als Blatt über die
+   volle Breite, und der Stern-Griff säße mitten auf seiner Leiste — über
+   `body.hoert` weicht er aus, solange gehört wird. */
+function begleiterStellen(offen) {
+  begleiter.classList.toggle("offen", offen);
+  document.body.classList.toggle("hoert", offen);
+}
+
 /** Ans Ziel: im laufenden Video spulen, in einem anderen erst wechseln. */
 function hin(t, v) {
   if (v === laeuft) { player.seekTo(t, true); player.playVideo(); }
@@ -242,7 +251,7 @@ async function spielen(t, quelle, ende = null, v = null) {
   if (!begleiter) return;
   pause = null;
   v = v || begleiter.dataset.video;
-  begleiter.classList.add("offen");
+  begleiterStellen(true);
   beiZeit.textContent = mmss(t);
   document.querySelectorAll(".klingt").forEach((e) => e.classList.remove("klingt"));
   quelle?.classList.add("klingt");
@@ -290,7 +299,7 @@ let pause = null;
 function schliessen() {
   if (!begleiter) return;
   if (begleiter.classList.contains("offen") && bereit) pause = { stelle: lesestelle() };
-  begleiter.classList.remove("offen");
+  begleiterStellen(false);
   player?.pauseVideo?.();
   clearInterval(stoppUhr);
   document.querySelectorAll(".klingt").forEach((el) => el.classList.remove("klingt"));
@@ -303,7 +312,7 @@ function amLesenOeffnen() {
   const a = lesestelle();
   if (pause && pause.stelle === a && player?.playVideo) {
     pause = null;
-    begleiter.classList.add("offen");
+    begleiterStellen(true);
     klingtT = null;          // das Mitlesen setzt die Marke gleich wieder
     player.playVideo();
     return;

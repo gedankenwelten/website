@@ -85,6 +85,10 @@
   .stern-buehne__leiste, .stern-buehne .stern { width: auto; }
   .stern-buehne .stern { overflow-x: auto; }
   .stern-griff { bottom: calc(.9rem + env(safe-area-inset-bottom)); }
+  /* Hier liegt der Begleiter als Blatt über die volle Breite — der Griff
+     säße mitten auf seiner Leiste. Solange gehört wird, weicht er unter den
+     Rand, mit derselben Bewegung, mit der er sonst geht (`.weg`). */
+  body.hoert .stern-griff { transform: translate(-50%, 160%); opacity: 0; pointer-events: none; }
 
   /* Der Begleiter: als Blatt über die volle Breite, unten. */
   .begleiter { right: .9rem; bottom: calc(.9rem + env(safe-area-inset-bottom)); }
