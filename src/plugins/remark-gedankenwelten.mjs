@@ -325,6 +325,29 @@ export default function remarkGedankenwelten() {
         for (i++; i < k.length; i++) {
           const n = k[i];
           if (n.type === "heading" && n.depth <= 2) break;
+          /* Die zweite Schreibweise: eine Liste, `- [[Ziel]] — Satz`. 161
+             Notes führen ihre Verbindungen nur so, 68 gemischt — bei ihnen
+             blieb die Randspalte leer oder halb (Cipolla, 20.09.2026). Der
+             Link muss den Eintrag eröffnen (davor höchstens `**` oder `→`);
+             steht er mitten im Satz, ist er eine Erwähnung, kein Ziel. Tote
+             Links sind hier schon `span`, fallen also von selbst heraus. */
+          if (n.type === "list") {
+            for (const li of n.children) {
+              let link = null;
+              visit(li, "link", (l) => { link ??= l; });
+              if (!link?.url?.startsWith("/")) continue;
+              const ganz = text(li).replace(/\s+/g, " ").trim();
+              const titel = text(link).trim();
+              const vor = ganz.indexOf(titel);
+              if (vor < 0 || !/^[→\s]*$/.test(ganz.slice(0, vor))) continue;
+              fm.verbindungen.push({
+                url: link.url,
+                titel,
+                warum: ganz.slice(vor + titel.length).replace(/^[\s—–:-]+/, "").trim(),
+              });
+            }
+            continue;
+          }
           if (n.type !== "heading" || n.depth !== 3) continue;
           let link = null;
           visit(n, "link", (l) => { link ??= l; });

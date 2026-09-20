@@ -168,6 +168,15 @@ export function ladeIndex() {
              Verweis existiert, als ein Satz, der keiner ist. */
           if (ziel && warum.length >= 60) begruendet.push({ ziel, warum: warum.slice(0, 1200) });
         }
+        /* Die zweite Schreibweise, als Liste: `- [[Ziel]] — Satz`, auch
+           `- **[[Ziel]]** —` und `- → [[Ziel]] —`. Rund 1.500 Begründungen
+           stehen so im Bestand und kamen bisher gar nicht an. Der Link muss
+           den Eintrag eröffnen; mitten im Satz ist er eine Erwähnung. */
+        for (const m of abschnitt[1].matchAll(/^[-*][ \t]+(?:→[ \t]*)?\**\[\[([^\]|]+)(?:\|[^\]]*)?\]\]\**[ \t]*(?:\*\([^)]*\)\*[ \t]*)?[—–:-]+[ \t]*([^\n]+(?:\n[ \t]+[^\n]+)*)/gm)) {
+          const warum = m[2].replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, z, a) => a || z)
+                            .replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
+          if (warum.length >= 60) begruendet.push({ ziel: m[1].trim(), warum: warum.slice(0, 1200) });
+        }
       }
 
       alle.push({
