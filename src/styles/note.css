@@ -645,7 +645,23 @@ h1 {
 .begleiter__folgen .folgen-pause { display: none; }
 .begleiter__folgen.ist .folgen-pause { display: inline; }
 .begleiter__folgen.ist .folgen-play { display: none; }
+/* Das Kästchen rechts sagt den Zustand — an oder aus —, das Zeichen links
+   sagt, was der Klick tut. Zwei Fragen, zwei Orte; die Farbe allein trüge
+   das nicht (und wer sie nicht unterscheidet, sähe gar nichts). */
+.begleiter__haken {
+  width: 9px; height: 9px; margin-left: .1rem; position: relative; flex: 0 0 auto;
+  border: 1px solid currentColor; border-radius: 2px; opacity: .65;
+  transition: background .2s, border-color .2s, opacity .2s;
+}
+.begleiter__folgen.ist .begleiter__haken {
+  background: var(--akzent); border-color: var(--akzent); opacity: 1;
+}
+.begleiter__folgen.ist .begleiter__haken::after {
+  content: ""; position: absolute; left: 2.4px; top: .2px; width: 2px; height: 4.6px;
+  border: solid var(--papier); border-width: 0 1.4px 1.4px 0; transform: rotate(40deg);
+}
 .begleiter__folgen:hover { color: var(--tinte-leise); background: var(--papier-tief); }
+.begleiter__folgen:hover .begleiter__haken { opacity: 1; }
 .begleiter__folgen.ist { color: var(--akzent); }
 /* Gerade selbst gescrollt: Der Knopf ist auf Play gesprungen. Einen Moment
    trägt er die Akzentfarbe — damit das Auge ihn findet, ohne dass etwas
