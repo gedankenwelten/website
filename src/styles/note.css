@@ -630,21 +630,27 @@ h1 {
 .begleiter__ersatz a { color: var(--akzent); text-decoration: none; font-weight: 600; }
 .begleiter__ersatz a:hover { text-decoration: underline; }
 /* Der Mitlauf-Schalter — kein Kasten, kein Schieber: dasselbe kleine Wort
-   wie „schließen", nur mit einem Punkt davor, der angeht. Aus ist er Tinte
-   in der leisen Stufe, an trägt er die Akzentfarbe; damit sieht man seinen
-   Zustand aus dem Augenwinkel, ohne ihn zu lesen. */
+   wie „schließen", davor ein Zeichen, das sagt, was der Klick tut. Läuft
+   die Seite mit, steht dort Pause (klicken hält an); steht sie, steht dort
+   Play (klicken nimmt sie wieder mit — und holt sie zur klingenden Stelle).
+   Das ist derselbe Griff wie an jedem Player, und man muss nichts einstellen,
+   um kurz etwas nachzulesen: scrollen genügt, der Knopf springt auf Play. */
 .begleiter__folgen {
   font: inherit; color: var(--tinte-fern); background: none; border: 0;
   display: inline-flex; align-items: center; gap: .4rem;
   cursor: pointer; padding: .15rem .45rem; border-radius: 3px;
+  transition: color .3s;
 }
-.begleiter__folgen::before {
-  content: ""; width: 6px; height: 6px; border-radius: 100px;
-  border: 1px solid currentColor; background: none; transition: background .2s, border-color .2s;
-}
+.begleiter__folgen svg { width: 10px; height: 10px; fill: currentColor; flex: 0 0 auto; }
+.begleiter__folgen .folgen-pause { display: none; }
+.begleiter__folgen.ist .folgen-pause { display: inline; }
+.begleiter__folgen.ist .folgen-play { display: none; }
 .begleiter__folgen:hover { color: var(--tinte-leise); background: var(--papier-tief); }
 .begleiter__folgen.ist { color: var(--akzent); }
-.begleiter__folgen.ist::before { background: var(--akzent); border-color: var(--akzent); }
+/* Gerade selbst gescrollt: Der Knopf ist auf Play gesprungen. Einen Moment
+   trägt er die Akzentfarbe — damit das Auge ihn findet, ohne dass etwas
+   aufpoppt —, dann geht er in die leise Stufe zurück und wartet. */
+.begleiter__folgen.ruft { color: var(--akzent); }
 .begleiter__zu { margin-left: auto; cursor: pointer; padding: .15rem .45rem; border-radius: 3px; }
 .begleiter__zu:hover { background: var(--papier-tief); }
 .begleiter__zu kbd {

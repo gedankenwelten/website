@@ -393,19 +393,35 @@ if (begleiter) {
      Zwei Regeln halten das Nachziehen höflich. Erstens rückt die Seite nur,
      wenn die klingende Stelle aus dem Lesefeld gelaufen ist — sonst spränge
      der Satz alle zwanzig Sekunden unter der Hand, obwohl man längst mitliest.
-     Zweitens gewinnt immer die eigene Hand: Das erste eigene Scrollen schaltet
-     ab, sofort und ohne Rückholung — wer zurückblättert, will lesen, nicht
-     weitergeschoben werden. Gelöscht wird damit aber nur der Zustand, nicht
-     die Entscheidung: Gemerkt bleibt, was am Schalter selbst gewählt wurde,
-     und auf der nächsten Note steht er wieder an. */
+     Zweitens gewinnt immer die eigene Hand: Das eigene Scrollen hält an,
+     sofort und ohne Rückholung — wer zurückblättert, will lesen, nicht
+     weitergeschoben werden.
+
+     Der Knopf ist darum kein Schalter, sondern ein Griff wie an jedem
+     Player: Läuft die Seite mit, zeigt er Pause; steht sie, zeigt er Play
+     und holt auf Klick die Seite zur klingenden Stelle zurück (Andreas'
+     Idee, 20.09.: „für kurzfristiges Entscheiden, und wenn man scrollt, hat
+     man es selbst in der Hand"). Gelöscht wird durch das Scrollen nur der
+     Zustand, nicht die Entscheidung: Gemerkt bleibt, was am Knopf selbst
+     gewählt wurde, und gilt auf der nächsten Note weiter. */
   const folgenKnopf = document.getElementById("folgen");
   let folgt = false;
   const ruhig = matchMedia("(prefers-reduced-motion: reduce)");
 
-  function folgenStellen(an, { merken = true } = {}) {
+  let rufFrist = null;
+  function folgenStellen(an, { merken = true, ruft = false } = {}) {
     folgt = an;
     folgenKnopf?.classList.toggle("ist", an);
     folgenKnopf?.setAttribute("aria-pressed", String(an));
+    folgenKnopf?.setAttribute("title", an
+      ? "Die Seite läuft mit — klicken hält sie an (eigenes Scrollen auch)"
+      : "Die Seite mitnehmen — zur Stelle, die gerade klingt");
+    // Nach dem eigenen Scrollen leuchtet der Knopf einen Moment auf: Er ist
+    // von Pause auf Play gesprungen, und das soll man sehen, ohne dass
+    // etwas aufspringt.
+    clearTimeout(rufFrist);
+    folgenKnopf?.classList.toggle("ruft", ruft);
+    if (ruft) rufFrist = setTimeout(() => folgenKnopf?.classList.remove("ruft"), 3200);
     if (!merken) return;
     try { an ? localStorage.setItem("gw-mitlaufen", "1") : localStorage.removeItem("gw-mitlaufen"); } catch {}
   }
@@ -428,8 +444,9 @@ if (begleiter) {
   try { if (localStorage.getItem("gw-mitlaufen")) folgenStellen(true); } catch {}
 
   /* Die eigene Hand: Rad, Finger, Blättertasten. Ohne `merken`, denn das
-     hier ist kein Widerruf der Wahl, nur ihr Ende für diese Lesung. */
-  const selbst = () => { if (folgt) folgenStellen(false, { merken: false }); };
+     hier ist kein Widerruf der Wahl, nur ihr Anhalten für diesen Moment —
+     der Knopf steht danach auf Play und wartet. */
+  const selbst = () => { if (folgt) folgenStellen(false, { merken: false, ruft: true }); };
   addEventListener("wheel", selbst, { passive: true });
   addEventListener("touchmove", selbst, { passive: true });
   addEventListener("keydown", (e) => {
