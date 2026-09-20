@@ -343,8 +343,9 @@ if (begleiter && anker.length) {
 /* ── Mitlesen ──
    Läuft das Video, wandert die Hervorhebung mit: Die Marke am Rand, deren
    Zeit gerade dran ist, leuchtet — und in der Zeitleiste gleitet der
-   Hörzeiger. Gescrollt wird nicht; wer liest, soll nicht geschoben werden.
-   Wer hinterher will, klickt unten im Player auf die Zeit. */
+   Hörzeiger. Von selbst gescrollt wird nur, wer es verlangt hat: „mitlaufen"
+   unten im Player. Ohne den Schalter bleibt die Seite stehen — wer liest,
+   soll nicht geschoben werden; wer einmal hinterherwill, klickt auf die Zeit. */
 let klingtT = null;
 function markeZuZeit(jetzt, v) {
   let beste = null;
@@ -370,7 +371,61 @@ if (begleiter) {
     document.querySelectorAll(`.ts[data-t="${klingtT}"]`).forEach((e) => {
       if ((e.dataset.v || begleiter.dataset.video) === laeuft) e.classList.add("klingt");
     });
+    nachziehen();
   }, 500);
+
+  /* ── Mitlaufen ──
+     Der Schalter, der aus dem Mitlesen ein Mitgehen macht: Die Seite zieht
+     zur Stelle nach, die gerade klingt. Aus ist der Anfang — eine Seite, die
+     von selbst wandert, soll niemand vorfinden, der sie nicht verlangt hat.
+     Wer sich aber einmal dafür entschieden hat, behält sie: die Wahl liegt
+     im Browser und gilt auf der nächsten Note weiter.
+
+     Zwei Regeln halten das Nachziehen höflich. Erstens rückt die Seite nur,
+     wenn die klingende Stelle aus dem Lesefeld gelaufen ist — sonst spränge
+     der Satz alle zwanzig Sekunden unter der Hand, obwohl man längst mitliest.
+     Zweitens gewinnt immer die eigene Hand: Das erste eigene Scrollen schaltet
+     ab, sofort und ohne Rückholung — wer zurückblättert, will lesen, nicht
+     weitergeschoben werden. Gelöscht wird damit aber nur der Zustand, nicht
+     die Entscheidung: Gemerkt bleibt, was am Schalter selbst gewählt wurde,
+     und auf der nächsten Note steht er wieder an. */
+  const folgenKnopf = document.getElementById("folgen");
+  let folgt = false;
+  const ruhig = matchMedia("(prefers-reduced-motion: reduce)");
+
+  function folgenStellen(an, { merken = true } = {}) {
+    folgt = an;
+    folgenKnopf?.classList.toggle("ist", an);
+    folgenKnopf?.setAttribute("aria-pressed", String(an));
+    if (!merken) return;
+    try { an ? localStorage.setItem("gw-mitlaufen", "1") : localStorage.removeItem("gw-mitlaufen"); } catch {}
+  }
+
+  function nachziehen(sofort = false) {
+    if (!folgt) return;
+    const m = document.querySelector(".oton.klingt, .ts.klingt");
+    if (!m) return;
+    const r = m.getBoundingClientRect();
+    // Steht die Stelle schon bequem im Bild, bleibt die Seite, wo sie ist.
+    if (!sofort && r.top > innerHeight * 0.12 && r.bottom < innerHeight * 0.8) return;
+    scrollTo({ top: scrollY + r.top - innerHeight * 0.38, behavior: ruhig.matches ? "auto" : "smooth" });
+  }
+
+  folgenKnopf?.addEventListener("click", (e) => {
+    e.stopPropagation();          // sonst öffnet der Klick den Begleiter mit
+    folgenStellen(!folgt);
+    if (folgt) nachziehen(true);  // beim Einschalten gleich hingehen
+  });
+  try { if (localStorage.getItem("gw-mitlaufen")) folgenStellen(true); } catch {}
+
+  /* Die eigene Hand: Rad, Finger, Blättertasten. Ohne `merken`, denn das
+     hier ist kein Widerruf der Wahl, nur ihr Ende für diese Lesung. */
+  const selbst = () => { if (folgt) folgenStellen(false, { merken: false }); };
+  addEventListener("wheel", selbst, { passive: true });
+  addEventListener("touchmove", selbst, { passive: true });
+  addEventListener("keydown", (e) => {
+    if ([" ", "PageDown", "PageUp", "Home", "End", "ArrowUp", "ArrowDown"].includes(e.key)) selbst();
+  });
 
   /* Die Zeit unten im Player führt zur Stelle im Text, die gerade klingt. */
   beiZeit.closest("span").classList.add("begleiter__hin");

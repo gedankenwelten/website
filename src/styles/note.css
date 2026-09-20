@@ -562,7 +562,24 @@ h1 {
   transition: width .48s cubic-bezier(.2,.85,.25,1), height .48s cubic-bezier(.2,.85,.25,1),
               border-radius .48s, background .5s;
 }
-.begleiter.offen { width: 25rem; height: 16.4rem; border-radius: 5px; cursor: default; }
+/* Offen nimmt er den Rand, den das Fenster rechts neben dem Satz übrig
+   lässt — feste 25rem ließen auf breiten Schirmen eine Handbreit Papier
+   ungenutzt. Die Grenze ist der Satzspiegel: über den Text darf er nicht
+   wachsen, sonst verdeckt er beim Mitlesen genau die Zeile, an der er
+   hängt. `--satz-rechts` ist die rechte Kante der Spalte — das Blatt steht
+   mittig, also halbes Fenster plus das, was rechts vom Satz noch zum Blatt
+   gehört (36 − 16 − 2,75 = 17,25 --e). Unten bleiben 25rem stehen (schmaler
+   war er nie), oben schließen 40rem ab: breiter wird aus dem Begleiter ein
+   zweites Fenster, das die Seite verdrängt, statt sie zu begleiten.
+   Die Höhe rechnet aus der Breite — 16:9 plus die Leiste darunter —, damit
+   kein schwarzer Rand ums Bild bleibt, wie ihn feste Maße hinterlassen. */
+.begleiter.offen {
+  --satz-rechts: calc(50vw + 17.25 * var(--e));
+  --begleiter-breite: clamp(25rem, calc(100vw - var(--satz-rechts) - 2.8rem), 40rem);
+  width: var(--begleiter-breite);
+  height: calc(var(--begleiter-breite) * 9 / 16 + 2.6rem);
+  border-radius: 12px; cursor: default;
+}
 .begleiter__knopf {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: var(--tinte-leise); font-size: 1rem; transition: opacity .22s;
@@ -612,6 +629,22 @@ h1 {
 }
 .begleiter__ersatz a { color: var(--akzent); text-decoration: none; font-weight: 600; }
 .begleiter__ersatz a:hover { text-decoration: underline; }
+/* Der Mitlauf-Schalter — kein Kasten, kein Schieber: dasselbe kleine Wort
+   wie „schließen", nur mit einem Punkt davor, der angeht. Aus ist er Tinte
+   in der leisen Stufe, an trägt er die Akzentfarbe; damit sieht man seinen
+   Zustand aus dem Augenwinkel, ohne ihn zu lesen. */
+.begleiter__folgen {
+  font: inherit; color: var(--tinte-fern); background: none; border: 0;
+  display: inline-flex; align-items: center; gap: .4rem;
+  cursor: pointer; padding: .15rem .45rem; border-radius: 3px;
+}
+.begleiter__folgen::before {
+  content: ""; width: 6px; height: 6px; border-radius: 100px;
+  border: 1px solid currentColor; background: none; transition: background .2s, border-color .2s;
+}
+.begleiter__folgen:hover { color: var(--tinte-leise); background: var(--papier-tief); }
+.begleiter__folgen.ist { color: var(--akzent); }
+.begleiter__folgen.ist::before { background: var(--akzent); border-color: var(--akzent); }
 .begleiter__zu { margin-left: auto; cursor: pointer; padding: .15rem .45rem; border-radius: 3px; }
 .begleiter__zu:hover { background: var(--papier-tief); }
 .begleiter__zu kbd {

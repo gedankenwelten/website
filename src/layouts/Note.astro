@@ -178,6 +178,8 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       <div id="buehne"></div>
       <div class="begleiter__leiste">
         <span>bei <b id="beiZeit">0:00</b></span>
+        <button class="begleiter__folgen" id="folgen" type="button" aria-pressed="false"
+                title="Die Seite wandert zur Stelle mit, die gerade klingt — sobald du selbst scrollst, schaltet sie ab">mitlaufen</button>
         <span class="begleiter__zu" id="zu" title="Taste P oder Esc — oder die Marke noch einmal klicken · ← → zehn Sekunden · Shift ← → zur nächsten Marke">schließen <kbd>P</kbd></span>
       </div>
     </div>
