@@ -151,7 +151,10 @@ export function ladeIndex() {
          ersten großen Z im Text — „…an Du Bois als Zündfunken" wurde zu
          „…an Du Bois als". Von 4.234 Begründungen im Bestand kamen so
          759 an, alle angeschnitten. */
-      const abschnitt = /^## Verbindungen\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(rumpf);
+      /* Die Überschrift hat Spielarten — „zu anderen Denkern" (293 Notes,
+         alle DenkerVitas), „in der Gedankenwelt" (22). Das Plugin las sie
+         schon immer mit `startsWith`; hier galt nur die nackte Form. */
+      const abschnitt = /^## Verbindungen[^\n]*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(rumpf);
       if (abschnitt) {
         // Der Absatz geht bis zur Leerzeile — nicht bis zum Zeilenende.
         // Diese Begründungen sind oft mehrere Zeilen lang, und wer nur die
