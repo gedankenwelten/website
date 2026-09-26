@@ -113,9 +113,27 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
       Suchindex heraus (`data-pagefind-ignore`): Die Begründungen stehen
       in *ihren* Notes noch einmal, und als Treffer wäre diese hier eine
       Fundstelle für einen Text, der woanders steht. */}
-  {kopf.verbindungen?.length > 0 && (
+  {(kopf.verbindungen?.length > 0 || kopf.nachbesprechung) && (
     <aside class="verwandt" data-pagefind-ignore>
       <div class="verwandt__halt">
+        {/* Die Nachbesprechung steht weit unten, nach dem Video und den
+            Publikumsfragen. Hier oben nennt sie ihre Themen, und ein Klick
+            rollt hin — wer neugierig geworden ist, soll nicht suchen. */}
+        {kopf.nachbesprechung && (
+          <nav class="nachgang" aria-label="Nachbesprechung">
+            <a class="nachgang__kopf" href={`#${kopf.nachbesprechung.anker}`}>
+              Nachbesprechung <span aria-hidden="true">↓</span>
+            </a>
+            {kopf.nachbesprechung.themen.length > 0 && (
+              <ol class="nachgang__liste">
+                {kopf.nachbesprechung.themen.map((t) => (
+                  <li><a href={`#${t.anker}`}>{t.titel}</a></li>
+                ))}
+              </ol>
+            )}
+          </nav>
+        )}
+        {kopf.verbindungen?.length > 0 && <>
         <h2 class="verwandt__kopf">Verwandt <i>{kopf.verbindungen.length}</i></h2>
         {/* Titel stehen, Begründungen liegen zusammengeklappt darunter.
             Acht ganze Absätze in der Randspalte waren eine Wand neben dem
@@ -143,6 +161,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
             );
           })}
         </ol>
+        </>}
       </div>
     </aside>
   )}

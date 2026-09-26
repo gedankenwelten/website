@@ -14,6 +14,7 @@
  * bleibt der Baum ein Baum und rehype macht daraus sauberes Markup.
  */
 import { visit, SKIP } from "unist-util-visit";
+import GithubSlugger, { slug } from "github-slugger";
 import { findeNote } from "../lib/notizen.mjs";
 import { zitatSchluessel } from "../lib/text.mjs";
 import ZITAT_ENDEN from "../data/zitat-enden.json" with { type: "json" };
@@ -168,7 +169,15 @@ export default function remarkGedankenwelten() {
           });
         } else {
           const note = findeNote(ziel);
-          const anker = ziel.includes("#") ? "#" + ziel.split("#")[1] : "";
+          /* `[[Note#Überschrift]]` springt an die Stelle. Obsidian schreibt
+             die Überschrift als Text, die Seite trägt sie als Kennung nach
+             GitHub-Art („die-schule-der-urteilsfähigkeit") — der Anker muss
+             also denselben Weg gehen, sonst landet man am Kopf der Note.
+             Bis zum 26.09.2026 stand hier der rohe Text, und keiner der
+             Sprünge kam an. Blockverweise (`#^id`) gibt es nicht als
+             Kennung; die fallen weg. */
+          const teil = ziel.includes("#") ? ziel.split("#")[1].trim() : "";
+          const anker = teil && !teil.startsWith("^") ? "#" + slug(teil) : "";
           const text = zusatz || note?.titel || ziel.split("/").pop();
           if (note) {
             teile.push({
@@ -358,6 +367,29 @@ export default function remarkGedankenwelten() {
             warum: warum.replace(/\s+/g, " ").trim(),
           });
         }
+      }
+    }
+
+    /* ── Nachbesprechung: der Sprung dorthin ────────────────────────
+       Manche Notes gehen nach dem Video weiter — `## Nachbesprechung`
+       nimmt zwei, drei Themen des Abends noch einmal auf und führt ins
+       Panorama (seit 26.09.2026, Münkler als erste). Sie steht weit unten,
+       nach Tausenden Wörtern; ohne Sprung findet sie nur, wer bis dahin
+       liest. Also nennt die Randspalte ihre Themen, mit Anker.
+       Die Kennungen zählen wir hier selbst mit demselben Verfahren, das
+       rehype später an die Überschriften schreibt — über *alle*
+       Überschriften, damit auch eine doppelte („…-1") richtig ankommt. */
+    fm.nachbesprechung = null;
+    {
+      const zaehler = new GithubSlugger();
+      let drin = false;
+      for (const n of tree.children) {
+        if (n.type !== "heading") continue;
+        const t = text(n).trim();
+        const id = zaehler.slug(t);
+        if (n.depth <= 2) drin = n.depth === 2 && /^nachbesprechung\b/i.test(t);
+        if (drin && n.depth === 2) fm.nachbesprechung = { anker: id, themen: [] };
+        else if (drin && n.depth === 3) fm.nachbesprechung.themen.push({ titel: t, anker: id });
       }
     }
 

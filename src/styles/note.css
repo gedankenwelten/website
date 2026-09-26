@@ -519,6 +519,33 @@ h1 {
   .verwandt__warum { transition: none; }
 }
 
+/* Der Sprung zur Nachbesprechung, über der Nachbarschaft. Dieselbe
+   Kopfzeile wie „Verwandt", damit die Spalte eine Sprache spricht; die
+   Themen darunter tragen einen Strich in Akzentfarbe — sie sind Wege in
+   *diese* Note, keine in andere. */
+.nachgang { margin: 0 0 2.2rem; }
+.nachgang__kopf {
+  display: flex; align-items: baseline; gap: .45rem; margin: 0 0 .75rem;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase;
+  color: var(--tinte-fern); text-decoration: none; border: 0 !important;
+  padding-bottom: .7rem; border-bottom: 1px solid var(--linie) !important;
+}
+.nachgang__kopf:hover { color: var(--akzent); }
+.nachgang__liste { list-style: none; margin: 0; padding: 0; }
+.nachgang__liste li { margin: 0 0 .55rem; }
+.nachgang__liste a {
+  display: block; padding: .1rem 0 .1rem .8rem;
+  border-left: 2px solid color-mix(in oklab, var(--akzent) 55%, transparent) !important;
+  border-bottom: 0 !important; text-decoration: none; color: inherit;
+  font-size: .95rem; line-height: 1.35; text-wrap: pretty; transition: color .2s;
+}
+.nachgang__liste a:hover { color: var(--akzent); }
+
+/* Wer an eine Überschrift springt, soll sie sehen und nicht unter der
+   Kopfleiste suchen. */
+#text :is(h2, h3)[id] { scroll-margin-top: calc(var(--kopf) + 1.4rem); }
+
 /* ── Links ── */
 .strang a:not(.ts) {
   color: inherit; text-decoration: none;
@@ -990,6 +1017,8 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
      zusammen wachsen. */
   .verwandt__kopf  { font-size: 10px; }
   .verwandt__titel { font-size: 1.05rem; }
+  .nachgang__kopf  { font-size: 10px; }
+  .nachgang__liste a { font-size: 1.05rem; }
   .verwandt__warum { font-size: calc(.8 * var(--lese)); line-height: 1.62; }
   .verwandt__liste li { padding: .72rem 1.15rem; margin: 0 -1.15rem; }
   .verwandt__liste li + li::before { left: 1.15rem; right: 1.15rem; }
