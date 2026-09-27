@@ -323,13 +323,20 @@
   .ist-start .kopfleiste .suchfeld { display: none; }
 
   /* Das Sieb in der Kopfleiste (index.astro hängt es beim Andocken um):
-     so hoch wie die Nachbarn, Schrift wie der Knopf, den es ersetzt. */
-  .sieb.sieb--oben { flex: 0 0 auto; width: 21rem; }
-  .sieb--oben .sieb__feld { padding: 0 .85rem; height: 2.05rem; gap: .5rem; }
-  .sieb--oben .sieb__feld:focus-within { box-shadow: 0 0 0 2px var(--akzent-weich); }
-  .sieb--oben .sieb__lupe { width: 13px; height: 13px; }
-  .sieb--oben .sieb__feld input { font-size: .88rem; }
-  .sieb--oben .sieb__taste, .sieb--oben .sieb__teilen { display: none; }
+     dasselbe Feld, nur eingebettet — zwischen Marke und Werkzeug, so breit
+     wie unten (--sieb-breite) oder so breit, wie das Fenster es zulässt.
+     Nur die Höhe gibt nach, damit es in die Leiste passt. */
+  .sieb.sieb--oben {
+    flex: 1 1 var(--sieb-breite, 40rem); max-width: var(--sieb-breite, 40rem);
+    min-width: 14rem; margin: 0 1.6rem; animation: sieb-ein .28s ease;
+  }
+  .sieb--oben .sieb__feld { padding-block: .42rem; }
+  /* Nachgeben darf nur das Feld: Marke und Rubrikwahl behalten ihre Breite,
+     die eigene Spur kürzt sich früher als sonst. */
+  .lenkung-steht .kopfleiste__weg { flex-shrink: 0; }
+  .lenkung-steht .kopfleiste__spur { max-width: 14rem; }
+  @keyframes sieb-ein { from { opacity: 0; transform: translateY(6px); } }
+  @media (prefers-reduced-motion: reduce) { .sieb.sieb--oben { animation: none; } }
 }
 
 /* Drei je Zeile, fest. Vier hatten mehr Bestand auf einen Blick, aber die

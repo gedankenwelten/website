@@ -1079,11 +1079,11 @@ const kurzMonat = (d) => {
     return true;
   };
 
-  /* ── Das Sieb wandert in die Kopfleiste ──
-     Oben unter der Wortmarke steht es groß — dort ist es ein Angebot.
-     Steht die Lenkung (großer Schirm, weit unten), zieht es klein in die
-     Kopfleiste, an die Stelle, wo auf den Notes der Suchknopf sitzt: eine
-     ganze Zeile Lesefläche mehr, und erreichbar bleibt es (27.09., Andreas).
+  /* ── Das Sieb zieht in die Kopfleiste ──
+     Wie die Wortmarke: Steht die Lenkung (großer Schirm, weit unten), bettet
+     sich das Feld in die Kopfleiste ein — in seiner Breite, zwischen Marke
+     und Werkzeug. Schmaler wird es nur, wenn das Fenster den Platz nicht
+     hergibt (27.09., Andreas). Eine ganze Zeile Lesefläche mehr.
 
      Umgehängt statt verschoben: Die Lenkung ist eine eigene Ebene unter der
      Kopfleiste, ein Kind von ihr käme dort nicht hin, wie hoch man es auch
@@ -1094,20 +1094,20 @@ const kurzMonat = (d) => {
   {
     const sieb = document.getElementById("sieb");
     const lenkungEl = document.getElementById("lenkung");
-    const werkzeug = document.querySelector(".kopfleiste__werkzeug");
-    const LANG = siebFeld.placeholder;
+    const weg = document.querySelector(".kopfleiste__weg");
     let oben = false;
 
     const umhaengen = (hinauf) => {
-      if (hinauf === oben || !werkzeug) return;
+      if (hinauf === oben || !weg) return;
       const aktiv = document.activeElement === siebFeld;
       const [von, bis] = [siebFeld.selectionStart, siebFeld.selectionEnd];
       const vorher = lenkungEl.offsetHeight;
-      if (hinauf) werkzeug.prepend(sieb);
+      // So breit wie unten, nie breiter — das Fenster darf es schmaler machen.
+      if (hinauf) document.documentElement.style.setProperty("--sieb-breite", `${sieb.offsetWidth}px`);
+      if (hinauf) weg.after(sieb);
       else lenkungEl.prepend(sieb);
       lenkungEl.style.marginBottom = hinauf ? `calc(2.4rem + ${vorher - lenkungEl.offsetHeight}px)` : "";
       sieb.classList.toggle("sieb--oben", hinauf);
-      siebFeld.placeholder = hinauf ? "Im Bestand suchen …" : LANG;
       if (aktiv) { siebFeld.focus({ preventScroll: true }); siebFeld.setSelectionRange(von, bis); }
       oben = hinauf;
     };
