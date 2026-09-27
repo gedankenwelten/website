@@ -300,6 +300,11 @@
     position: sticky; top: var(--kopf); z-index: 60;
     background: var(--papier);
     padding-top: .9rem; margin-top: -.9rem;
+    /* Die Kopfleiste endet auf einem Bruchteil (3,4 × 16 px = 54,4 px), und
+       nicht jeder Browser rundet beide Kanten gleich: In Firefox blieb ein
+       Pixel Spalt, durch den die Banner beim Scrollen flimmerten (27.09.,
+       Andreas). Eine Papierkante nach oben deckt ihn, wie auch gerundet wird. */
+    box-shadow: 0 -2px 0 var(--papier);
   }
   .feld, .faden { scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
   body.lenkung-steht .kopfleiste { border-bottom-color: transparent; }
