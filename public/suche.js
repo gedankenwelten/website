@@ -198,12 +198,23 @@ if (schicht) {
     const tippt = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "");
     if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !tippt)) {
       e.preventDefault();
+      // Auf der Startseite steht das Sieb — dort hinein statt hierher.
+      if (schicht.hidden && window.gwSieb?.()) return;
       schicht.hidden ? oeffnen() : schliessen();
     }
   });
 
   for (const el of document.querySelectorAll("[data-schliessen]")) el.addEventListener("click", schliessen);
   for (const el of document.querySelectorAll("[data-suche-auf]")) {
-    el.addEventListener("click", (e) => { e.preventDefault(); oeffnen(); });
+    el.addEventListener("click", (e) => { e.preventDefault(); if (!window.gwSieb?.()) oeffnen(); });
   }
+
+  /* Das Sieb der Startseite reicht seine Anfrage hierher weiter, wenn
+     man die Eingabetaste drückt — mit dem Wort, das es verstanden hat. */
+  window.gwSuche = {
+    async oeffnen(begriff) {
+      await oeffnen();
+      if (begriff) { feld.value = begriff; suchen(begriff); }
+    },
+  };
 }

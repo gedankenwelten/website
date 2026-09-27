@@ -81,11 +81,56 @@
    dieselbe Frage beantwortet: was will ich gerade sehen. */
 .lenkung {
   display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 2rem; flex-wrap: wrap;
+  gap: 1rem 2rem; flex-wrap: wrap;
   margin: 0 0 2.4rem; padding-bottom: 1.3rem;
   border-bottom: 1px solid var(--linie);
 }
 .lenkung__rubriken { display: flex; flex-wrap: wrap; gap: .4rem; flex: 1; min-width: 0; }
+
+/* ── Das Sieb ──
+   Eine eigene Zeile über den Rubriken, in der Lenkung und darum mit ihr
+   stehend: Wer weit unten ist, sucht, ohne zurück nach oben zu müssen.
+   Dieselbe runde Kante wie die Chips — es ist ein Filter wie sie, nur
+   einer, in den man schreibt. */
+.sieb { flex: 1 0 100%; display: flex; align-items: center; gap: .55rem; }
+.sieb__feld {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: .65rem;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  padding: .55rem 1.15rem; cursor: text; transition: border-color .2s, box-shadow .2s;
+}
+.sieb__feld:hover { border-color: var(--tinte-fern); }
+.sieb__feld:focus-within { border-color: var(--tinte-fern); box-shadow: 0 0 0 3px var(--akzent-weich); }
+.sieb__lupe { width: 15px; height: 15px; flex: 0 0 auto; color: var(--tinte-fern); }
+.sieb__feld input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: none; padding: 0;
+  font: inherit; font-size: 1.02rem; color: var(--tinte);
+}
+.sieb__feld input::placeholder { color: var(--tinte-fern); font-style: italic; }
+.sieb__taste {
+  flex: 0 0 auto; font-family: "Inter", -apple-system, sans-serif; font-size: 9.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.sieb__taste[hidden], .sieb__teilen[hidden] { display: none; }
+.sieb__teilen { flex: 0 0 auto; }
+
+/* Die Zeile über dem Feld, die sagt, was gefunden wurde. */
+.sieb__zahl {
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
+  letter-spacing: .08em; color: var(--tinte-fern); font-variant-numeric: tabular-nums;
+}
+.sieb__vitas { display: contents; }
+.sieb__vita {
+  font-size: .92rem; color: var(--tinte-leise); text-decoration: none;
+  border-bottom: 1px solid var(--akzent-weich); transition: color .2s, border-color .2s;
+}
+.sieb__vita:hover { color: var(--akzent); border-bottom-color: var(--akzent); }
+.sieb__vita i {
+  font-style: normal; font-family: "Inter", -apple-system, sans-serif; font-size: 9px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--r-denkervita); margin-right: .2rem;
+}
+#siebbalken button + button { margin-left: .4rem; }
+/* Ein Chip, der aus der jetzigen Auswahl nichts machen würde, tritt zurück. */
+.chip--leer { opacity: .45; }
 .lenkung__ansicht { display: flex; gap: .45rem; flex: 0 0 auto; }
 
 .chip {
@@ -633,6 +678,14 @@
      die sagt, was gewählt ist, und die Chips erst auf Tippen zeigt —
      daneben die zwei Wege. */
   .lenkung { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .45rem; margin-bottom: 1.2rem; padding-bottom: .9rem; }
+  .sieb { margin-bottom: .35rem; }
+  .sieb__feld { padding: .5rem .95rem; }
+  .sieb__taste { display: none; }
+  .sieb__balken { gap: .45rem .8rem; }
+  .sieb__zahl { flex: 1 0 100%; order: 1; }
+  .sieb__balken .sieb__vita { order: 2; }
+  #siebbalken button, #siebbalken button + button { order: 3; margin-left: 0; padding: .36rem .85rem; }
+  #siebbalken #siebVoll { margin-left: auto; }
   .lenkung__klappe {
     display: inline-flex; align-items: center; gap: .45rem; flex: 0 0 auto;
     font-family: "Inter", -apple-system, sans-serif; font-size: 11px; letter-spacing: .05em;
@@ -660,7 +713,9 @@
      auf 390 px waren gedrungen (Andreas, 05.09.); eine Karte pro Zeile
      mit großem Bild wäre eine Bildergalerie. Die Zeile ist die Form, die
      den Bestand zeigt, statt ihn vorzuführen. */
-  .feld__gitter { display: block; }
+  /* Eine Spalte, aber flex statt block: Nur so wirkt `order`, mit dem das
+     Sieb nach Gewicht ordnet und die Nachbarschaft ihre Quelle vorstellt. */
+  .feld__gitter { display: flex; flex-direction: column; gap: 0; }
   .kachel {
     display: grid; grid-template-columns: minmax(0, 1fr) 92px;
     grid-template-areas: "kennung bild" "titel bild" "teaser bild";

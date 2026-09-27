@@ -113,6 +113,23 @@ const nachbarschaft = feld.map((n) => {
     .filter((i) => i !== undefined);
 });
 
+/* ── Das Sieb ──
+   Was eine Karte außer Titel und Teaser (die stehen ohnehin im Dokument)
+   noch findbar macht: ihre Tags und die Namen der Menschen, auf deren
+   Vita sie verweist. Wer „Arendt" tippt, soll auch die Note finden, in
+   der Arendt nur eine Stimme unter mehreren ist. Die Vitas selbst haben
+   keine Karte — sie kommen als Liste mit, damit das Sieb auf sie zeigen
+   kann, statt so zu tun, als gäbe es sie nicht. */
+const vitaName = (n) => (n.titel ?? n.basis).replace(/\s*—\s*DenkerVita\s*$/i, "").trim();
+const vitas = notes.filter((n) => n.rubrik === "DenkerVita").map((n) => ({ n: vitaName(n), u: n.url }));
+const markenVon = (n) => [
+  ...n.tags,
+  ...[...(g.hinaus.get(n.id) ?? [])]
+    .map((id) => g.knoten.get(id))
+    .filter((k) => k?.rubrik === "DenkerVita")
+    .map(vitaName),
+].join(" ");
+
 /* Wie viele Karten sichtbar starten. Alle stehen im Dokument — sonst
    könnte der Rubrikfilter nicht sofort antworten, und ein Filter, der
    erst lädt, ist zäher als gar keiner. Sichtbar ist erst dieser Anfang. */
@@ -201,6 +218,26 @@ const kurzMonat = (d) => {
 
   {/* ── Die Leiste: filtern und die Ansicht wählen ── */}
   <div class="lenkung" id="lenkung">
+    {/* Das Sieb — ein Feld über den Rubriken (27.09.2026, Andreas). Es
+        filtert die Karten beim Tippen; die Eingabetaste führt in den
+        Volltext. Vorher gab es nur die Suchschicht, und die fand bei
+        einem Tippfehler im Namen nicht nichts, sondern Falsches. */}
+    <div class="sieb" id="sieb">
+      <label class="sieb__feld">
+        <svg class="sieb__lupe" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M10.4 10.4 L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <input id="siebFeld" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search"
+               placeholder="Im Bestand suchen — ein Name, ein Titel, ein Thema …" aria-label="Notes durchsuchen">
+        <kbd class="sieb__taste" id="siebTaste" hidden>↵ Volltext</kbd>
+      </label>
+      {/* Die Auswahl gehört dem, der sie getroffen hat: Sie steht ganz in
+          der Adresse — Lesezeichen, Link, Telefon, alles hält sie. */}
+      <button class="lenkung__knopf sieb__teilen" id="teilen" type="button" hidden>Teilen</button>
+    </div>
+    <script type="application/json" id="siebVitas" set:html={JSON.stringify(vitas)}></script>
+
     {/* Nur auf dem Telefon sichtbar (start.css): sagt, welche Rubrik
         gewählt ist, und zeigt die Chips erst auf Tippen. */}
     <button class="lenkung__klappe" id="klappe" type="button" aria-expanded="false" aria-controls="filter">
@@ -275,6 +312,17 @@ const kurzMonat = (d) => {
       <button type="button" id="themaAus">Aufheben</button>
     </p>
 
+    {/* Sagt, was das Sieb gefunden hat — und, wenn es einen Tippfehler
+        verziehen hat, wonach es wirklich gesucht hat. */}
+    <p class="verwandtschaft sieb__balken" id="siebbalken" hidden>
+      <span class="verwandtschaft__wort">Gesucht</span>
+      <b id="siebWort"></b>
+      <span class="sieb__zahl" id="siebZahl"></span>
+      <span class="sieb__vitas" id="siebVitaListe"></span>
+      <button type="button" id="siebVoll">Im Volltext</button>
+      <button type="button" id="siebAus">Aufheben</button>
+    </p>
+
 
     <ol class="feld__gitter" id="gitter">
       {feld.map((n, i) => (
@@ -283,6 +331,7 @@ const kurzMonat = (d) => {
             data-themen={n.tags.filter((t) => inWolke.has(t)).join(" ") || null}
             data-nah={nachbarschaft[i].length ? nachbarschaft[i].join(",") : null}
             data-titel={n.titel}
+            data-marken={markenVon(n) || null}
             hidden={i >= ERSTE_LADUNG}>
           <a class="kachel__weg" href={n.url}>
             <span class="kachel__bild">
@@ -513,7 +562,10 @@ const kurzMonat = (d) => {
   let thema = "";       // "" heißt: kein Thema gewählt
   const themenVon = kacheln.map((k) => new Set((k.dataset.themen ?? "").split(" ")));
   const themenbalken = document.getElementById("themenbalken");
-  const passt = (k, i) => (!rubrik || k.dataset.rubrik === rubrik) && (!thema || themenVon[i].has(thema));
+  let treffer = null;   // Map Platz → Gewicht, solange das Sieb etwas enthält
+  const passt = (k, i) => (!rubrik || k.dataset.rubrik === rubrik) && (!thema || themenVon[i].has(thema))
+    && (!treffer || treffer.has(i));
+  const siebbalken = document.getElementById("siebbalken");
   let gezeigt = PORTION;
   let quelle = null;    // Platznummer der Karte, deren Nachbarschaft steht
 
@@ -534,6 +586,7 @@ const kurzMonat = (d) => {
       });
       for (const z of wiederkehrZeilen) z.hidden = true;
       themenbalken.hidden = true;
+      siebbalken.hidden = true;
       mehr.hidden = true;
       stand.textContent = `${nah.size} verwandt`;
       kappungPruefen();
@@ -542,23 +595,59 @@ const kurzMonat = (d) => {
 
     // Die Wiederkehr-Zeilen gehören zum Grundzustand: Wer eine Rubrik
     // wählt, will diese Rubrik sehen, nicht den Blick zurück.
-    for (const z of wiederkehrZeilen) z.hidden = !!(rubrik || thema);
+    for (const z of wiederkehrZeilen) z.hidden = !!(rubrik || thema || treffer);
     themenbalken.hidden = !thema;
     if (thema) document.getElementById("themenbalkenWort").textContent = thema.replace(/-/g, " ");
-    let passend = 0, sichtbar = 0;
-    for (const [i, k] of kacheln.entries()) {
-      const trifft = passt(k, i);
-      if (trifft) passend++;
-      const zeigen = trifft && sichtbar < gezeigt;
-      k.hidden = !zeigen;
+
+    /* Ohne Sieb stehen die Karten nach Datum, mit Sieb nach Gewicht — was
+       im Titel trifft, vor dem, was nur im Teaser vorkommt. Gleich schwere
+       behalten ihre Datumsfolge. */
+    const reihe = treffer
+      ? [...treffer.keys()].sort((a, b) => treffer.get(b) - treffer.get(a) || a - b)
+      : kacheln.map((_, i) => i);
+    for (const k of kacheln) {
+      k.hidden = true;
       k.style.order = "";
       k.classList.remove("kachel--quelle");
-      if (zeigen) sichtbar++;
+    }
+    let passend = 0, sichtbar = 0;
+    for (const [n, i] of reihe.entries()) {
+      if (!passt(kacheln[i], i)) continue;
+      passend++;
+      if (sichtbar >= gezeigt) continue;
+      kacheln[i].hidden = false;
+      if (treffer) kacheln[i].style.order = n;
+      sichtbar++;
     }
     mehr.hidden = sichtbar >= passend;
     // Zählt, was die Auswahl übriglässt — nicht, wie groß das Regal ist.
     stand.textContent = sichtbar >= passend ? `alle ${passend}` : `${sichtbar} von ${passend}`;
+    chipsZaehlen();
+    siebZeigen(passend);
+    teilenKnopf.hidden = !(rubrik || thema || treffer);
     kappungPruefen();
+  }
+
+  /* Die Zahl am Chip sagt, was er aus der *jetzigen* Auswahl machen würde
+     — „Denker 3" ist bei einer Suche eine Auskunft, „Denker 119" nur eine
+     Wiederholung des Regals. Ohne Suche und Thema steht wieder die Größe. */
+  const chips = [...document.querySelectorAll(".chip")];
+  for (const c of chips) c._groesse = c.querySelector("i").textContent;
+  function chipsZaehlen() {
+    const zahl = new Map();
+    if (treffer || thema) {
+      kacheln.forEach((k, i) => {
+        if ((thema && !themenVon[i].has(thema)) || (treffer && !treffer.has(i))) return;
+        zahl.set(k.dataset.rubrik, (zahl.get(k.dataset.rubrik) ?? 0) + 1);
+        zahl.set("", (zahl.get("") ?? 0) + 1);
+      });
+    }
+    for (const c of chips) {
+      const n = treffer || thema ? zahl.get(c.dataset.rubrik) ?? 0 : null;
+      c.querySelector("i").textContent = n ?? c._groesse;
+      c.classList.toggle("chip--leer", n === 0 && c.dataset.rubrik !== rubrik);
+    }
+    window.gwEtikett?.();
   }
 
   /* ── Die Welle ──
@@ -640,6 +729,7 @@ const kurzMonat = (d) => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
     rubrik = chip.dataset.rubrik;
+    adresseSetzen("rubrik", rubrik);
     gezeigt = PORTION;
     wolkeZeigen(false);
     for (const c of document.querySelectorAll(".chip")) c.classList.toggle("ist-gewaehlt", c === chip);
@@ -686,9 +776,7 @@ const kurzMonat = (d) => {
   }
 
   function themaSetzen(t) {
-    const adresse = new URL(location.href);
-    t ? adresse.searchParams.set("thema", t) : adresse.searchParams.delete("thema");
-    history.replaceState(null, "", adresse.pathname + adresse.search);
+    adresseSetzen("thema", t);
     welle(() => {
       thema = t; gezeigt = PORTION; quelle = null; balken.hidden = true;
       wolkeZeigen(false);
@@ -717,6 +805,299 @@ const kurzMonat = (d) => {
   });
   document.getElementById("themaAus").addEventListener("click", () => themaSetzen(""));
 
+  /* ══ Das Sieb ══
+     Ein Feld, das die Karten beim Tippen ausdünnt — über Titel, Teaser,
+     Tags und die Namen der Menschen, auf deren Vita eine Note verweist.
+
+     Tippfehler verzeiht es, aber nur, wo es muss: Erst wird wörtlich
+     gesucht (Wortanfang, bei längeren Wörtern auch mitten im Wort). Nur
+     wenn ein Wort *nirgends* vorkommt, darf es unscharf werden — ein oder
+     zwei Buchstaben daneben, Dreher mitgezählt. So wird aus „Morrin"
+     Morin, aus „Precht" aber nie Brecht, denn Precht gibt es ja. Die
+     Volltextsuche (Pagefind) kannte nur den ersten Schritt und fand bei
+     „Harrari" nicht nichts, sondern Tsitsi Dangarembga.
+
+     Umlaute zählen nicht: ä, ae und a sind dasselbe, ß ist ss. Groß und
+     klein sowieso nicht. */
+  const siebFeld = document.getElementById("siebFeld");
+  const siebTaste = document.getElementById("siebTaste");
+  const siebWort = document.getElementById("siebWort");
+  const siebZahl = document.getElementById("siebZahl");
+  const siebVitaListe = document.getElementById("siebVitaListe");
+  const teilenKnopf = document.getElementById("teilen");
+  let gesucht = "";     // was tatsächlich gesucht wurde, nach Korrektur
+  let eingabe = "";     // was dasteht
+
+  const glatt = (w) => w.toLowerCase().replace(/ß/g, "ss")
+    .normalize("NFD").replace(/\p{M}/gu, "")
+    .replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u");
+  const woerter = (text) => (text.match(/[\p{L}\p{N}]+/gu) ?? [])
+    .map((w) => [glatt(w), w]).filter(([g]) => g.length > 1);
+
+  /* Der Wortschatz wird erst gebaut, wenn jemand das Feld anfasst —
+     wer nur schaut, zahlt nichts dafür. */
+  let karten = null;    // glattes Wort → Map(Platz → Gewicht)
+  let kartenForm = null; // glattes Wort → wie es geschrieben stand
+  let vitaWort = null;  // glattes Wort → Set(Vita-Nummer)
+  let vitaForm = null;
+  const vitaListe = JSON.parse(document.getElementById("siebVitas").textContent);
+
+  function wortschatzBauen() {
+    if (karten) return;
+    karten = new Map(); kartenForm = new Map();
+    const nimm = (text, i, gewicht) => {
+      for (const [g, w] of woerter(text ?? "")) {
+        if (!kartenForm.has(g)) kartenForm.set(g, w);
+        const m = karten.get(g) ?? karten.set(g, new Map()).get(g);
+        if ((m.get(i) ?? 0) < gewicht) m.set(i, gewicht);
+      }
+    };
+    kacheln.forEach((k, i) => {
+      nimm(k.dataset.titel, i, 3);
+      nimm(k.dataset.marken, i, 2);
+      nimm(k.querySelector(".kachel__teaser")?.textContent, i, 1);
+    });
+    vitaWort = new Map(); vitaForm = new Map();
+    vitaListe.forEach((v, n) => {
+      for (const [g, w] of woerter(v.n)) {
+        if (!vitaForm.has(g)) vitaForm.set(g, w);
+        (vitaWort.get(g) ?? vitaWort.set(g, new Set()).get(g)).add(n);
+      }
+    });
+  }
+
+  /* Wie nah kommt q an einen Anfang von t heran? Editierdistanz mit
+     Drehern, aber gegen jedes Präfix von t — wer „Harar" tippt, ist auf
+     dem Weg zu Harari, nicht daneben. Bricht ab, sobald k überschritten
+     ist; darum kostet das auch über zwanzigtausend Wörter nichts. */
+  function naehe(q, t, k) {
+    const m = q.length, n = Math.min(t.length, m + k);
+    let vor = null, zeile = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+      const neu = [i];
+      let kleinste = i;
+      for (let j = 1; j <= n; j++) {
+        let d = Math.min(zeile[j] + 1, neu[j - 1] + 1, zeile[j - 1] + (q[i - 1] === t[j - 1] ? 0 : 1));
+        if (i > 1 && j > 1 && q[i - 1] === t[j - 2] && q[i - 2] === t[j - 1]) d = Math.min(d, vor[j - 2] + 1);
+        neu[j] = d;
+        if (d < kleinste) kleinste = d;
+      }
+      if (kleinste > k) return Infinity;
+      vor = zeile; zeile = neu;
+    }
+    return Math.min(...zeile.slice(Math.max(0, m - k)));
+  }
+
+  /* Welche Wörter des Wortschatzes ein Suchwort meint, und wie gut. */
+  function gemeint(q, formen) {
+    const gefunden = new Map();
+    for (const t of formen.keys()) {
+      if (t === q) gefunden.set(t, 1);
+      // Ein kurzes Wort ist oft nur der Anfang eines anderen („los" in
+      // „löscht") — es darf treffen, aber leiser.
+      else if (t.startsWith(q)) gefunden.set(t, q.length > 3 ? .85 : .4);
+      else if (q.length >= 5 && t.includes(q)) gefunden.set(t, .6);
+    }
+    if (gefunden.size) return { gefunden, statt: null };
+    /* Unscharf zählt nur, was am nächsten liegt: Ist „Harari" einen
+       Buchstaben entfernt, bleibt „Harare" mit zweien draußen. */
+    const k = q.length >= 7 ? 2 : q.length >= 4 ? 1 : 0;
+    const nah = new Map();
+    let bestes = null, bestesD = Infinity;
+    if (k) for (const t of formen.keys()) {
+      if (t.length < q.length - k) continue;
+      const d = naehe(q, t, k);
+      if (d > k || d > bestesD) continue;
+      if (d < bestesD) { nah.clear(); bestesD = d; bestes = t; }
+      else if (t.length < bestes.length) bestes = t;
+      nah.set(t, .5);
+    }
+    return { gefunden: nah, statt: bestes && formen.get(bestes) };
+  }
+
+  function sieben(text) {
+    eingabe = text;
+    const suchwoerter = woerter(text);
+    if (!suchwoerter.length) { treffer = null; gesucht = ""; return []; }
+    wortschatzBauen();
+
+    let summe = null;
+    const korrigiert = [];
+    for (const [q, roh] of suchwoerter) {
+      const { gefunden, statt } = gemeint(q, kartenForm);
+      korrigiert.push(statt ?? roh);
+      const hier = new Map();
+      for (const [t, guete] of gefunden) {
+        for (const [i, gewicht] of karten.get(t)) {
+          const w = guete * gewicht;
+          if ((hier.get(i) ?? 0) < w) hier.set(i, w);
+        }
+      }
+      // Jedes Wort muss treffen — mehrere schränken ein.
+      if (!summe) summe = hier;
+      else for (const [i, w] of summe) hier.has(i) ? summe.set(i, w + hier.get(i)) : summe.delete(i);
+    }
+    treffer = summe;
+    gesucht = korrigiert.join(" ");
+
+    // Die Vitas: gleiche Regeln, eigene Liste.
+    let vitas = null;
+    for (const [q] of suchwoerter) {
+      const { gefunden } = gemeint(q, vitaForm);
+      const hier = new Set([...gefunden.keys()].flatMap((t) => [...vitaWort.get(t)]));
+      vitas = vitas ? new Set([...vitas].filter((n) => hier.has(n))) : hier;
+    }
+    return [...vitas].slice(0, 3).map((n) => vitaListe[n]);
+  }
+
+  let gefundeneVitas = [];
+  function siebZeigen(passend) {
+    siebbalken.hidden = !treffer;
+    siebTaste.hidden = !treffer;
+    if (!treffer) return;
+    const anders = glatt(gesucht) !== glatt(eingabe.trim());
+    siebWort.textContent = `„${gesucht}"`;
+    const ohneFilter = treffer.size;
+    const imText = [...ausText].filter((i) => passt(kacheln[i], i)).length;
+    siebZahl.textContent = passend
+      ? `${passend} ${passend === 1 ? "Note" : "Notes"}${imText ? ` · ${imText === passend ? "alle" : `${imText} davon`} nur im Text` : ""}${anders ? ` · statt „${eingabe.trim()}"` : ""}`
+      : ohneFilter
+        ? `hier keine · ${ohneFilter} ohne ${rubrik && thema ? "Rubrik und Thema" : rubrik ? "Rubrik" : "Thema"}`
+        : "keine Note im Feld";
+    siebVitaListe.replaceChildren(...gefundeneVitas.map((v) => {
+      const a = document.createElement("a");
+      a.className = "sieb__vita";
+      a.href = v.u;
+      a.innerHTML = `<i>Vita</i> ${v.n.replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;")}`;
+      return a;
+    }));
+  }
+
+  function siebSetzen(text) {
+    gefundeneVitas = sieben(text);
+    adresseSetzen("q", text.trim());
+    gezeigt = PORTION;
+    if (quelle !== null) { quelle = null; balken.hidden = true; }
+    auslegen();
+    imVolltext(gesucht);
+  }
+
+  /* ── Die zweite Tiefe: der Volltext ──
+     Titel, Teaser und Tags sagen, *worum* es in einer Note geht. Dass
+     Nussbaum in der Arendt-Vita vorkommt oder Žižek bei Finkelde, steht
+     nur im Text. Also fragt das Sieb nach jedem Wort still auch Pagefind
+     — mit dem Wort, das es verstanden hat, nicht mit dem Tippfehler — und
+     stellt, was dort auftaucht, als Karten *hinter* die eigenen Treffer.
+     Der Index kommt erst mit dem ersten Wort; wer nur schaut, lädt nichts. */
+  let pagefind = null, pfLauf = 0, platzVon = null;
+  const ausText = new Set();
+  const pfad = (u) => decodeURI(new URL(u, location.origin).pathname)
+    .replace(/\/index\.html$|\.html$/, "").replace(/\/$/, "") || "/";
+
+  async function imVolltext(begriff) {
+    const lauf = ++pfLauf;
+    ausText.clear();
+    if (!treffer || begriff.trim().length < 3) return;
+    try {
+      if (!pagefind) {
+        const pf = "/pagefind/pagefind.js";
+        pagefind = await import(/* @vite-ignore */ pf);
+        await pagefind.options({ excerptLength: 26 });   // dieselben wie suche.js
+        await pagefind.init();
+      }
+      const antwort = await pagefind.search(begriff);
+      if (lauf !== pfLauf || !treffer) return;
+      // Nur die ersten vierzig: Jeder Treffer ist ein eigenes kleines
+      // Stück, das geladen werden will, und hinter vierzig liest keiner.
+      const daten = await Promise.all(antwort.results.slice(0, 40).map((r) => r.data()));
+      if (lauf !== pfLauf || !treffer) return;
+      platzVon ??= new Map(kacheln.map((k, i) => [pfad(k.querySelector("a").href), i]));
+      for (const d of daten) {
+        const i = platzVon.get(pfad(d.url));
+        if (i === undefined || treffer.has(i)) continue;
+        treffer.set(i, .2);   // leichter als jeder eigene Treffer
+        ausText.add(i);
+      }
+      if (ausText.size) auslegen();
+    } catch {
+      /* Unter `astro dev` gibt es keinen Index — dann bleibt es beim Sieb. */
+    }
+  }
+
+  let siebWarten = null;
+  siebFeld.addEventListener("focus", wortschatzBauen, { once: true });
+  siebFeld.addEventListener("input", () => {
+    // Wer tippt, will das Feld sehen — nicht den Faden, nicht die Wolke.
+    if (wurzel.dataset.ansicht === "faden") ansichtSetzen("feld", false);
+    if (!wolkeEl.hidden) wolkeZeigen(false);
+    clearTimeout(siebWarten);
+    siebWarten = setTimeout(() => siebSetzen(siebFeld.value), 110);
+  });
+
+  /* Die Eingabetaste führt eine Tiefe weiter: in den Volltext, mit dem
+     Wort, das das Sieb verstanden hat, nicht mit dem Tippfehler. */
+  const TASTATUR_WEG = matchMedia("(pointer: coarse)").matches;
+  if (matchMedia("(max-width: 700px)").matches) siebFeld.placeholder = "Ein Name, ein Titel, ein Thema …";
+  const volltext = () => window.gwSuche?.oeffnen(gesucht || siebFeld.value.trim());
+  siebFeld.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); clearTimeout(siebWarten); siebSetzen(siebFeld.value);
+      // Auf dem Telefon heißt die Taste „Suchen" und soll die Tastatur
+      // schließen, damit man die Karten sieht — keine zweite Schicht öffnen.
+      TASTATUR_WEG ? siebFeld.blur() : volltext();
+    }
+    if (e.key === "Escape" && siebFeld.value) { e.preventDefault(); siebFeld.value = ""; siebSetzen(""); }
+  });
+  document.getElementById("siebVoll").addEventListener("click", volltext);
+  document.getElementById("siebAus").addEventListener("click", () => {
+    siebFeld.value = "";
+    welle(() => siebSetzen(""));
+  });
+
+  /* Die Suche in der Kopfleiste (und ⌘K) führt hier ins Sieb statt in
+     die Schicht darüber — zwei Felder auf einer Seite hießen, erst
+     entscheiden zu müssen, in welches man tippt. Im Faden gilt das nicht:
+     Dort steht kein Feld, also bleibt es bei der Schicht. */
+  window.gwSieb = () => {
+    if (wurzel.dataset.ansicht === "faden") return false;
+    const oben = document.getElementById("lenkung").getBoundingClientRect().top;
+    if (oben < 0 || oben > innerHeight * .6) document.getElementById("lenkung").scrollIntoView({ block: "start", behavior: "smooth" });
+    siebFeld.focus({ preventScroll: true });
+    siebFeld.select();
+    return true;
+  };
+
+  /* ══ Die Auswahl in der Adresse ══
+     Rubrik, Thema und Sieb stehen in der Adresse — das ist das eigentliche
+     Speichern. Ein Lesezeichen hält es, ein Link trägt es weiter, auf dem
+     Telefon geht es auf wie am Schreibtisch. */
+  function adresseSetzen(name, wert) {
+    const adresse = new URL(location.href);
+    wert ? adresse.searchParams.set(name, wert) : adresse.searchParams.delete(name);
+    history.replaceState(null, "", adresse.pathname + adresse.search);
+  }
+
+  const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
+  teilenKnopf.addEventListener("click", async () => {
+    const was = [eingabe.trim() && `„${gesucht || eingabe.trim()}"`, rubrik, thema && thema.replace(/-/g, " ")]
+      .filter(Boolean).join(" · ");
+    const titel = `Gedankenwelten — ${was}`;
+    // Das Teilen-Blatt des Telefons kennt „Lesezeichen", „Nachricht",
+    // „Notizen" — es kann mehr als wir. Am Schreibtisch reicht der Link.
+    if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+      try { await navigator.share({ title: titel, url: location.href }); } catch {}
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(location.href);
+      teilenKnopf.textContent = `Link kopiert · ${MAC ? "⌘D" : "Strg+D"} fürs Lesezeichen`;
+    } catch {
+      teilenKnopf.textContent = `${MAC ? "⌘D" : "Strg+D"} fürs Lesezeichen`;
+    }
+    clearTimeout(teilenKnopf._zurueck);
+    teilenKnopf._zurueck = setTimeout(() => { teilenKnopf.textContent = "Teilen"; }, 3200);
+  });
+
   /* ══ Den Platz im Feld behalten ══
      Wer sich durch dreihundert Karten gescrollt hat, eine Note öffnet und
      zurückkommt, soll dort stehen, wo er war — und nicht wieder oben.
@@ -733,7 +1114,7 @@ const kurzMonat = (d) => {
 
   function platzSichern() {
     try {
-      sessionStorage.setItem(PLATZ, JSON.stringify({ rubrik, thema, gezeigt, quelle, y: Math.round(scrollY) }));
+      sessionStorage.setItem(PLATZ, JSON.stringify({ rubrik, thema, q: eingabe, gezeigt, quelle, y: Math.round(scrollY) }));
     } catch {}
   }
   // `pagehide` und nicht `beforeunload`: Letzteres verhindert, dass die
@@ -746,12 +1127,10 @@ const kurzMonat = (d) => {
     if (p) {
       rubrik = p.rubrik ?? "";
       thema = p.thema ?? "";
+      if (p.q) { siebFeld.value = p.q; gefundeneVitas = sieben(p.q); }
       gezeigt = Math.max(PORTION, p.gezeigt ?? PORTION);
       quelle = Number.isInteger(p.quelle) ? p.quelle : null;
       zurueckAuf = p.y || 0;
-      for (const c of document.querySelectorAll(".chip")) {
-        c.classList.toggle("ist-gewaehlt", c.dataset.rubrik === rubrik);
-      }
       if (quelle !== null && kacheln[quelle]?.dataset.nah) {
         balkenTitel.textContent = kacheln[quelle].dataset.titel;
         balken.hidden = false;
@@ -761,14 +1140,31 @@ const kurzMonat = (d) => {
     }
   } catch {}
 
-  /* Ein Thema in der Adresse gilt vor dem gemerkten Platz — wer einen
-     Link mit ?thema= bekommt, will genau das sehen. */
+  /* Was in der Adresse steht, gilt vor dem gemerkten Platz — wer einen
+     Link mit ?thema=, ?rubrik= oder ?q= bekommt, will genau das sehen.
+     Und umgekehrt: Steht dort nichts, schreibt der gemerkte Platz sich
+     hinein, damit auch ein zurückgekehrter Blick teilbar ist. */
   {
-    const t = new URL(location.href).searchParams.get("thema");
-    if (t && inDerWolke.has(t)) { thema = t; quelle = null; balken.hidden = true; zurueckAuf = null; }
+    const p = new URL(location.href).searchParams;
+    const t = p.get("thema"), r = p.get("rubrik"), q = p.get("q");
+    const vonAussen = (t && inDerWolke.has(t)) || r !== null || q !== null;
+    if (vonAussen) {
+      thema = t && inDerWolke.has(t) ? t : "";
+      rubrik = r && document.querySelector(`.chip[data-rubrik="${CSS.escape(r)}"]`) ? r : "";
+      siebFeld.value = q ?? "";
+      gefundeneVitas = sieben(q ?? "");
+      quelle = null; balken.hidden = true; zurueckAuf = null; gezeigt = PORTION;
+    }
+    adresseSetzen("rubrik", rubrik);
+    adresseSetzen("thema", thema);
+    adresseSetzen("q", eingabe.trim());
+    for (const c of document.querySelectorAll(".chip")) {
+      c.classList.toggle("ist-gewaehlt", c.dataset.rubrik === rubrik);
+    }
   }
 
   auslegen();
+  if (treffer) imVolltext(gesucht);
   kappungPruefen();
   addEventListener("resize", kappungPruefen);
 
@@ -942,20 +1338,27 @@ const kurzMonat = (d) => {
       const offen = lenkung.classList.toggle("ist-offen");
       klappe.setAttribute("aria-expanded", String(offen));
     });
+    const etikett = () => {
+      const c = document.querySelector(".chip.ist-gewaehlt");
+      if (!c) return;
+      const r = c.dataset.rubrik || "";
+      wort.textContent = r || "Alles";
+      zahl.textContent = c.querySelector("i")?.textContent ?? "";
+      punkt.hidden = !r;
+      punkt.className = r ? `regal__punkt regal__punkt--${r.toLowerCase()}` : "regal__punkt";
+    };
     document.getElementById("filter").addEventListener("click", (e) => {
       if (!e.target.closest(".chip")) return;
       requestAnimationFrame(() => {
-        const c = document.querySelector(".chip.ist-gewaehlt");
-        if (!c) return;
-        const r = c.dataset.rubrik || "";
-        wort.textContent = r || "Alles";
-        zahl.textContent = c.querySelector("i")?.textContent ?? "";
-        punkt.hidden = !r;
-        punkt.className = r ? `regal__punkt regal__punkt--${r.toLowerCase()}` : "regal__punkt";
+        etikett();
         lenkung.classList.remove("ist-offen");
         klappe.setAttribute("aria-expanded", "false");
       });
     });
+    // Das Feld (ein Modul, läuft also *nach* diesem Skript) ruft es nach
+    // jedem Umblenden — auch wenn die Rubrik aus der Adresse kommt.
+    window.gwEtikett = etikett;
+    etikett();
   }
 </script>
 </body>
