@@ -317,6 +317,19 @@
   }
   .feld, .faden { scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
   body.lenkung-steht .kopfleiste { border-bottom-color: transparent; }
+
+  /* Auf der Startseite ist das Sieb die Suche — der Knopf oben rechts wäre
+     ein zweites Feld, das nur ins erste führt. Auf den Notes bleibt er. */
+  .ist-start .kopfleiste .suchfeld { display: none; }
+
+  /* Das Sieb in der Kopfleiste (index.astro hängt es beim Andocken um):
+     so hoch wie die Nachbarn, Schrift wie der Knopf, den es ersetzt. */
+  .sieb.sieb--oben { flex: 0 0 auto; width: 21rem; }
+  .sieb--oben .sieb__feld { padding: 0 .85rem; height: 2.05rem; gap: .5rem; }
+  .sieb--oben .sieb__feld:focus-within { box-shadow: 0 0 0 2px var(--akzent-weich); }
+  .sieb--oben .sieb__lupe { width: 13px; height: 13px; }
+  .sieb--oben .sieb__feld input { font-size: .88rem; }
+  .sieb--oben .sieb__taste, .sieb--oben .sieb__teilen { display: none; }
 }
 
 /* Drei je Zeile, fest. Vier hatten mehr Bestand auf einen Blick, aber die

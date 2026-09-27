@@ -1079,6 +1079,44 @@ const kurzMonat = (d) => {
     return true;
   };
 
+  /* ── Das Sieb wandert in die Kopfleiste ──
+     Oben unter der Wortmarke steht es groß — dort ist es ein Angebot.
+     Steht die Lenkung (großer Schirm, weit unten), zieht es klein in die
+     Kopfleiste, an die Stelle, wo auf den Notes der Suchknopf sitzt: eine
+     ganze Zeile Lesefläche mehr, und erreichbar bleibt es (27.09., Andreas).
+
+     Umgehängt statt verschoben: Die Lenkung ist eine eigene Ebene unter der
+     Kopfleiste, ein Kind von ihr käme dort nicht hin, wie hoch man es auch
+     stapelt. Damit beim Umhängen nichts springt, bekommt die Lenkung genau
+     die Höhe als Abstand darunter, die sie verliert — der Fluss der Seite
+     bleibt, nur der verdeckende Kasten wird kleiner. Und weil sich dabei
+     ihre Oberkante nicht bewegt, kann das Andocken nicht hin- und herkippen. */
+  {
+    const sieb = document.getElementById("sieb");
+    const lenkungEl = document.getElementById("lenkung");
+    const werkzeug = document.querySelector(".kopfleiste__werkzeug");
+    const LANG = siebFeld.placeholder;
+    let oben = false;
+
+    const umhaengen = (hinauf) => {
+      if (hinauf === oben || !werkzeug) return;
+      const aktiv = document.activeElement === siebFeld;
+      const [von, bis] = [siebFeld.selectionStart, siebFeld.selectionEnd];
+      const vorher = lenkungEl.offsetHeight;
+      if (hinauf) werkzeug.prepend(sieb);
+      else lenkungEl.prepend(sieb);
+      lenkungEl.style.marginBottom = hinauf ? `calc(2.4rem + ${vorher - lenkungEl.offsetHeight}px)` : "";
+      sieb.classList.toggle("sieb--oben", hinauf);
+      siebFeld.placeholder = hinauf ? "Im Bestand suchen …" : LANG;
+      if (aktiv) { siebFeld.focus({ preventScroll: true }); siebFeld.setSelectionRange(von, bis); }
+      oben = hinauf;
+    };
+    // leser.js entscheidet, ob die Lenkung steht — hier wird nur zugehört.
+    new MutationObserver(() => umhaengen(document.body.classList.contains("lenkung-steht")))
+      .observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    umhaengen(document.body.classList.contains("lenkung-steht"));
+  }
+
   /* ══ Die Auswahl in der Adresse ══
      Rubrik, Thema und Sieb stehen in der Adresse — das ist das eigentliche
      Speichern. Ein Lesezeichen hält es, ein Link trägt es weiter, auf dem
