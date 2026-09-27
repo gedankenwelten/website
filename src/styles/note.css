@@ -329,6 +329,44 @@ h1 {
   letter-spacing: .04em; color: var(--tinte-leise); padding: .5rem .65rem .55rem;
 }
 
+/* ── Blick in die Zielnote (blick.js) ──
+   Die Schwester des Vorschaubilds am Zeitstempel: dieselbe Bewegung,
+   derselbe Schatten. Sie folgt nicht der Maus und nimmt keine Klicks —
+   ein Blick, kein zweites Fenster. In Pixeln, nicht in rem: Die Karte
+   soll beim großen Schriftgrad nicht über den halben Text wachsen. */
+.blick {
+  position: fixed; z-index: 60; width: 400px; border-radius: 6px; overflow: hidden;
+  box-shadow: var(--schatten); background: var(--papier);
+  border: 1px solid var(--linie);
+  opacity: 0; transform: translateY(-4px) scale(.98); transform-origin: top left;
+  transition: opacity .18s ease, transform .2s cubic-bezier(.2,.8,.2,1);
+  pointer-events: none; visibility: hidden;
+}
+.blick.blick--oben { transform-origin: bottom left; transform: translateY(4px) scale(.98); }
+.blick.da { opacity: 1; transform: none; visibility: visible; }
+.blick.messen { transition: none; visibility: hidden; }
+.blick__bild {
+  display: block; width: 100%; aspect-ratio: 12 / 5; object-fit: cover;
+  margin: 0; border-radius: 0; background: var(--papier-tief);
+}
+.blick__bild[hidden] { display: none; }
+.blick__rumpf { padding: 14px 18px 16px; }
+.blick__rubrik {
+  display: flex; align-items: center; gap: 7px;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.blick__titel {
+  font-family: "Literata", Georgia, serif; font-size: 17.5px; font-weight: 600;
+  line-height: 1.28; letter-spacing: -.01em; color: var(--tinte);
+  margin: 6px 0 0; text-wrap: balance;
+}
+.blick__text {
+  font-size: 14.5px; line-height: 1.52; color: var(--tinte-leise); margin: 8px 0 0;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden;
+}
+.blick__text[hidden] { display: none; }
+
 /* ── O-Ton ── */
 .oton {
   margin: 2.4rem 0 2.4rem -1.6rem; padding: 0 0 0 1.6rem;
