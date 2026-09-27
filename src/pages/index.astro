@@ -994,17 +994,26 @@ const kurzMonat = (d) => {
   const pfad = (u) => decodeURI(new URL(u, location.origin).pathname)
     .replace(/\/index\.html$|\.html$/, "").replace(/\/$/, "") || "/";
 
+  /* Geladen wird beim ersten Antippen des Feldes, nicht beim ersten Wort:
+     Über das Netz braucht der Index eine Sekunde, und die soll vergangen
+     sein, bevor jemand zu Ende getippt hat. */
+  let volltextBereit = null;
+  function volltextLaden() {
+    volltextBereit ??= (async () => {
+      const pf = "/pagefind/pagefind.js";
+      pagefind = await import(/* @vite-ignore */ pf);
+      await pagefind.options({ excerptLength: 26 });   // dieselben wie suche.js
+      await pagefind.init();
+    })().catch((e) => { volltextBereit = null; throw e; });
+    return volltextBereit;
+  }
+
   async function imVolltext(begriff) {
     const lauf = ++pfLauf;
     ausText.clear();
     if (!treffer || begriff.trim().length < 3) return;
     try {
-      if (!pagefind) {
-        const pf = "/pagefind/pagefind.js";
-        pagefind = await import(/* @vite-ignore */ pf);
-        await pagefind.options({ excerptLength: 26 });   // dieselben wie suche.js
-        await pagefind.init();
-      }
+      await volltextLaden();
       const antwort = await pagefind.search(begriff);
       if (lauf !== pfLauf || !treffer) return;
       // Nur die ersten vierzig: Jeder Treffer ist ein eigenes kleines
@@ -1025,7 +1034,10 @@ const kurzMonat = (d) => {
   }
 
   let siebWarten = null;
-  siebFeld.addEventListener("focus", wortschatzBauen, { once: true });
+  siebFeld.addEventListener("focus", () => {
+    wortschatzBauen();
+    volltextLaden().catch(() => {});
+  }, { once: true });
   siebFeld.addEventListener("input", () => {
     // Wer tippt, will das Feld sehen — nicht den Faden, nicht die Wolke.
     if (wurzel.dataset.ansicht === "faden") ansichtSetzen("feld", false);
