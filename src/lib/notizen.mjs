@@ -28,6 +28,13 @@ export function auszugVon(rumpf) {
     for (const block of ohneDetails.split(/\n[ \t]*\n/)) {
       const z = block.trim();
       if (!z || /^(#|>|!\[|---|\||<|Quelle:|Gesprächspartner|\*Prompt|→|-\s|\d+\.\s)/.test(z)) continue;
+      // Ein Steckbrief ist kein Anfang: „**Geburt:** 1945 in Teheran",
+      // „Datum: 13.02.2026" — Zeile für Zeile Etikett und Wert. 33 Notes
+      // zeigten so ihre Kopfdaten statt eines Satzes (26.09.2026).
+      const zeilen = z.split("\n");
+      // Ebenso ein Etikett mit Liste darunter: „Wendepunkte:", „Quellen:".
+      if (/:\**$/.test(zeilen[0].trim()) && zeilen.length > 1) continue;
+      if (zeilen.filter((l) => /^\**[A-ZÄÖÜ][^:\n]{0,30}:\**\s/.test(l.trim())).length * 2 >= zeilen.length) continue;
       text = z; break;
     }
   }
