@@ -303,8 +303,17 @@
     /* Die Kopfleiste endet auf einem Bruchteil (3,4 × 16 px = 54,4 px), und
        nicht jeder Browser rundet beide Kanten gleich: In Firefox blieb ein
        Pixel Spalt, durch den die Banner beim Scrollen flimmerten (27.09.,
-       Andreas). Eine Papierkante nach oben deckt ihn, wie auch gerundet wird. */
-    box-shadow: 0 -2px 0 var(--papier);
+       Andreas). Eine Papierkante nach oben deckt ihn, wie auch gerundet wird.
+       Dazu je 3 rem Papier zur Seite: Die Kartenschatten (bis 34 px weich)
+       reichen über die Spalte hinaus und liefen sonst links und rechts der
+       Leiste sichtbar durch. Schatten statt breiterem Element — ein Schatten
+       kann keine waagrechte Scrollleiste erzeugen. */
+    box-shadow:
+      0 -2px 0 var(--papier),
+      -3rem -2px 0 var(--papier),
+      3rem -2px 0 var(--papier),
+      -3rem 0 0 var(--papier),
+      3rem 0 0 var(--papier);
   }
   .feld, .faden { scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
   body.lenkung-steht .kopfleiste { border-bottom-color: transparent; }
