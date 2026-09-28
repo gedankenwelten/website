@@ -1,5 +1,5 @@
 /**
- * Der Wortmarken-Pool — sechs Handschriften für denselben Namen.
+ * Der Wortmarken-Pool — neun Handschriften für denselben Namen.
  *
  * Übernommen aus der Quartz-Fassung (`quartz/components/PageTitle.tsx`).
  * Die Bilder liegen in `public/wortmarke/` als `wordmark-<stil>-<hell|dunkel>.png`;
@@ -9,9 +9,12 @@
  * Sechs, weil der Pool durch drei teilbar sein soll: Dann geht er auf
  * dreißig Tage gleichmäßig auf. Seit 13.09.2026 sieben — die siebte
  * Hand (Matisse-Scherenschnitt) war Andreas wichtiger als die glatte
- * Teilung; im Monat kommt jede Marke jetzt vier- bis fünfmal.
+ * Teilung; im Monat kommt jede Marke jetzt vier- bis fünfmal. Seit
+ * 28.09.2026 neun: Hilma af Klint (Spiralen, Schneckenhäuser, Rosetten —
+ * innere Welten als Diagramm) und Hokusai (die Welle, die aus dem letzten
+ * Buchstaben steigt). Neun geht wieder durch drei.
  */
-export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt"];
+export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt", "klint", "hokusai"];
 
 /**
  * Welche Marke an einem Tag gilt — dieselbe Rechnung wie in der

@@ -56,6 +56,12 @@
 .wortmarke:has([data-stil="sumie"]),
 .wortmarke:has([data-stil="aquarell"]) { height: 5.45rem; }
 .wortmarke:has([data-stil="aether"])   { height: 4.9rem; }
+/* af Klint und Hokusai tragen Luft um die Schrift wie sumie — Rosetten
+   darüber, die Welle daneben. Ohne Zuschlag stünde das Wort zu klein. */
+.wortmarke__bild[data-stil="klint"]    { height: 5.2rem; }
+.wortmarke__bild[data-stil="hokusai"]  { height: 5.45rem; }
+.wortmarke:has([data-stil="klint"])    { height: 5.2rem; }
+.wortmarke:has([data-stil="hokusai"])  { height: 5.45rem; }
 
 /* Die Marke fliegt in die Kopfleiste (leser.js): Beim Scrollen wandert das
    Bild nach oben, schrumpft auf das Wort in der Kopfleiste und geht dort in
@@ -291,6 +297,10 @@
   .start__kopf .wortmarke:has([data-stil="aquarell"]) { height: 8rem; }
   .start__kopf .wortmarke__bild[data-stil="aether"],
   .start__kopf .wortmarke:has([data-stil="aether"])   { height: 7.35rem; }
+  .start__kopf .wortmarke__bild[data-stil="klint"],
+  .start__kopf .wortmarke:has([data-stil="klint"])    { height: 7.8rem; }
+  .start__kopf .wortmarke__bild[data-stil="hokusai"],
+  .start__kopf .wortmarke:has([data-stil="hokusai"])  { height: 8.2rem; }
   .start__satz {
     grid-column: 3; grid-row: 1; justify-self: end; align-self: end;
     max-width: 16rem; text-align: right; font-size: .8rem; line-height: 1.45;
@@ -699,6 +709,10 @@
   .wortmarke__bild[data-stil="aether"]   { height: 3.45rem; }
   .wortmarke:has([data-stil="sumie"]), .wortmarke:has([data-stil="aquarell"]) { height: 3.85rem; }
   .wortmarke:has([data-stil="aether"]) { height: 3.45rem; }
+  .wortmarke__bild[data-stil="klint"]    { height: 3.7rem; }
+  .wortmarke__bild[data-stil="hokusai"]  { height: 3.85rem; }
+  .wortmarke:has([data-stil="klint"])    { height: 3.7rem; }
+  .wortmarke:has([data-stil="hokusai"])  { height: 3.85rem; }
   .start__satz { font-size: .95rem; }
   .wolke__wort { font-size: calc(.8rem + var(--grad) * 1.15rem); }
   .wolke__liste { gap: .15rem .8rem; }
