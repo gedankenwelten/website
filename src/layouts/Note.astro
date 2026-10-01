@@ -46,7 +46,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
 <head>
-  <Kopf titel={d.title} beschreibung={d.description} bild={kopf.banner ?? null} rubrik={rubrik} />
+  <Kopf titel={d.title} beschreibung={d.description} bild={kopf.banner ?? null} rubrik={rubrik} datum={d.aktualisiert} erstellt={d.erstellt} />
 </head>
 <body>
 

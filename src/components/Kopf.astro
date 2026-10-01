@@ -14,6 +14,8 @@ const {
   bild = null,            // absoluter Pfad, z. B. /assets/…
   art = "article",
   rubrik = null,          // für den Rubrik-Feed als Alternative
+  datum = null,           // `aktualisiert:` der Note (Date oder Text)
+  erstellt = null,
 } = Astro.props;
 
 const voll = titel ? `${titel} · ${SITE.name}` : SITE.name;
@@ -23,13 +25,81 @@ const voll = titel ? `${titel} · ${SITE.name}` : SITE.name;
 const pfad = Astro.url.pathname.replace(/(?:\/index)?\.html$/, "") || "/";
 const hier = new URL(pfad, SITE.url).href;
 const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
+
+/* Was Bing (und damit DuckDuckGo) und Google über die Seite lesen, um ihr
+   im Treffer ein Vorschaubild zu geben: das og:image allein reicht ihnen
+   selten, sie wollen es als Hauptbild der Seite ausgezeichnet sehen
+   (schema.org). Eine Vita ist ein Profil einer Person, eine Note ein
+   Artikel, die Startseite die Website selbst. Der Satz der Seite ist
+   kein Inhalt — wo die Note keinen eigenen hat, schweigen wir lieber. */
+const iso = (w) => {
+  if (w instanceof Date) return w.toISOString().slice(0, 10);
+  const t = String(w ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0, 10);
+  const m = t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : undefined;
+};
+const herausgeber = {
+  "@type": "Organization",
+  name: SITE.name,
+  url: SITE.url,
+  logo: { "@type": "ImageObject", url: new URL("/icon.png", SITE.url).href },
+};
+const eigeneBeschreibung = beschreibung !== SITE.satz ? beschreibung : undefined;
+const hauptbild = bild ? { "@type": "ImageObject", url: bildUrl } : undefined;
+let daten;
+if (art === "article" && rubrik === "DenkerVita") {
+  daten = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: hier,
+    name: titel,
+    description: eigeneBeschreibung,
+    inLanguage: "de",
+    dateModified: iso(datum),
+    primaryImageOfPage: hauptbild,
+    image: bild ? bildUrl : undefined,
+    mainEntity: { "@type": "Person", name: titel?.replace(/\s+—\s+DenkerVita$/, ""), image: bild ? bildUrl : undefined },
+    isPartOf: { "@type": "WebSite", name: SITE.name, url: SITE.url },
+  };
+} else if (art === "article") {
+  daten = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: titel,
+    description: eigeneBeschreibung,
+    url: hier,
+    mainEntityOfPage: hier,
+    inLanguage: "de",
+    image: [bildUrl],
+    datePublished: iso(erstellt),
+    dateModified: iso(datum),
+    author: herausgeber,
+    publisher: herausgeber,
+    isPartOf: { "@type": "WebSite", name: SITE.name, url: SITE.url },
+  };
+} else if (pfad === "/") {
+  daten = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE.name,
+    url: SITE.url,
+    description: beschreibung,
+    inLanguage: "de",
+    publisher: herausgeber,
+  };
+}
+// `<` maskieren — ein Titel mit `</script>` darf den Block nicht schließen.
+const jsonld = daten && JSON.stringify(daten).replace(/</g, "\\u003c");
 ---
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{voll}</title>
 <meta name="description" content={beschreibung}>
 <link rel="canonical" href={hier}>
-{SITE.noindex && <meta name="robots" content="noindex, follow">}
+{/* Große Bildvorschau ausdrücklich erlauben — ohne die Angabe zeigen
+    Suchmaschinen oft nur ein Daumennagel-Bild oder gar keins. */}
+<meta name="robots" content={SITE.noindex ? "noindex, follow, max-image-preview:large" : "max-image-preview:large"}>
 
 {/* Die Leseschrift vorab holen — sonst steht der Text kurz in der
     Ersatzschrift und springt. Nur Latin, nur die zwei Schnitte, die
@@ -53,6 +123,9 @@ const bildUrl = new URL(bild ?? SITE.ogBild, SITE.url).href;
 <meta name="twitter:title" content={titel ?? SITE.name}>
 <meta name="twitter:description" content={beschreibung}>
 <meta name="twitter:image" content={bildUrl}>
+{bild && <meta property="og:image:width" content="1200">}
+{bild && <meta property="og:image:height" content="500">}
+{jsonld && <script type="application/ld+json" set:html={jsonld} />}
 
 <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — alle Notes`} href={`${SITE.url}/index.xml`}>
 {rubrik && <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — ${rubrik}`} href={`${SITE.url}/${rubrik}/index.xml`}>}
