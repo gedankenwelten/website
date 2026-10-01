@@ -20,14 +20,21 @@ import { datumVon } from "./datum.mjs";
    Prosa — keine Überschrift, kein Callout, kein Bild, keine Quelle-Zeile,
    nichts aus <details>. Gekürzt am Satzende. Kein Ersatz für die
    Beschreibung: Die trägt ein Urteil, der Auszug nur den Anfang. */
-export function auszugVon(rumpf) {
-  const ohneDetails = String(rumpf ?? "").replace(/<details>[\s\S]*?<\/details>/g, "");
-  const abstract = /^>\s*\[!abstract\][^\n]*\n((?:>[^\n]*\n?)+)/m.exec(ohneDetails);
+export function auszugVon(rumpf, max = 240) {
+  let ohneDetails = String(rumpf ?? "").replace(/<details>[\s\S]*?<\/details>/g, "");
+  // Eine Vita beginnt oft mit Kauflinks oder der politischen Einordnung;
+  // der Mensch steht im Biografie-Abschnitt. Gibt es ihn, dort anfangen.
+  const bio = /^#{2,3}\s+[^\n]*(Biogra|Wer spricht|Snapshot)[^\n]*$/m.exec(ohneDetails);
+  if (bio && !/^>\s*\[!abstract\]/m.test(ohneDetails)) ohneDetails = ohneDetails.slice(bio.index);
+  // Der Aufmacher einer Note, bei Vitas das „Wer spricht?" — beides ist
+  // schon der Satz, den man über die Seite sagen würde.
+  const abstract = /^>\s*\[!abstract\][^\n]*\n((?:>[^\n]*\n?)+)/m.exec(ohneDetails)
+    ?? /^>\s*\[!info\][-+]?\s*Wer spricht[^\n]*\n((?:>[^\n]*\n?)+)/m.exec(ohneDetails);
   let text = abstract ? abstract[1].replace(/^>[ \t]?/gm, "") : null;
   if (!text) {
     for (const block of ohneDetails.split(/\n[ \t]*\n/)) {
       const z = block.trim();
-      if (!z || /^(#|>|!\[|---|\||<|Quelle:|Gesprächspartner|\*Prompt|→|-\s|\d+\.\s)/.test(z)) continue;
+      if (!z || /^(#|>|!\[|---|\||<|\*?\(|Quelle:|Gesprächspartner|\*Prompt|→|-\s|\d+\.\s)/.test(z)) continue;
       // Ein Steckbrief ist kein Anfang: „**Geburt:** 1945 in Teheran",
       // „Datum: 13.02.2026" — Zeile für Zeile Etikett und Wert. 33 Notes
       // zeigten so ihre Kopfdaten statt eines Satzes (26.09.2026).
@@ -46,10 +53,16 @@ export function auszugVon(rumpf) {
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
   if (!rein) return null;
-  if (rein.length <= 240) return rein;
-  const schnitt = rein.slice(0, 240);
-  const ende = Math.max(schnitt.lastIndexOf(". "), schnitt.lastIndexOf("! "), schnitt.lastIndexOf("? "));
-  return ende > 80 ? schnitt.slice(0, ende + 1) : schnitt.slice(0, schnitt.lastIndexOf(" ")) + " …";
+  if (rein.length <= max) return rein;
+  const schnitt = rein.slice(0, max);
+  // Satzende, nicht Abkürzung: „seit ca. 2017" ist keins, „1977." meist auch nicht.
+  let ende = -1;
+  for (const m of schnitt.matchAll(/[.!?](?=\s+[A-ZÄÖÜ„"»(])/g)) {
+    const davor = schnitt.slice(Math.max(0, m.index - 6), m.index);
+    if (m[0] === "." && /(\b(ca|bzw|vgl|etc|ggf|geb|Dr|Prof|St|Nr|Jh|Mio|Mrd)|\b[a-zA-Z]\.[a-zA-Z]|\d)$/.test(davor)) continue;
+    ende = m.index;
+  }
+  return ende > max / 3 ? schnitt.slice(0, ende + 1) : schnitt.slice(0, schnitt.lastIndexOf(" ")) + " …";
 }
 
 export const INHALT = process.env.GW_INHALT || path.join(

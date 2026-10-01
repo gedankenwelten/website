@@ -7,6 +7,7 @@ import { alleWege } from "../lib/faden.mjs";
 const wege = alleWege(7);
 import { filterbareThemen } from "../lib/rubriken.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
+import { auszugVon } from "../lib/notizen.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -30,6 +31,10 @@ const datum = d.aktualisiert instanceof Date
   : d.aktualisiert ?? null;
 
 const rubrik = note.id.split("/")[0];
+/* Ohne `description:` stand im Suchtreffer und in jeder Link-Vorschau der
+   allgemeine Satz der Seite — bei 304 von 317 Vitas (01.10.2026). Der
+   Auszug ist kein Urteil, aber er spricht wenigstens von dieser Seite. */
+const beschreibung = d.description ?? auszugVon(note.body, 200) ?? undefined;
 /* Die Marken unter dem Text zeigten bisher auf `/tags/…` — eine Seite,
    die es nie gab. Jetzt führen sie in die eigene Rubrik, auf dieses Thema
    gefiltert. Was dort nichts trennt (der Typ-Tag, das Jahr, der Autor),
@@ -46,7 +51,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
 <head>
-  <Kopf titel={d.title} beschreibung={d.description} bild={kopf.banner ?? null} rubrik={rubrik} datum={d.aktualisiert} erstellt={d.erstellt} />
+  <Kopf titel={d.title} beschreibung={beschreibung} bild={kopf.banner ?? null} rubrik={rubrik} datum={d.aktualisiert} erstellt={d.erstellt} />
 </head>
 <body>
 
