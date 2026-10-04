@@ -6,13 +6,13 @@
 # ziehen, bauen, atomar tauschen — mit demselben Lock wie swap-public.sh.
 #
 # Erwartet:
-#   /home/luc/services/gedankenwelten          Inhalt (content/) + public/ (Caddy-Root)
-#   /home/luc/services/gedankenwelten-neu/src  dieses Projekt (Forgejo-Klon, node_modules installiert)
+#   $HOME/services/gedankenwelten          Inhalt (content/) + public/ (Caddy-Root)
+#   $HOME/services/gedankenwelten-neu/src  dieses Projekt (Forgejo-Klon, node_modules installiert)
 
 set -euo pipefail
 
-INHALT_REPO="/home/luc/services/gedankenwelten"
-PROJEKT="/home/luc/services/gedankenwelten-neu/src"
+INHALT_REPO="${GW_INHALT_REPO:-$HOME/services/gedankenwelten}"
+PROJEKT="${GW_PROJEKT:-$HOME/services/gedankenwelten-neu/src}"
 LOG="[$(date '+%F %T')] pull-and-build (astro)"
 
 exec 200>/tmp/gw-build.lock
