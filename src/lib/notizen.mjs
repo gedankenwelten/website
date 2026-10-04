@@ -212,6 +212,8 @@ export function ladeIndex() {
         url: noteUrl(rubrik, basis),
         titel: fm.title ?? basis,
         beschreibung: fm.description ?? null,
+        // der geheimnisvolle Satz, der im Gedankenraum (/raum) über dem Bild der Note steht
+        raetsel: typeof fm.raetsel === "string" ? fm.raetsel.trim() : null,
         auszug: auszugVon(rumpf),
         datum: datumVon(fm, basis),
         banner,

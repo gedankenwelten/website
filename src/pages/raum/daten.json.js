@@ -3,8 +3,9 @@
  *
  * Jede Note mit eigenem Banner ist ein Saal; die Wikilinks zwischen ihnen
  * sind die Türen (2 = gegenseitig verlinkt). Dazu je Note der geheimnisvolle
- * Satz, der als Wandspruch über ihrem Bild steht (`src/data/raum-raetsel.json`,
- * geschrieben mit gedankenpoesie — jeder Satz in seiner eigenen Hand), und das
+ * Satz, der als Wandspruch über ihrem Bild steht — `raetsel:` im Frontmatter der Note
+ * (so schreibt ihn die gedankenwelt-Pipeline seit 04.10.2026), sonst aus der
+ * Sammlung `src/data/raum-raetsel.json` (die ersten 679, mit gedankenpoesie), und das
  * Datum fürs Wandschild. Die Zusammenfassungen fürs Schild liegen getrennt in
  * `texte.json` und werden erst geholt, wenn jemand ein Schild antippt.
  */
@@ -23,7 +24,7 @@ export function GET() {
     b: n.banner,
     v: n.vorschau?.startsWith("/vorschau/") ? n.vorschau : null,
     d: n.datum ? String(n.datum).slice(0, 10) : null,
-    s: raetsel[n.url] ?? null,
+    s: n.raetsel ?? raetsel[n.url] ?? null,   // das Frontmatter der Note zuerst, die Sammlung als Rückfall
   }));
   const w = new Map();
   for (const [von, ziele] of g.hinaus) for (const nach of ziele) {
