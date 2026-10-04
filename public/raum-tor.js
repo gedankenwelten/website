@@ -7,6 +7,14 @@
  * Doppelklick zurück hinaus in den Saal.
  */
 (() => {
+  // Aus dem Raum durch den Ausgang zurück: an die Stelle, an der man die Note verlassen hatte.
+  try {
+    const z = JSON.parse(sessionStorage.getItem("raum:zurueck") || "null");
+    if (z && z.p === decodeURIComponent(location.pathname).normalize("NFC")) {
+      sessionStorage.removeItem("raum:zurueck");
+      if (z.y) addEventListener("load", () => scrollTo(0, z.y), { once: true });
+    }
+  } catch {}
   const bild = document.querySelector("img.banner");
   if (!bild) return;
   bild.style.touchAction = "manipulation";   // kein Doppeltipp-Zoom auf dem Bild — der Doppeltipp gehört dem Tor

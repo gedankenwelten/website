@@ -93,6 +93,7 @@ const DUNKEL = new THREE.Color("#1c1916");
 
 /* ══ Bühne ═══════════════════════════════════════════════════════════════ */
 const canvas = document.getElementById("c");
+const ausgangEl = document.getElementById("ausgang");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: true, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia("(pointer: coarse)").matches ? 1.6 : 2));
 renderer.setSize(innerWidth, innerHeight);
@@ -926,7 +927,10 @@ function steuern(dt) {
 
 /* ══ Zuwenden, Eintauchen, Auftauchen (aus dem Gedankenraum) ═════════════ */
 let zustand = "reise", seitWann = 0;
-const setze = (z) => { zustand = z; seitWann = performance.now(); };
+const setze = (z) => {
+  zustand = z; seitWann = performance.now();
+  ausgangEl.classList.toggle("da", z === "reise" || z === "zu");   // der Ausgang nur, solange man im Saal steht
+};
 const tweens = [];
 const glatt = (k) => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
 function tween(ms, fn, ease = glatt) { return new Promise((res) => tweens.push({ ms, t: 0, fn, ease, res })); }
@@ -1363,6 +1367,17 @@ addEventListener("keydown", (ev) => {
 addEventListener("keyup", (ev) => tasten.delete(ev.code));
 addEventListener("blur", () => tasten.clear());
 zurueckEl.addEventListener("click", auftauchen);
+/* Der Ausgang: zurück zur Note, durch deren Tor man kam, an die Stelle, an der man dort war.
+   Wer ohne Tor kam (ein geteilter Link), geht zur Note des Saals, in dem er gerade steht. */
+ausgangEl.addEventListener("click", () => {
+  if (zustand !== "reise" && zustand !== "zu") return;
+  const ziel = VON || K[jetzt.i].u;
+  try { sessionStorage.setItem("raum:zurueck", JSON.stringify({ p: decodeURIComponent(ziel).normalize("NFC"), y: VON ? VON_Y : 0 })); } catch {}
+  const s = document.getElementById("schleier");
+  s.style.display = ""; s.style.transition = "opacity .6s ease";
+  requestAnimationFrame(() => (s.style.opacity = 1));
+  setTimeout(() => (location.href = ziel), 620);
+});
 addEventListener("message", (ev) => { if (ev.origin === location.origin && ev.data === "raum:zurueck") auftauchen(); });
 
 /* ══ Takt ════════════════════════════════════════════════════════════════ */
@@ -1372,6 +1387,7 @@ if (!VON) {
   flug.pos.copy(eingang(jetzt));
   camera.position.copy(flug.pos); camera.rotation.set(flug.pitch, flug.yaw, 0);
   requestAnimationFrame(() => (document.getElementById("schleier").style.opacity = 0));
+  ausgangEl.classList.add("da");
 }
 
 const uhr = new THREE.Clock();
@@ -1412,6 +1428,7 @@ if (VON) {
     seiteEl.style.opacity = 0;
     const s = document.getElementById("schleier"); s.style.display = "";
     requestAnimationFrame(() => (s.style.opacity = 0));
+    ausgangEl.classList.add("da");
   }
 }
 
