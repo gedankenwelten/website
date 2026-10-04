@@ -28,6 +28,17 @@
   }
   bild.addEventListener("dblclick", (e) => { e.preventDefault(); oeffnen(); });
 
+  // Die sichtbare Klinke unter dem Banner: im Raum selbst überflüssig
+  // (man steht ja schon im Saal), sonst dieselbe Tür wie der Doppelklick.
+  const klinke = document.querySelector("a.raumtor");
+  if (klinke) {
+    if (imRaum) klinke.hidden = true;
+    else klinke.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault(); oeffnen();
+    });
+  }
+
   // Touch: zwei kurze Tipps kurz hintereinander, nah beieinander
   let letzter = null;
   bild.addEventListener("pointerup", (e) => {

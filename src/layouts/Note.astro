@@ -68,6 +68,10 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
 <article class="blatt">
   <header class="strang">
     {kopf.banner && <img class="banner" src={kopf.banner} alt="">}
+    {/* Die sichtbare Klinke am Tor: dieselbe Tür wie der Doppelklick aufs
+        Banner (raum-tor.js), nur dass man sie nicht kennen muss. Man steht
+        dann im Saal dieser Note. */}
+    {kopf.banner && <a class="raumtor" href={`/raum?von=${encodeURIComponent(Astro.url.pathname)}`}>Gedankenraum</a>}
 
     <div class="kennung">
       {/* Die Rubrikmarke ist die einzige Navigation im Kopf der Note —

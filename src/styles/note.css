@@ -224,6 +224,22 @@ body {
 [data-theme="dunkel"] a:hover img, [data-theme="dunkel"] .banner:hover { filter: none; }
 .blatt > header { margin-bottom: 3.6rem; }
 
+/* Die Klinke am Tor zum Gedankenraum — rechts unter dem Bild, leise wie
+   die Kennzeile, damit sie einlädt und nicht führt. Sie sitzt in den
+   40 px, die `.strang img` dem Banner ohnehin nach unten gibt (darum der
+   negative Rand), damit zwischen Bild und Titel keine neue Leere entsteht.
+   So spezifisch, weil `.strang a:not(.ts)` sonst seine Unterstreichung anhängt. */
+header.strang a.raumtor {
+  display: block; width: max-content; margin: -1.85rem 0 0 auto;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--tinte-fern); text-decoration: none;
+  border-bottom: 1px solid transparent; transition: border-color .2s, color .2s;
+}
+header.strang a.raumtor:hover { color: var(--akzent); border-bottom-color: var(--akzent); }
+header.strang a.raumtor[hidden] { display: none; }
+header.strang a.raumtor + .kennung { margin-top: .9rem; }
+
 .kennung {
   display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
   font-size: 11px; letter-spacing: .15em; text-transform: uppercase;

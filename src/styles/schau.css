@@ -52,6 +52,8 @@
    den Begleiter *dieser* Seite mit dem Video einer anderen. Weg damit. */
 .schau__inhalt .ts { display: none; }
 .schau__inhalt .banner { margin-top: 0; }
+/* Aus der Vorschau heraus führt keine Tür in den Raum — erst die Seite selbst. */
+.schau__inhalt header.strang a.raumtor { display: none; }
 .schau__inhalt h1 { font-size: 2rem; line-height: 1.14; }
 .schau__inhalt .zeitanker,
 .schau__inhalt .verwandt { display: none; }
