@@ -14,6 +14,10 @@ import { BUILD } from "../lib/site.mjs";
  * Skript ist der Link ein mailto. Was ankommt, landet in der Cortex-
  * Inbox (Dienst `gedankenwelten-rueckmeldung` auf dem Pi).
  *
+ * Und vorn die stille Tür in den Gedankenraum: ohne `?von=`, also mit
+ * zufälligem Start — anders als die Klinke unter dem Banner, die in den
+ * Saal der gelesenen Note führt.
+ *
  * `fest`: Auf der Startseite bleibt die Zeile am unteren Rand stehen
  * (Andreas, 06.09.2026) — der Faden ist lang, das Beiwerk soll trotzdem
  * jederzeit da sein. Der Satz entfällt dort; er steht oben schon im Kopf.
@@ -27,6 +31,7 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
 <footer class={`fusszeile${fest ? " fusszeile--fest" : ""}`}>
   {!fest && <p class="fusszeile__satz">{SITE.satz}</p>}
   <nav class="fusszeile__wege" aria-label="Beiwerk">
+    <a href="/raum" title="Ein Museum aus den Notes — man beginnt in einem zufälligen Saal">Gedankenraum</a>
     <a href="/Feeds">RSS-Feeds</a>
     {rubrik && <a href={`/${rubrik}/index.xml`} title={`Feed der Rubrik ${rubrik}`}>{rubrik} abonnieren</a>}
     <a href="/MCP">MCP-Server</a>
