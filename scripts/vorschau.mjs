@@ -11,6 +11,10 @@
  * aus. Läuft nicht bei jedem Build — die Banner ändern sich selten, und
  * 536 Bilder neu zu rechnen dauert länger als die ganze Seite.
  *
+ * Dazu eine kleine Fassung (320 px, `vorschau/klein/`) für den Gedankenraum
+ * (/raum/): Die Säle hinter den Türen zeigen ihre Bilder nur aus der Ferne,
+ * dort wären auch 760 px verschenkt — ein Saal lädt rund zwanzig davon.
+ *
  *   node scripts/vorschau.mjs          nur was fehlt
  *   node scripts/vorschau.mjs --alle   alles neu
  */
@@ -24,7 +28,8 @@ const QUELLE = path.join(process.env.GW_INHALT || path.join(process.env.HOME, "G
 const ZIEL = path.join(import.meta.dirname, "..", "public", "vorschau");
 const ALLE = process.argv.includes("--alle");
 
-fs.mkdirSync(ZIEL, { recursive: true });
+const KLEIN = path.join(ZIEL, "klein");
+fs.mkdirSync(KLEIN, { recursive: true });
 
 const bilder = fs.readdirSync(QUELLE).filter((f) => /\.(jpe?g|png|webp)$/i.test(f));
 let gebaut = 0, uebersprungen = 0, kaputt = 0;
@@ -32,8 +37,14 @@ let vorher = 0, nachher = 0;
 
 for (const datei of bilder) {
   const aus = path.join(ZIEL, datei.replace(/\.[^.]+$/, "") + ".webp");
+  const klein = path.join(KLEIN, datei.replace(/\.[^.]+$/, "") + ".webp");
   const quelle = path.join(QUELLE, datei);
   const q = fs.statSync(quelle);
+
+  if (ALLE || !fs.existsSync(klein) || fs.statSync(klein).mtimeMs < q.mtimeMs) {
+    try { await sharp(quelle).resize({ width: 320, withoutEnlargement: true }).webp({ quality: 70 }).toFile(klein); }
+    catch { /* das Original meldet sich unten selbst */ }
+  }
 
   if (!ALLE && fs.existsSync(aus) && fs.statSync(aus).mtimeMs >= q.mtimeMs) {
     uebersprungen++;
