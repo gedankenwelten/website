@@ -85,5 +85,9 @@
   }, true);
 
   // Erst zeigen, wenn der Empfänger antwortet — unterwegs ohne Tailnet bleibt alles wie immer.
-  rufen("/da").then(() => document.body.appendChild(knopf)).catch(() => {});
+  // Ein zweiter Versuch, weil die erste Anfrage nach dem Aufwachen des Tunnels gern zu spät kommt.
+  rufen("/da")
+    .catch(() => new Promise((r) => setTimeout(r, 1500)).then(() => rufen("/da")))
+    .then(() => document.body.appendChild(knopf))
+    .catch(() => {});
 })();

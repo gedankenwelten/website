@@ -692,7 +692,9 @@ h1 {
   transition: color .3s, border-color .3s, opacity .3s;
 }
 .fernseher svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
-.fernseher:hover, .fernseher[aria-pressed="true"] { color: var(--akzent); border-color: var(--akzent-weich); }
+.fernseher[aria-pressed="true"] { color: var(--akzent); border-color: var(--akzent-weich); }
+/* Nur mit Maus: am Telefon bliebe :hover nach dem Tippen kleben, und der Knopf sähe an aus, wenn er aus ist. */
+@media (hover: hover) { .fernseher:hover { color: var(--akzent); border-color: var(--akzent-weich); } }
 .fernseher[aria-pressed="true"] svg rect { fill: var(--akzent-weich); }
 .fernseher::after {
   content: attr(data-zeit); position: absolute; right: calc(100% + .6rem); white-space: nowrap;
