@@ -86,6 +86,14 @@ if (schicht) {
   /* ── Suchen ── */
   let warten = null;
   feld?.addEventListener("input", () => {
+    // Der Einrichtungs-Link des eigenen Fernsehers (Kopf.astro) — kein Suchbegriff.
+    if (window.fernseherEinrichten?.(feld.value)) {
+      feld.value = "";
+      hinweis.hidden = false;
+      hinweis.textContent = "Fernseher eingerichtet.";
+      setTimeout(() => location.reload(), 900);
+      return;
+    }
     clearTimeout(warten);
     warten = setTimeout(() => suchen(feld.value), 140);
   });

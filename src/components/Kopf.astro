@@ -141,8 +141,11 @@ const jsonld = daten && JSON.stringify(daten).replace(/</g, "\\u003c");
 <script is:inline>try { const u = new URL(location.href), q = u.searchParams; if (q.has("nicht-zaehlen")) localStorage.setItem("umami.disabled", "1"); if (q.has("wieder-zaehlen")) localStorage.removeItem("umami.disabled"); if (q.has("nicht-zaehlen") || q.has("wieder-zaehlen")) { q.delete("nicht-zaehlen"); q.delete("wieder-zaehlen"); history.replaceState(null, "", u.pathname + (q.size ? "?" + q : "") + u.hash); } } catch {}</script>
 {/* Der eigene Fernseher (fernseher.js): einmal #fernseher=<Base64 von {"u":Adresse,"k":Schlüssel}>
     an eine Adresse hängen, dann kennt dieser Browser seinen Empfänger. #fernseher=aus vergisst ihn.
-    Im Fragment, damit es nie einen Server erreicht — und vor Umami weggeräumt, damit es nicht gezählt wird. */}
-<script is:inline>try { const m = /^#fernseher=(.+)$/.exec(location.hash); if (m) { if (m[1] === "aus") localStorage.removeItem("gw-fernseher"); else { const z = JSON.parse(atob(m[1].replace(/-/g, "+").replace(/_/g, "/"))); if (/^https:\/\/[^/]+$/.test(z.u) && z.k) localStorage.setItem("gw-fernseher", JSON.stringify({ u: z.u, k: z.k })); } history.replaceState(null, "", location.pathname + location.search); } } catch {}</script>
+    Im Fragment, damit es nie einen Server erreicht — und vor Umami weggeräumt, damit es nicht gezählt wird.
+    Eine Web-App auf dem Home-Bildschirm hat keine Adresszeile und eigenen Speicher: dort nimmt das
+    Suchfeld denselben Link (suche.js ruft fernseherEinrichten). */}
+<script is:inline>window.fernseherEinrichten = (text) => { const m = /#fernseher=([\w-]+)/.exec(text || ""); if (!m) return false; try { if (m[1] === "aus") { localStorage.removeItem("gw-fernseher"); return true; } const z = JSON.parse(atob(m[1].replace(/-/g, "+").replace(/_/g, "/"))); if (!/^https:\/\/[^/]+$/.test(z.u) || !z.k) return false; localStorage.setItem("gw-fernseher", JSON.stringify({ u: z.u, k: z.k })); return true; } catch { return false; } };
+try { if (fernseherEinrichten(location.hash)) history.replaceState(null, "", location.pathname + location.search); } catch {}</script>
 <script is:inline>window.umamiKnapp = (_typ, p) => { delete p.screen; delete p.language; return p; };</script>
 <script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id} data-before-send="umamiKnapp"></script>
 
