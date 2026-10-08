@@ -705,9 +705,8 @@ h1 {
 .fernseher--fehler::after { color: var(--tinte-leise); }
 .fernseher--puls::after { animation: fernseher-zeit 2.4s ease-out; }
 @keyframes fernseher-zeit { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
-/* Hört man im Begleiter, macht der Fernseher Platz; sieht man fern, schläft der Begleiter. */
+/* Hört man im Begleiter, macht der Fernseher Platz. */
 body.hoert .fernseher { opacity: 0; pointer-events: none; }
-body.fernsieht .begleiter { opacity: .35; }
 .begleiter__buehne {
   position: absolute; inset: 0; opacity: 0; transition: opacity .3s .18s;
   display: flex; flex-direction: column;

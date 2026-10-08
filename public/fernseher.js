@@ -3,8 +3,11 @@
    eingerichtet hat (Adresse + Schlüssel im localStorage, gesetzt über
    `#fernseher=…`, siehe Kopf.astro). In dieser Datei steht keine Adresse und
    kein Schlüssel; für alle anderen tut sie nichts, nicht einmal eine Anfrage.
-   Ist der Knopf an, spielen Zeitstempel, Zitate und ▶ nicht im Begleiter,
-   sondern am Fernseher — man liest am Telefon, es klingt im Wohnzimmer. */
+   Ist der Knopf an, spielen Zeitstempel und Zitate nicht im Begleiter,
+   sondern am Fernseher — man liest am Telefon, es klingt im Wohnzimmer.
+   ▶ bleibt immer der Player im Telefon: wer ihn antippt, hält den Fernseher
+   an und hört wieder hier. Unterwegs gibt es den Knopf gar nicht — der
+   Empfänger sagt, ob man daheim ist, und weist sonst selbst ab. */
 (() => {
   let ziel;
   try { ziel = JSON.parse(localStorage.getItem("gw-fernseher")); } catch {}
@@ -50,7 +53,9 @@
     try {
       await rufen("/spielen", { v, t: Math.floor(t) });
       melden(mmss(t));
-    } catch {
+    } catch (e) {
+      // 403: inzwischen unterwegs — der Knopf geht, das Telefon spielt wieder selbst.
+      if (e.message === "403") { stellen(false); knopf.remove(); return; }
       melden("nicht erreichbar", true);
     }
   }
@@ -78,16 +83,19 @@
       e.stopPropagation();
       senden(+marke.dataset.t, marke.dataset.v, marke);
     } else if (e.target.closest("#begleiter")) {
-      e.stopPropagation();
-      const a = lesestelle();
-      senden(a ? +a.dataset.t : 0, a?.dataset.v, a);
+      // ▶ heißt: hier hören. Fernseher anhalten, der Klick geht weiter an den Begleiter.
+      stellen(false);
+      rufen("/pause", {}).catch(() => {});
     }
   }, true);
 
   // Erst zeigen, wenn der Empfänger antwortet — unterwegs ohne Tailnet bleibt alles wie immer.
-  // Ein zweiter Versuch, weil die erste Anfrage nach dem Aufwachen des Tunnels gern zu spät kommt.
-  rufen("/da")
-    .catch(() => new Promise((r) => setTimeout(r, 1500)).then(() => rufen("/da")))
+  /* Ein zweiter Versuch: Nach dem Aufwachen läuft die erste Anfrage oft noch über
+     ein Relay, bevor Tailscale den direkten Weg im WLAN gefunden hat — dann
+     hieße es „unterwegs", obwohl man auf dem Sofa sitzt. */
+  const daheim = () => rufen("/da").then((r) => r.json()).then((d) => d.daheim || Promise.reject());
+  daheim()
+    .catch(() => new Promise((r) => setTimeout(r, 2500)).then(daheim))
     .then(() => document.body.appendChild(knopf))
     .catch(() => {});
 })();
