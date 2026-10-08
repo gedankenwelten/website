@@ -95,6 +95,8 @@
   /* Zugeklappt ein Daumenziel: größer als am Rechner, wo die Maus genau trifft. */
   .begleiter:not(.offen) { width: 3.7rem; height: 3.7rem; }
   .begleiter__knopf { font-size: 1.3rem; padding-left: .15rem; }
+  .fernseher { right: .9rem; bottom: calc(.9rem + 4.4rem + env(safe-area-inset-bottom)); width: 3.7rem; height: 3.7rem; }
+  .fernseher svg { width: 1.45rem; height: 1.45rem; }
   .begleiter.offen {
     width: calc(100vw - 1.8rem); height: calc((100vw - 1.8rem) * 9 / 16 + 2.6rem);
     left: .9rem; right: .9rem;
