@@ -60,7 +60,20 @@
     }
   }
 
+  /* Anwerfen braucht einen zweiten Tap: Ein Fernseher, der aus Versehen
+     losplärrt, ist schlimmer als ein Tap mehr. Danach gehen die Marken direkt. */
+  let frage = null;
+  function fragen() {
+    knopf.classList.add("fernseher--frage");
+    knopf.dataset.zeit = "Nochmal tippen — im Wohnzimmer starten";
+    clearTimeout(frage);
+    frage = setTimeout(() => knopf.classList.remove("fernseher--frage"), 4000);
+  }
+
   knopf.addEventListener("click", async () => {
+    if (!an && !knopf.classList.contains("fernseher--frage")) return fragen();
+    clearTimeout(frage);
+    knopf.classList.remove("fernseher--frage");
     if (an) {
       stellen(false);
       document.querySelectorAll(".klingt").forEach((e) => e.classList.remove("klingt"));

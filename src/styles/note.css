@@ -703,6 +703,8 @@ h1 {
   opacity: 0; pointer-events: none;
 }
 .fernseher--fehler::after { color: var(--tinte-leise); }
+.fernseher--frage { color: var(--akzent); border-color: var(--akzent); }
+.fernseher--frage::after { opacity: 1; animation: none; }
 .fernseher--puls::after { animation: fernseher-zeit 2.4s ease-out; }
 @keyframes fernseher-zeit { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 /* Hört man im Begleiter, macht der Fernseher Platz. */
