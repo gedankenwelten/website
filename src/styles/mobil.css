@@ -61,6 +61,7 @@
     vertical-align: .15em; white-space: nowrap;
   }
   .ts::after { opacity: .75; }
+  .ts--im-satz { margin-left: .35rem; }
   .strang h2 .ts, .strang h3 .ts, .strang h4 .ts { display: block; width: fit-content; margin-bottom: .6rem; }
 
   .oton { margin-left: 0; padding-left: 1rem; font-size: 1.15rem; }

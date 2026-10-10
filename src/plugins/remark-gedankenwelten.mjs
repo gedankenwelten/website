@@ -73,7 +73,7 @@ export default function remarkGedankenwelten() {
        sie neben einer Überschrift steht. */
     visit(tree, ["paragraph", "heading"], (absatz) => {
       let n = 0;
-      visit(absatz, "link", (node) => {
+      visit(absatz, "link", (node, i, eltern) => {
         const erstes = node.children?.[0];
         if (erstes?.type !== "text" || !erstes.value.trimStart().startsWith("▶")) return;
         const t = Number(/[?&]t=(\d+)/.exec(node.url ?? "")?.[1]);
@@ -93,6 +93,18 @@ export default function remarkGedankenwelten() {
         node.data = { hName: "span", hProperties: eigen };
         node.children = [{ type: "text", value: erstes.value.replace("▶", "").trim() }];
         delete node.url;
+        // Stand die Marke allein in Klammern — „… eine Unwahrheit ([▶ 5:18](…)).“ —,
+        // wandert sie in den Rand und ließ „()“ im Satz zurück (603 Stellen in
+        // 47 Notes). Die Klammern gehen mit ihr.
+        const vor = eltern?.children?.[i - 1], nach = eltern?.children?.[i + 1];
+        if (vor?.type === "text" && nach?.type === "text"
+            && /\(\s*$/.test(vor.value) && /^\s*\)/.test(nach.value)) {
+          vor.value = vor.value.replace(/\s*\(\s*$/, "");
+          nach.value = nach.value.replace(/^\s*\)/, "");
+          // Auf dem Telefon steht die Marke im Satz statt am Rand — dort braucht
+          // sie links etwas Luft, sonst klebt sie am Wort davor.
+          eigen.className.push("ts--im-satz");
+        }
         n++;
       });
     });
