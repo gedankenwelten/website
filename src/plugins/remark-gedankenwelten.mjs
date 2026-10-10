@@ -179,6 +179,21 @@ export default function remarkGedankenwelten() {
               },
             },
           });
+        } else if (ziel.startsWith("#")) {
+          /* `[[#Überschrift]]` springt innerhalb derselben Note. Ohne Notenamen
+             fand findeNote nichts, und bis zum 10.10.2026 standen solche
+             Sprünge als tote Links da (23 Notes). */
+          const teil = ziel.slice(1).trim();
+          if (teil && !teil.startsWith("^")) {
+            teile.push({
+              type: "link",
+              url: "#" + slug(teil),
+              data: { hProperties: { className: ["wikilink"] } },
+              children: [{ type: "text", value: zusatz || teil }],
+            });
+          } else {
+            teile.push({ type: "text", value: zusatz || teil.replace(/^\^/, "") });
+          }
         } else {
           const note = findeNote(ziel);
           /* `[[Note#Überschrift]]` springt an die Stelle. Obsidian schreibt
