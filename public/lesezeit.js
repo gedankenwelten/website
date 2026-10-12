@@ -136,3 +136,63 @@
   addEventListener("click", hinaus);
   addEventListener("auxclick", hinaus);
 })();
+
+/* Das Stöbern — wie lange und wie weit jemand auf der Startseite schaut.
+
+   Ein Klick von der Startseite in eine Note sagt, dass jemand etwas fand. Wer
+   ohne Klick wieder geht, kann zwei Sekunden geblieben sein oder zwei Minuten
+   lang Karten angesehen haben — für Umami ist das derselbe Besuch. Gezählt
+   werden darum die aktiven Sekunden (wie beim Lesen), wie viele verschiedene
+   Karten zu mindestens der Hälfte im Bild waren, und womit gesucht wurde:
+   Rubrik, Sieb, Thema, Faden, Verwandte, Vorschau, Würfel. Nur Namen und
+   Zahlen, kein Suchwort, keine Note. Gesendet beim Verlassen als „stoebern". */
+
+(() => {
+  const gitter = document.getElementById("gitter");
+  if (!gitter || !document.body.classList.contains("ist-start")) return;
+
+  const RUHE = 90;
+  let sekunden = 0, zuletzt = Date.now(), gesendet = "";
+  const gesehen = new Set(), wege = new Set();
+
+  const regung = () => { zuletzt = Date.now(); };
+  for (const e of ["scroll", "wheel", "keydown", "pointermove", "touchstart"]) {
+    addEventListener(e, regung, { passive: true });
+  }
+  setInterval(() => {
+    if (document.visibilityState === "visible" && Date.now() - zuletzt < RUHE * 1000) sekunden++;
+  }, 1000);
+
+  // Nachgeladene Karten sind schon im Gitter, nur `hidden` — die beobachten
+  // wir gleich mit; solange sie verborgen sind, schneiden sie nichts.
+  const blick = new IntersectionObserver((eintraege) => {
+    for (const e of eintraege) if (e.isIntersecting) gesehen.add(e.target.dataset.platz);
+  }, { threshold: 0.5 });
+  gitter.querySelectorAll(".kachel").forEach((k) => blick.observe(k));
+
+  const WEGE = [
+    ["#filter .chip, #klappe", "rubrik"],
+    ["#themenKnopf, .wolke__wort, #themaAndere", "thema"],
+    ["#ansicht, [data-faden]", "faden"],
+    ["[data-nah-auf]", "verwandt"],
+    ["[data-schau]", "vorschau"],
+    ["#wuerfel", "wuerfel"],
+  ];
+  addEventListener("click", (e) => {
+    for (const [wo, name] of WEGE) if (e.target.closest?.(wo)) wege.add(name);
+  }, { capture: true });
+  document.querySelector("#sieb input")?.addEventListener("input", () => wege.add("sieb"), { once: true });
+
+  const senden = () => {
+    if (sekunden < 3 || !window.umami) return;
+    const karten = gesehen.size;
+    const stand = `${sekunden}/${karten}/${wege.size}`;
+    if (stand === gesendet) return;
+    gesendet = stand;
+    window.umami.track("stoebern", { sekunden, karten, wege: [...wege].sort().join(",") || "-" });
+  };
+  addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") senden();
+  });
+  addEventListener("pagehide", senden);
+})();
