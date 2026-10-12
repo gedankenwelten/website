@@ -117,7 +117,9 @@ function zitateAus(markdown) {
       if (/^\[!/.test(inhalt)) { schliessen(); sammler = { skip: true }; continue; }
       if (sammler?.skip) continue;
       if (!sammler) sammler = { t: letzterT, text: [] };
-      sammler.text.push(inhalt);
+      // Eine Zeitmarke im Zitat ist kein gesprochenes Wort — raus, sonst
+      // passt der Schlüssel nicht zu dem, den das Plugin bildet
+      sammler.text.push(inhalt.replace(/\[▶[^\]]*\]\([^)]*\)/g, ""));
     } else if (zeile.trim() === "") {
       schliessen();
     } else {

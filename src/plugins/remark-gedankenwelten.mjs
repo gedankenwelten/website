@@ -28,6 +28,13 @@ function text(node) {
   return s;
 }
 
+/** Wie `text`, aber ohne Zeitmarken (`span.ts`) — für den Zitat-Schlüssel. */
+function sprechtext(node) {
+  if (node.data?.hProperties?.className?.includes?.("ts")) return "";
+  if (node.type === "text" || node.type === "inlineCode") return node.value;
+  return (node.children ?? []).map(sprechtext).join("");
+}
+
 /** Callout-Typ → Gestalt. Kästen gibt es hier keine mehr. */
 const CALLOUT = {
   abstract:  ["vorspann"],
@@ -292,6 +299,22 @@ export default function remarkGedankenwelten() {
       }
       if (node.type !== "blockquote") return;
 
+      // Zeitstempel im Zitat selbst — „> [▶ 18:47](…) — „…““, 298 Zitate in
+      // 42 Notes. Der gilt, nicht der letzte davor: Sonst stand unter einem
+      // Satz aus Minute 18 „Im Gespräch — 3:09“. Weil der Knoten hier mit
+      // SKIP endet, sähe der Lauf die Marken im Inneren sonst nie.
+      const innen = [];
+      visit(node, (k) => {
+        const p = k.data?.hProperties;
+        if (k !== node && p?.["data-t"]) innen.push(p);
+      });
+      const nachher = () => {
+        if (!innen.length) return;
+        const p = innen[innen.length - 1];
+        letzterT = Number(p["data-t"]);
+        letzterV = p["data-v"] ?? null;
+      };
+
       const ersterAbsatz = node.children?.[0];
       const ersterText = ersterAbsatz?.children?.[0];
       const roh = ersterText?.type === "text" ? ersterText.value : "";
@@ -312,10 +335,15 @@ export default function remarkGedankenwelten() {
             children: [{ type: "text", value: titel.trim() }],
           });
         }
+        nachher();
         return SKIP;
       }
 
       // Kein Callout → gesprochenes Wort. Hörbar machen.
+      if (innen.length) {
+        letzterT = Number(innen[0]["data-t"]);
+        letzterV = innen[0]["data-v"] ?? null;
+      }
       const eigen = { className: ["oton"] };
       if (letzterT != null) eigen["data-t"] = String(letzterT);
       if (letzterT != null && letzterV) eigen["data-v"] = letzterV;
@@ -326,7 +354,8 @@ export default function remarkGedankenwelten() {
       // wirklich passiert; sie verspricht nie mehr, als sie kann.
       let ende = null;
       if (letzterT != null && fm.video) {
-        const roh = text(node).replace(/^\s*/, "");
+        // Ohne die Randmarken — sie sind keine gesprochenen Worte
+        const roh = sprechtext(node).replace(/^\s*/, "");
         ende = ZITAT_ENDEN[zitatSchluessel(letzterV ?? fm.video, letzterT, roh)] ?? null;
         if (ende != null) eigen["data-ende"] = String(ende);
       }
@@ -344,6 +373,7 @@ export default function remarkGedankenwelten() {
           }],
         });
       }
+      nachher();
       return SKIP;
     });
 
