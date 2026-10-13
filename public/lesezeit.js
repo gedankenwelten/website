@@ -16,6 +16,12 @@
   const blatt = document.querySelector("article.blatt");
   if (!blatt) return;
 
+  // Im Gedankenraum liegt die Note in einem Rahmen, der schon lädt, wenn man sich
+  // ihrem Bild zuwendet. Gelesen wird erst, wenn man eintaucht — dann trägt der
+  // Rahmen die Klasse „offen“. Vorher zählt nichts, auch nicht die Tiefe.
+  const rahmen = window.frameElement?.id === "seite" ? window.frameElement : null;
+  const offen = () => !rahmen || rahmen.classList.contains("offen");
+
   const RUHE = 90;   // Sekunden ohne jede Regung: dann liest niemand mehr
   let sekunden = 0, zuletzt = Date.now(), tiefe = 0, gesendet = 0;
 
@@ -25,6 +31,7 @@
   }
 
   const messen = () => {
+    if (!offen()) return;
     const r = blatt.getBoundingClientRect();
     const bis = (innerHeight - r.top) / r.height;
     tiefe = Math.max(tiefe, Math.min(100, Math.round(bis * 100)));
@@ -33,13 +40,15 @@
   messen();
 
   setInterval(() => {
+    if (!offen()) return;
+    if (rahmen) messen();   // im Raum fährt die Seite ins Bild, ohne dass jemand scrollt
     if (document.visibilityState === "visible" && Date.now() - zuletzt < RUHE * 1000) sekunden++;
   }, 1000);
 
   const senden = () => {
     if (sekunden < 5 || sekunden === gesendet || !window.umami) return;
     gesendet = sekunden;
-    window.umami.track("lesen", { sekunden, tiefe });
+    window.umami.track("lesen", rahmen ? { sekunden, tiefe, raum: 1 } : { sekunden, tiefe });
   };
   addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") senden();
