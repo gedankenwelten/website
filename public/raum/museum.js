@@ -146,7 +146,9 @@ if (VON) {
 }
 
 addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight; camera.fov = blickfeld(); camera.updateProjectionMatrix();
+  camera.aspect = innerWidth / innerHeight;
+  camera.fov = zustand === "sitzt" && sitz ? sitzBlick(sitz.pos).fov : blickfeld();
+  camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight); css.setSize(innerWidth, innerHeight);
   if (zustand === "note") Object.assign(seiteEl.style, { width: innerWidth + "px", height: innerHeight + "px" });
 });
@@ -414,8 +416,8 @@ function schildTextur(i) {
 }
 
 /* Der Wandspruch: der geheimnisvolle Satz der Note, in Schreibschrift über dem Bild, weiß auf die Wand gemalt. */
-function spruchTextur(satz, breite, hoehe) {
-  const W = 2048, Hh = Math.round(W * hoehe / breite);
+function spruchTextur(satz, breite, hoehe, W = 2048) {
+  const Hh = Math.round(W * hoehe / breite);
   return leinwand(W, Hh, (g, w, h) => {
     g.clearRect(0, 0, w, h);
     // lieber eine Zeile — erst wenn die Schrift dafür zu klein würde, zwei
@@ -734,10 +736,12 @@ function baueSaal(i, von) {
 
   // Bänke mit Blick auf das große Bild — in der Rotunde eine runde in der Mitte
   const holz = mat(new THREE.MeshLambertMaterial({ color: 0x2c231d })), leder = mat(new THREE.MeshLambertMaterial({ color: 0x4b3a2e }));
+  saal.leder = leder;
   for (const [x, z, b] of typ.baenke ?? []) {
     const bank = new THREE.Group(); bank.position.set(x, 0, z);
     const sitz = new THREE.Mesh(KISTE, leder); sitz.scale.set(b, .14, .85); sitz.position.y = .44;
-    bank.add(sitz);
+    sitz.userData.bank = { x, z };
+    bank.add(sitz); saal.klickbar.push(sitz);
     for (const fx of [-(b / 2 - .18), b / 2 - .18]) { const f = new THREE.Mesh(KISTE, holz); f.scale.set(.12, .37, .72); f.position.set(fx, .185, 0); bank.add(f); }
     g.add(bank);
     saal.hindernisse.push({ x0: x - b / 2, x1: x + b / 2, z0: z - .43, z1: z + .43 });
@@ -747,7 +751,8 @@ function baueSaal(i, von) {
     const sitz = new THREE.Mesh(new THREE.CylinderGeometry(rb, rb, .14, 48), leder); sitz.position.y = .44;
     const fuss = new THREE.Mesh(new THREE.CylinderGeometry(rb - .25, rb - .2, .37, 48), holz); fuss.position.y = .185;
     sitz.userData.eigen = fuss.userData.eigen = true;
-    g.add(sitz, fuss);
+    sitz.userData.bank = { x: 0, z: -(rb - .3) };   // man setzt sich auf die Seite, die zum großen Bild schaut
+    g.add(sitz, fuss); saal.klickbar.push(sitz);
     saal.hindernisse.push({ rund: rb });
   }
 
@@ -929,7 +934,7 @@ function steuern(dt) {
 let zustand = "reise", seitWann = 0;
 const setze = (z) => {
   zustand = z; seitWann = performance.now();
-  ausgangEl.classList.toggle("da", z === "reise" || z === "zu");   // der Ausgang nur, solange man im Saal steht
+  ausgangEl.classList.toggle("da", z === "reise" || z === "zu" || z === "sitzt");   // der Ausgang nur, solange man im Saal steht
 };
 const tweens = [];
 const glatt = (k) => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
@@ -1009,6 +1014,71 @@ function seiteLaden(i) {
   const u = K[i].u.normalize("NFC");
   if (seiteEl.dataset.fuer === u) return;
   seiteEl.dataset.fuer = u; seiteEl.src = K[i].u;
+}
+
+/* Die Bank: man setzt sich, und das große Bild mit seinem Wandspruch füllt den Blick.
+   Hier bewegt sich nur der Mensch — Bild und Spruch bleiben, wo sie sind. */
+const SITZ = 1.2, SPRUCH_SITZ = .88;
+let sitz = null;   // { pos, fov }
+function sitzBlick(pos) {
+  // wohin man schaut und wie weit das Blickfeld sein muss, damit Bild und Spruch ganz darin liegen
+  const h = jetzt.haupt, hp = h.mesh.getWorldPosition(new V());
+  let unten = hp.y - h.h / 2 - RAHMEN, oben = hp.y + h.h / 2 + RAHMEN, breit = h.b + 2 * RAHMEN;
+  if (jetzt.spruch) {
+    const sp = jetzt.spruch.getWorldPosition(new V());
+    oben = Math.max(oben, sp.y + jetzt.spruch.scale.y / 2); breit = Math.max(breit, jetzt.spruch.scale.x);
+  }
+  const dx = hp.x - pos.x, dz = hp.z - pos.z, d = Math.hypot(dx, dz);
+  const a = Math.atan2(oben - pos.y, d), b = Math.atan2(unten - pos.y, d), pitch = (a + b) / 2;
+  const vNoetig = (a - b) * 1.25;
+  const hNoetig = 2 * Math.atan(breit / 2 / d) * 1.12;
+  const vAusH = 2 * Math.atan(Math.tan(hNoetig / 2) / camera.aspect);
+  const fov = clamp(THREE.MathUtils.radToDeg(Math.max(vNoetig, vAusH)), 24, camera.aspect < 1 ? 84 : blickfeld());
+  return { yaw: Math.atan2(-dx, -dz), pitch, fov };
+}
+function spruchScharf() {
+  // aus der Nähe gelesen: den Spruch einmal in doppelter Auflösung neu auf die Wand malen
+  const s = jetzt.spruch, satz = raetsel[K[jetzt.i].u];
+  if (!s || !satz || s.userData.scharf) return;
+  const tex = spruchTextur(satz, s.scale.x, s.scale.y, 4096);
+  jetzt.texturen.push(tex);
+  s.material.map = tex; s.material.needsUpdate = true; s.userData.scharf = true;
+}
+async function setzen(bank) {
+  if (zustand !== "reise") return;
+  setze("setzen");
+  gang = null; flug.vel.set(0, 0, 0); tasten.clear();
+  schliesseSaaltext();
+  hinweis.style.opacity = 0;
+  jetzt.leder?.emissive.setHex(0);
+  spruchScharf();
+  const ziel = new V(bank.x, SITZ, bank.z), blick = sitzBlick(ziel);
+  const p0 = flug.pos.clone(), y0 = flug.yaw, pi0 = flug.pitch, f0 = camera.fov;
+  sitz = { pos: p0.clone() };
+  const ms = clamp(Math.hypot(ziel.x - p0.x, ziel.z - p0.z) / 1.4 * 1000, 1600, 5200);
+  await tween(ms, (k) => {
+    sitz.pos.x = lerp(p0.x, ziel.x, k); sitz.pos.z = lerp(p0.z, ziel.z, k);
+    sitz.pos.y = lerp(p0.y, SITZ, glatt(clamp((k - .55) / .45, 0, 1)));   // erst hingehen, dann sich setzen
+    flug.yaw = winkel(y0, blick.yaw, k); flug.pitch = lerp(pi0, blick.pitch, k);
+    camera.fov = lerp(f0, blick.fov, glatt(clamp((k - .35) / .65, 0, 1))); camera.updateProjectionMatrix();
+  }, seil);
+  setze("sitzt");
+}
+async function aufstehen() {
+  if (zustand !== "sitzt") return;
+  setze("aufstehen");
+  // man steht auf und tritt einen Schritt vor die Bank, dem Bild entgegen
+  const f = new V(-Math.sin(flug.yaw), 0, -Math.cos(flug.yaw));
+  const p0 = sitz.pos.clone(), ziel = p0.clone().addScaledVector(f, jetzt.typ.rundbank ? .75 : .85);
+  ziel.y = AUGE; eingrenzen(ziel);
+  const pi0 = flug.pitch, f0 = camera.fov, f1 = blickfeld();
+  await tween(1300, (k) => {
+    sitz.pos.lerpVectors(p0, ziel, k);
+    flug.pitch = lerp(pi0, .06, k);
+    camera.fov = lerp(f0, f1, k); camera.updateProjectionMatrix();
+  });
+  flug.pos.copy(ziel); sitz = null;
+  setze("reise");
 }
 
 async function zuwenden(bild) {
@@ -1291,6 +1361,7 @@ function ziel(x, y) {
   if (u.schild !== undefined) return { art: "schild", i: u.schild };
   if (u.bild) return { art: "bild", bild: u.bild };
   if (u.tuer) return { art: "tuer", tuer: u.tuer };
+  if (u.bank) return { art: "bank", bank: u.bank };
   if (u.boden) return { art: "boden", punkt: h.point };
   return null;
 }
@@ -1298,11 +1369,12 @@ function markiere(z, maustyp) {
   canvas.style.cursor = !z ? "default" : z.art === "fokus" ? "zoom-in" : z.art === "boden" ? "default" : "pointer";
   ring.visible = maustyp === "mouse" && z?.art === "boden" && zustand === "reise";
   if (ring.visible) ring.position.set(z.punkt.x, .012, z.punkt.z);
+  jetzt?.leder?.emissive.setHex(z?.art === "bank" && zustand === "reise" ? 0x2e2016 : 0);   // die Bank glimmt, wenn man auf sie zeigt
 }
 
 const hinweis = document.getElementById("hinweis");
 if (matchMedia("(pointer: coarse)").matches)
-  hinweis.innerHTML = "<b>Wischen</b> schaut · <b>Antippen</b>: Boden geht hin, Bild wendet sich zu, Tür führt weiter";
+  hinweis.innerHTML = "<b>Wischen</b> schaut · <b>Antippen</b>: Boden geht hin, Bild wendet sich zu, Bank setzt dich, Tür führt weiter";
 let hinweisWeg = false;
 const ruhe = () => { if (!hinweisWeg) { hinweisWeg = true; setTimeout(() => (hinweis.style.opacity = 0), 5000); } };
 setTimeout(() => (hinweis.style.opacity = 0), 20000);
@@ -1312,7 +1384,7 @@ let druck = null;
 canvas.addEventListener("pointerdown", (ev) => { druck = { weg: 0, typ: ev.pointerType, x: ev.clientX, y: ev.clientY }; canvas.setPointerCapture?.(ev.pointerId); });
 addEventListener("pointermove", (ev) => {
   if (druck && ev.buttons) {
-    if (zustand === "reise") {
+    if (zustand === "reise" || zustand === "sitzt") {
       const s = ev.pointerType === "mouse" ? .0034 : .0052;
       flug.yaw += ev.movementX * s; flug.pitch = clamp(flug.pitch + ev.movementY * s * .8, -1.15, 1.15);
     }
@@ -1333,14 +1405,16 @@ canvas.addEventListener("pointerup", (ev) => {
     if (z.art === "schild") zeigeSaaltext(z.i);
     else if (z.art === "bild") zuwenden(z.bild);
     else if (z.art === "tuer") geheDurch(z.tuer);
+    else if (z.art === "bank") setzen(z.bank);
     else if (z.art === "boden") geheZu(z.punkt);
   } else if (zustand === "zu") {
     if (z?.art === "fokus") eintauchen(); else abwenden();
-  }
+  } else if (zustand === "sitzt") aufstehen();
 });
 addEventListener("wheel", (ev) => {
   ev.preventDefault();
   if (zustand === "zu") { if (performance.now() - seitWann > 700 && Math.abs(ev.deltaY) + Math.abs(ev.deltaX) > 4) abwenden(); return; }
+  if (zustand === "sitzt") { if (performance.now() - seitWann > 700 && Math.abs(ev.deltaY) + Math.abs(ev.deltaX) > 4) aufstehen(); return; }
   if (zustand !== "reise") return;
   ruhe(); gang = null;
   const f = new V(-Math.sin(flug.yaw), 0, -Math.cos(flug.yaw)), k = ev.deltaMode === 1 ? 16 : 1;
@@ -1356,12 +1430,13 @@ addEventListener("keydown", (ev) => {
   ruhe();
   if (ev.code === "Escape" && schliesseSaaltext()) return;
   if (BEWEGUNG[ev.code]) schliesseSaaltext();
-  if (ev.code === "Escape") { if (zustand === "zu") abwenden(); else if (zustand === "note") auftauchen(); return; }
+  if (ev.code === "Escape") { if (zustand === "zu") abwenden(); else if (zustand === "sitzt") aufstehen(); else if (zustand === "note") auftauchen(); return; }
   if (ev.code === "Enter" && zustand === "zu") { eintauchen(); return; }
   if (BEWEGUNG[ev.code] || ev.code.startsWith("Shift")) {
     ev.preventDefault();
     tasten.add(ev.code);
     if (zustand === "zu" && BEWEGUNG[ev.code]) abwenden();
+    if (zustand === "sitzt" && BEWEGUNG[ev.code]) aufstehen();
   }
 });
 addEventListener("keyup", (ev) => tasten.delete(ev.code));
@@ -1370,7 +1445,7 @@ zurueckEl.addEventListener("click", auftauchen);
 /* Der Ausgang: zurück zur Note, durch deren Tor man kam, an die Stelle, an der man dort war.
    Wer ohne Tor kam (ein geteilter Link), geht zur Note des Saals, in dem er gerade steht. */
 ausgangEl.addEventListener("click", () => {
-  if (zustand !== "reise" && zustand !== "zu") return;
+  if (zustand !== "reise" && zustand !== "zu" && zustand !== "sitzt") return;
   const ziel = VON || K[jetzt.i].u;
   try { sessionStorage.setItem("raum:zurueck", JSON.stringify({ p: decodeURIComponent(ziel).normalize("NFC"), y: VON ? VON_Y : 0 })); } catch {}
   const s = document.getElementById("schleier");
@@ -1405,12 +1480,16 @@ function takt() {
     steuern(dt);
     camera.position.copy(flug.pos);
     camera.rotation.set(flug.pitch, flug.yaw, 0);
+  } else if (sitz) {
+    camera.position.copy(sitz.pos);
+    camera.rotation.set(flug.pitch, flug.yaw, 0);
   }
   // Der Wandspruch tritt zurück: Ton in Ton, und erst wer dem Bild nahekommt, bemerkt ihn.
   if (jetzt.spruch) {
     const p = jetzt.spruch.getWorldPosition(_sp), d = Math.hypot(camera.position.x - p.x, camera.position.z - p.z);
     const tiefe = jetzt.typ.waende.h[0] * 2;
-    const ziel = SPRUCH_MAX * clamp((tiefe * .62 - d) / (tiefe * .3), 0, 1);
+    // wer sich gesetzt hat, liest ihn klar
+    const ziel = zustand === "setzen" || zustand === "sitzt" ? SPRUCH_SITZ : SPRUCH_MAX * clamp((tiefe * .62 - d) / (tiefe * .3), 0, 1);
     const m = jetzt.spruch.material;
     m.opacity += (ziel - m.opacity) * (1 - Math.exp(-dt * 1.6));
   }
@@ -1433,4 +1512,4 @@ if (VON) {
 }
 
 // Zum Prüfen von außen (Konsole).
-window.__museum = { zeigeSaaltext, flug, camera, K, get jetzt() { return jetzt; }, nachbarn, saele, zuwenden, abwenden, eintauchen, auftauchen, geheDurch, geheZu, durchgehen, ziel, get zustand() { return zustand; } };
+window.__museum = { zeigeSaaltext, flug, camera, K, get jetzt() { return jetzt; }, nachbarn, saele, zuwenden, abwenden, eintauchen, auftauchen, geheDurch, geheZu, durchgehen, ziel, setzen, aufstehen, get zustand() { return zustand; } };
