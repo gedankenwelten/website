@@ -2,6 +2,10 @@
 import { BUILD } from "../lib/site.mjs";
 /**
  * Verbessern — die zweite leise Tür, diesmal in der Note selbst.
+ * Nach außen heißt sie „Anfassen erlaubt" (das umgedrehte Museumsschild;
+ * Andreas, 16.10.2026): am Rand „anfassen", das Blatt „Neu fassen" — denn
+ * gemeint ist nicht nur der Fehler, auch der holprige Satz. Intern bleibt
+ * es `verbessern`, wie die Feedback-Tür intern `rueckmeldung` heißt.
  *
  * Ein Leser sieht einen Fehler oder eine Lücke und schlägt für genau
  * diesen Abschnitt eine andere Fassung vor. Links steht der Abschnitt, wie
@@ -10,7 +14,7 @@ import { BUILD } from "../lib/site.mjs";
  * keine Community, nur Post mit Rotstift (Andreas, 16.10.2026).
  *
  * Auf der Seite steht davon fast nichts: ein Satz unter den Marken am
- * Ende (in Note.astro) und, am Rechner, ein „verbessern" am Rand, solange
+ * Ende (in Note.astro) und, am Rechner, ein „anfassen" am Rand, solange
  * die Maus auf einer Abschnittsüberschrift liegt. Der Text wird im Browser
  * aus dem gelesenen Abschnitt genommen, nicht aus dem Markdown — der Leser
  * soll Prosa ändern, keine Wikilinks und Callout-Zeichen. Übertragen ins
@@ -27,7 +31,7 @@ const { note, titel } = Astro.props;
 
   <form class="verb__blatt" id="verbForm" role="dialog" aria-modal="true" aria-labelledby="verbTitel" novalidate>
     <div class="verb__zeile">
-      <h2 id="verbTitel">Verbessern</h2>
+      <h2 id="verbTitel">Neu fassen</h2>
       <label class="verb__wahl">
         <span class="verb__unsichtbar">Abschnitt</span>
         <select id="verbAbschnitt"></select>
@@ -36,8 +40,9 @@ const { note, titel } = Astro.props;
     </div>
 
     <p class="verb__hinweis">
-      Links steht der Abschnitt, wie er jetzt ist. Rechts änderst du, was nicht stimmt oder fehlt —
-      ein Wort, ein Satz, ein Absatz. Wir lesen jeden Vorschlag und entscheiden, was übernommen wird.
+      Links steht der Abschnitt, wie er jetzt ist. Rechts änderst du, was nicht stimmt, fehlt oder sich
+      besser sagen lässt — ein Wort, ein Satz, ein Absatz. Wir lesen jeden Vorschlag und entscheiden,
+      was übernommen wird.
     </p>
 
     <div class="verb__seiten">
@@ -52,7 +57,7 @@ const { note, titel } = Astro.props;
     </div>
 
     <textarea id="verbWarum" class="verb__warum" rows="2" maxlength="2000"
-              placeholder="Warum — und woher weißt du es? Eine Quelle hilft beim Prüfen (freiwillig)"
+              placeholder="Warum so? Und bei Fakten: woher weißt du es? Eine Quelle hilft beim Prüfen (freiwillig)"
               aria-label="Begründung oder Quelle, freiwillig"></textarea>
 
     <input id="verbMail" class="verb__mail" type="email" autocomplete="email" maxlength="200"

@@ -49,12 +49,12 @@ const filterbar = filterbareThemen(rubrik);
 const nichtSuchbar = ladeGraph().katalog.has(note.id)
   || note.id.split("/").pop().toLowerCase() === "index";
 
-/* Verbessern: überall, wo Wissen steht, das stimmen muss. Nicht bei den
+/* „Anfassen erlaubt" (intern: verbessern): überall, wo Wissen steht. Nicht bei den
    Gedanken — eine persönliche Reflexion lässt sich nicht berichtigen —
    und nicht bei Katalogen. Ohne Skript ist der Satz ein mailto. */
 const verbesserbar = rubrik !== "Gedanken" && !nichtSuchbar;
 const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
-  + encodeURIComponent(`Verbesserung zu „${d.title ?? note.id}“`);
+  + encodeURIComponent(`Neue Fassung zu „${d.title ?? note.id}“`);
 ---
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
@@ -127,7 +127,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 
     {verbesserbar && (
       <p class="verbessern-hinweis" data-pagefind-ignore>
-        Ein Fehler, eine Unschärfe, etwas fehlt? <a href={verbessernMail} data-verbessern>Jeden Abschnitt kannst du verbessern.</a>
+        Ein Fehler, ein holpriger Satz, etwas fehlt? <a href={verbessernMail} data-verbessern>Anfassen erlaubt: Jeden Abschnitt kannst du neu fassen.</a>
       </p>
     )}
   </div>

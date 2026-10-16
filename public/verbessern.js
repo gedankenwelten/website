@@ -117,8 +117,8 @@
       const g = document.createElement("button");
       g.type = "button";
       g.className = "verb-griff" + (a.kopf.querySelector(".ts") ? " verb-griff--tief" : "");
-      g.textContent = "verbessern";
-      g.setAttribute("aria-label", `Abschnitt „${a.titel}“ verbessern`);
+      g.textContent = "anfassen";
+      g.setAttribute("aria-label", `Abschnitt „${a.titel}“ neu fassen`);
       g.addEventListener("click", (e) => { e.preventDefault(); oeffnen(i, g); });
       a.kopf.append(g);
     });
