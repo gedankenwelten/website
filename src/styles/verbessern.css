@@ -1,0 +1,167 @@
+/* ══════════════════════════════════════════════════════════════════
+   Verbessern — der Satz unter der Note, der Griff am Rand, das Blatt
+   ══════════════════════════════════════════════════════════════════
+   Auf der Seite soll davon fast nichts stehen (Andreas, 16.10.2026):
+   kein Knopf, der mitliest. Ein Satz am Ende, in der Stimme der
+   Kennzeile; am Rechner ein Wort am Rand, nur solange die Maus auf der
+   Überschrift liegt. Das Blatt selbst ist gebaut wie die Rückmeldung —
+   das Papier tritt zurück, es wird nicht dunkel. */
+
+/* ── Der Satz am Ende ── */
+.verbessern-hinweis {
+  margin: 1.4rem 0 0; font-size: .9rem; line-height: 1.55;
+  font-style: italic; color: var(--tinte-fern); text-wrap: pretty;
+}
+.strang .verbessern-hinweis a {
+  color: var(--tinte-leise); border-bottom: 1px dotted var(--tinte-fern);
+}
+.strang .verbessern-hinweis a:hover { color: var(--akzent); border-bottom-color: var(--akzent); }
+
+/* ── Der Griff ── sitzt in der Marge wie eine Zeitmarke, auf Höhe der
+   ersten Zeile (unter dem Akzentstrich, den h3::before setzt). */
+.verb-griff {
+  position: absolute; right: calc(100% + var(--luft)); top: calc(1.5rem + 2px + .42em);
+  width: var(--marge); padding: 0; text-align: right;
+  background: none; border: 0; cursor: pointer;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; line-height: 1.4;
+  color: var(--tinte-fern);
+  opacity: 0; transition: opacity .25s, color .2s;
+}
+/* Trägt die Überschrift selbst eine Zeitmarke, rückt der Griff darunter. */
+.verb-griff--tief { top: calc(1.5rem + 2px + .42em + 1.6em); }
+/* An den leisen ##-Trennern (Viten, Kultur, Faktencheck) mittig zur Linie. */
+.strang h2 .verb-griff { top: 50%; transform: translateY(-50%); }
+.strang h3:hover .verb-griff, .strang h2:hover .verb-griff { opacity: .75; }
+.verb-griff:hover { color: var(--akzent); opacity: 1; }
+.verb-griff:focus-visible { opacity: 1; outline: 1px solid var(--akzent); outline-offset: 3px; }
+@media (max-width: 700px), (hover: none) { .verb-griff { display: none; } }
+
+/* ── Das Blatt ── */
+.verb { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; }
+.verb[hidden], .verb [hidden] { display: none !important; }
+html.verb-offen { overflow: hidden; }
+
+.verb__grund {
+  position: absolute; inset: 0;
+  background: color-mix(in oklab, var(--papier) 80%, transparent);
+  backdrop-filter: blur(3px);
+  animation: verbAuf .18s ease;
+}
+
+.verb__blatt {
+  position: relative; margin: 5vh auto 0; align-self: flex-start;
+  width: min(68rem, calc(100vw - 2.4rem));
+  max-height: 90vh; overflow: auto; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: .85rem;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
+  box-shadow: var(--schatten);
+  padding: 1.4rem 1.7rem 1.3rem;
+  animation: verbHoch .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes verbAuf { from { opacity: 0 } }
+@keyframes verbHoch { from { opacity: 0; transform: translateY(-8px) } }
+
+.verb__zeile { display: flex; align-items: baseline; gap: 1rem; }
+.verb__zeile h2 {
+  margin: 0; font-size: 1.35rem; font-weight: 600; letter-spacing: -.01em; color: var(--tinte);
+}
+.verb__wahl { flex: 1; min-width: 0; }
+.verb__wahl select {
+  width: 100%; max-width: 30rem; text-overflow: ellipsis;
+  font-family: "Inter", -apple-system, sans-serif; font-size: .82rem; color: var(--tinte-leise);
+  background: var(--papier-tief); border: 1px solid var(--linie); border-radius: 4px;
+  padding: .32rem .5rem; cursor: pointer;
+}
+.verb__wahl select:focus { outline: none; border-color: var(--akzent); }
+.verb__unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.verb__zu {
+  flex: 0 0 auto; margin-left: auto;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-fern);
+  background: none; border: 1px solid var(--linie); border-radius: 4px;
+  padding: .25rem .5rem; cursor: pointer; transition: all .2s;
+}
+.verb__zu:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.verb__hinweis {
+  margin: 0; font-size: .95rem; line-height: 1.55; font-style: italic; color: var(--tinte-leise);
+  text-wrap: pretty; max-width: 46rem;
+}
+
+/* Zwei Spalten gleicher Höhe: links das Papier, wie es in der Note
+   steht, rechts dasselbe zum Bearbeiten. */
+.verb__seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.verb__seite { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.verb__seite h3 {
+  margin: 0; font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.verb__zaehler { letter-spacing: .06em; text-transform: none; font-weight: 400; color: var(--akzent); }
+
+.verb__original,
+.verb__seite textarea {
+  height: min(52vh, 34rem); box-sizing: border-box; overflow: auto;
+  font-family: inherit; font-size: 1rem; line-height: 1.6; color: var(--tinte);
+  border: 1px solid var(--linie); border-radius: 4px; padding: .8rem .95rem;
+}
+.verb__original { background: transparent; color: var(--tinte-leise); }
+.verb__original:focus { outline: none; border-color: var(--tinte-fern); }
+.verb__original p { margin: 0 0 1.05rem; padding-left: .7rem; border-left: 2px solid transparent; transition: border-color .3s; }
+.verb__original p:last-child { margin-bottom: 0; }
+/* Leise: Dieser Absatz steht rechts nicht mehr so. */
+.verb__original p.anders { border-left-color: color-mix(in oklab, var(--akzent) 55%, transparent); color: var(--tinte); }
+
+.verb__seite textarea {
+  width: 100%; resize: none; background: var(--papier-tief); outline: none; transition: border-color .2s;
+}
+.verb__seite textarea:focus { border-color: var(--akzent); }
+
+.verb__warum,
+.verb__mail {
+  width: 100%; box-sizing: border-box;
+  font-family: inherit; font-size: .95rem; line-height: 1.5; color: var(--tinte);
+  background: var(--papier-tief); border: 1px solid var(--linie); border-radius: 4px;
+  padding: .6rem .85rem; outline: none; transition: border-color .2s;
+}
+.verb__warum { resize: vertical; min-height: 3.2rem; }
+.verb__mail { font-size: .9rem; }
+.verb__warum:focus, .verb__mail:focus { border-color: var(--akzent); }
+.verb__blatt ::placeholder { color: var(--tinte-fern); }
+
+.verb__honig { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+.verb__fuss { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
+.verb__klein {
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px; line-height: 1.5;
+  letter-spacing: .04em; color: var(--tinte-fern); max-width: 40rem;
+}
+.verb__senden {
+  flex: 0 0 auto;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--papier); background: var(--akzent); border: 1px solid var(--akzent);
+  border-radius: 4px; padding: .55rem 1rem; cursor: pointer; transition: opacity .2s;
+}
+.verb__senden:hover { opacity: .88; }
+.verb__senden:disabled { opacity: .5; cursor: default; }
+
+.verb__antwort { margin: 0; font-size: 1.02rem; line-height: 1.55; color: var(--tinte); }
+.verb__antwort.ist-fehler { color: var(--rot); }
+
+/* Auf dem Telefon untereinander: oben das Original (kürzer), darunter
+   das Feld. Das Original bleibt sichtbar, während man schreibt. */
+@media (max-width: 760px) {
+  .verb__blatt { margin-top: 2vh; max-height: 96vh; padding: 1.05rem 1rem 1rem; gap: .7rem; width: calc(100vw - 1.2rem); }
+  .verb__zeile { flex-wrap: wrap; }
+  .verb__wahl { order: 3; flex-basis: 100%; }
+  .verb__wahl select { max-width: none; }
+  .verb__seiten { grid-template-columns: 1fr; gap: .7rem; }
+  .verb__original { height: 26vh; font-size: .93rem; }
+  .verb__seite textarea { height: 34vh; }
+  /* Unter 16px zoomt Safari beim Antippen ins Feld. */
+  .verb__seite textarea, .verb__warum, .verb__mail, .verb__wahl select { font-size: 16px; }
+  .verb__hinweis { font-size: .9rem; }
+  .verb__fuss { flex-direction: column; align-items: stretch; }
+}

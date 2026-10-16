@@ -13,6 +13,7 @@ import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
 import Fusszeile from "../components/Fusszeile.astro";
 import Schau from "../components/Schau.astro";
+import Verbessern from "../components/Verbessern.astro";
 import "../styles/mobil.css";
 
 const { note, kopf } = Astro.props;
@@ -47,6 +48,13 @@ const filterbar = filterbareThemen(rubrik);
    sondern ein Inhaltsverzeichnis, das sich vordrängt. */
 const nichtSuchbar = ladeGraph().katalog.has(note.id)
   || note.id.split("/").pop().toLowerCase() === "index";
+
+/* Verbessern: überall, wo Wissen steht, das stimmen muss. Nicht bei den
+   Gedanken — eine persönliche Reflexion lässt sich nicht berichtigen —
+   und nicht bei Katalogen. Ohne Skript ist der Satz ein mailto. */
+const verbesserbar = rubrik !== "Gedanken" && !nichtSuchbar;
+const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
+  + encodeURIComponent(`Verbesserung zu „${d.title ?? note.id}“`);
 ---
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
@@ -115,6 +123,12 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
           ? <a href={`/${rubrik}?thema=${encodeURIComponent(t)}`}>{t}</a>
           : <span>{t}</span>)}
       </div>
+    )}
+
+    {verbesserbar && (
+      <p class="verbessern-hinweis" data-pagefind-ignore>
+        Ein Fehler, eine Unschärfe, etwas fehlt? <a href={verbessernMail} data-verbessern>Jeden Abschnitt kannst du verbessern.</a>
+      </p>
     )}
   </div>
 
@@ -195,6 +209,7 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
   <Stern id={note.id} />
 </article>
 <Fusszeile rubrik={rubrik} />
+{verbesserbar && <Verbessern note={note.id} titel={d.title ?? note.id} />}
 
 <figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
 

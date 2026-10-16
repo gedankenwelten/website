@@ -1,0 +1,79 @@
+---
+import { BUILD } from "../lib/site.mjs";
+/**
+ * Verbessern — die zweite leise Tür, diesmal in der Note selbst.
+ *
+ * Ein Leser sieht einen Fehler oder eine Lücke und schlägt für genau
+ * diesen Abschnitt eine andere Fassung vor. Links steht der Abschnitt, wie
+ * er jetzt ist, und bleibt stehen; rechts dasselbe noch einmal zum
+ * Ändern. Wir prüfen und entscheiden — abgestimmt wird nicht, es gibt
+ * keine Community, nur Post mit Rotstift (Andreas, 16.10.2026).
+ *
+ * Auf der Seite steht davon fast nichts: ein Satz unter den Marken am
+ * Ende (in Note.astro) und, am Rechner, ein „verbessern" am Rand, solange
+ * die Maus auf einer Abschnittsüberschrift liegt. Der Text wird im Browser
+ * aus dem gelesenen Abschnitt genommen, nicht aus dem Markdown — der Leser
+ * soll Prosa ändern, keine Wikilinks und Callout-Zeichen. Übertragen ins
+ * Markdown wird beim Prüfen.
+ *
+ * Ziel: Pi-Dienst `gedankenwelten-rueckmeldung`, `/api/rueckmeldung/vorschlag`
+ * (die Caddy-Route `/api/rueckmeldung*` deckt das mit).
+ */
+import "../styles/verbessern.css";
+const { note, titel } = Astro.props;
+---
+<div class="verb" id="verb" hidden data-note={note} data-titel={titel} data-stand={BUILD}>
+  <div class="verb__grund" data-verb-zu></div>
+
+  <form class="verb__blatt" id="verbForm" role="dialog" aria-modal="true" aria-labelledby="verbTitel" novalidate>
+    <div class="verb__zeile">
+      <h2 id="verbTitel">Verbessern</h2>
+      <label class="verb__wahl">
+        <span class="verb__unsichtbar">Abschnitt</span>
+        <select id="verbAbschnitt"></select>
+      </label>
+      <button class="verb__zu" type="button" data-verb-zu aria-label="Schließen">esc</button>
+    </div>
+
+    <p class="verb__hinweis">
+      Links steht der Abschnitt, wie er jetzt ist. Rechts änderst du, was nicht stimmt oder fehlt —
+      ein Wort, ein Satz, ein Absatz. Wir lesen jeden Vorschlag und entscheiden, was übernommen wird.
+    </p>
+
+    <div class="verb__seiten">
+      <section class="verb__seite">
+        <h3>So steht es da</h3>
+        <div class="verb__original" id="verbOriginal" tabindex="0" aria-label="Der Abschnitt im Original"></div>
+      </section>
+      <section class="verb__seite">
+        <h3>Deine Fassung <span class="verb__zaehler" id="verbZaehler" aria-live="polite"></span></h3>
+        <textarea id="verbFassung" spellcheck="true" aria-label="Deine Fassung des Abschnitts"></textarea>
+      </section>
+    </div>
+
+    <textarea id="verbWarum" class="verb__warum" rows="2" maxlength="2000"
+              placeholder="Warum — und woher weißt du es? Eine Quelle hilft beim Prüfen (freiwillig)"
+              aria-label="Begründung oder Quelle, freiwillig"></textarea>
+
+    <input id="verbMail" class="verb__mail" type="email" autocomplete="email" maxlength="200"
+           placeholder="Mail, falls du wissen möchtest, was daraus wird (freiwillig)"
+           aria-label="Mail-Adresse, freiwillig">
+
+    <div class="verb__honig" aria-hidden="true">
+      <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <div class="verb__fuss">
+      <span class="verb__klein">
+        Mitgeschickt werden die Seite, der Abschnitt und deine Fassung. Kein Name, keine IP, kein Cookie.
+        Eine Adresse löschen wir, sobald wir geantwortet haben. Was übernommen wird, steht unter
+        derselben Lizenz wie die Notes (CC BY-SA).
+      </span>
+      <button class="verb__senden" type="submit">Vorschlag einreichen</button>
+    </div>
+
+    <p class="verb__antwort" id="verbAntwort" hidden></p>
+  </form>
+</div>
+
+<script src={`/verbessern.js?v=${BUILD}`} is:inline defer></script>
