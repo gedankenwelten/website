@@ -117,6 +117,13 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 
     <slot />
 
+    {/* Direkt nach dem Text, über dem Trennstrich der Marken (Andreas, 16.10.). */}
+    {verbesserbar && (
+      <p class="verbessern-hinweis" data-pagefind-ignore>
+        Ein Fehler, ein holpriger Satz, etwas fehlt? <a href={verbessernMail} data-verbessern>Anfassen erlaubt: Jeden Abschnitt kannst du neu fassen.</a>
+      </p>
+    )}
+
     {d.tags?.length > 0 && (
       <div class="marken-zeile" data-pagefind-ignore>
         {d.tags.map((t) => filterbar.has(t)
@@ -125,11 +132,6 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
       </div>
     )}
 
-    {verbesserbar && (
-      <p class="verbessern-hinweis" data-pagefind-ignore>
-        Ein Fehler, ein holpriger Satz, etwas fehlt? <a href={verbessernMail} data-verbessern>Anfassen erlaubt: Jeden Abschnitt kannst du neu fassen.</a>
-      </p>
-    )}
   </div>
 
   {/* Alle Verbindungen beisammen, an einem festen Platz. Aus dem

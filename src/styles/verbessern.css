@@ -8,10 +8,12 @@
    das Papier tritt zurück, es wird nicht dunkel. */
 
 /* ── Der Satz am Ende ── */
-.verbessern-hinweis {
-  margin: 1.4rem 0 0; font-size: .9rem; line-height: 1.55;
+/* `.strang p` setzt sonst seinen eigenen Abstand durch. */
+.strang .verbessern-hinweis {
+  margin: 3rem 0 0; font-size: calc(.88 * var(--lese)); line-height: 1.55;
   font-style: italic; color: var(--tinte-fern); text-wrap: pretty;
 }
+.verbessern-hinweis + .marken-zeile { margin-top: 2rem; }
 .strang .verbessern-hinweis a {
   color: var(--tinte-leise); border-bottom: 1px dotted var(--tinte-fern);
 }
