@@ -56,6 +56,21 @@ function lies(wert) {
 }
 
 /**
+ * Ein Frontmatter-Datum so, wie der Leser es liest: „5. April 2026“.
+ * YAML macht aus `2026-04-05` ein Date, aus `05.04.2026` einen Text —
+ * im Kopf der Note sollen beide gleich aussehen.
+ */
+export function lesbar(wert) {
+  const iso = lies(wert);
+  if (!iso) return null;
+  return new Date(`${iso}T12:00:00Z`)
+    .toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+}
+
+/** Für Vergleiche: dasselbe Datum als `JJJJ-MM-TT`. */
+export { lies as isoVon };
+
+/**
  * `aktualisiert:` zuerst — es ist das kuratierte Datum, an dem auch das
  * Journal hängt. Erst wenn keins da ist, zählt die Erstanlage.
  */

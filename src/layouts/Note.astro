@@ -14,6 +14,7 @@ import Kopf from "../components/Kopf.astro";
 import Fusszeile from "../components/Fusszeile.astro";
 import Schau from "../components/Schau.astro";
 import Verbessern from "../components/Verbessern.astro";
+import { lesbar, isoVon } from "../lib/datum.mjs";
 import "../styles/mobil.css";
 
 const { note, kopf } = Astro.props;
@@ -27,9 +28,16 @@ const dauer = zeitstempel.length ? Math.ceil(Math.max(...zeitstempel) * 1.02) : 
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const hm = (s) => `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}`;
 
-const datum = d.aktualisiert instanceof Date
-  ? d.aktualisiert.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
-  : d.aktualisiert ?? null;
+const datum = lesbar(d.aktualisiert);
+/* Offen sagen, wann eine Note entstand und wann sie zuletzt inhaltlich
+   wuchs (Andreas, 17.10.2026). `erstellt:` tragen nur die Panoramen; sonst
+   ist es `date:` — laut Pipeline der Verarbeitungstag, also dasselbe.
+   Ohne beides schweigen wir lieber, als ein Git-Datum zu raten: Die
+   Geschichte des Cortex beginnt erst nach vielen seiner Notes.
+   Am selben Tag (oder bei verdrehten Daten) bleibt es bei einem Datum. */
+const erstelltRoh = d.erstellt ?? d.date;
+const erstellt = lesbar(erstelltRoh);
+const gewachsen = datum && erstellt && isoVon(d.aktualisiert) > isoVon(erstelltRoh);
 
 const rubrik = note.id.split("/")[0];
 /* Ohne `description:` stand im Suchtreffer und in jeder Link-Vorschau der
@@ -63,7 +71,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 <!DOCTYPE html>
 <html lang="de" data-theme="hell">
 <head>
-  <Kopf titel={d.title} beschreibung={beschreibung} bild={kopf.banner ?? null} rubrik={rubrik} datum={d.aktualisiert} erstellt={d.erstellt} />
+  <Kopf titel={d.title} beschreibung={beschreibung} bild={kopf.banner ?? null} rubrik={rubrik} datum={d.aktualisiert} erstellt={erstelltRoh} />
 </head>
 <body>
 
@@ -90,7 +98,9 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
           von hier führt sie jetzt in die Rubrik statt nur zu sagen, in
           welcher man ist. */}
       <b><a class="kennung__rubrik" href={`/${rubrik}`}>{rubrik}</a></b>
-      {datum && <><i>·</i>{datum}</>}
+      {gewachsen
+        ? <><i>·</i><span>erstellt {erstellt}</span><i>·</i><span>aktualisiert {datum}</span></>
+        : (erstellt ?? datum) && <><i>·</i><span>{erstellt ? "erstellt" : "aktualisiert"} {erstellt ?? datum}</span></>}
       {dauer > 0 && <><i>·</i>{hm(dauer)} h</>}
       {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
     </div>
