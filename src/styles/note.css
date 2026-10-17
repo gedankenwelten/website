@@ -980,7 +980,7 @@ details.malerhand summary {
 }
 details.malerhand summary::-webkit-details-marker { display: none; }
 details.malerhand summary::before {
-  content: "gemalt von"; margin-right: .45em;
+  content: "frei nach"; /* wir adaptieren eine Hand, wir malen nicht wie sie (Andreas, 17.10.2026) */ margin-right: .45em;
   font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase;
   color: var(--tinte-fern); opacity: 0; transition: opacity .25s;
 }
