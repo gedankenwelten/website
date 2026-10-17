@@ -135,7 +135,10 @@
       .map((a) => {
         const aus = [];
         a.teile.forEach((el) => bloecke(el, aus));
-        return { ...a, text: aus.join("\n\n") };
+        // Der Anfang trägt meist den Aufmacher („Worum es geht“) — dann soll er so heißen.
+        const titel = !a.kopf && a.teile.some((el) => el.matches?.(".vorspann") || el.querySelector?.(".vorspann"))
+          ? "Aufmacher · Worum es geht" : a.titel;
+        return { ...a, titel, text: aus.join("\n\n") };
       })
       .filter((a) => a.text.length > 0);
   }
@@ -150,6 +153,12 @@
 
   if (admin) {
     document.documentElement.classList.add("gw-admin");
+    // Der Aufhänger im Kopf ist die `description` aus dem Frontmatter — für Andreas ganz oben in der Wahl.
+    const kopfzeile = document.querySelector(".standfirst");
+    if (kopfzeile && kopfzeile.textContent.trim()) {
+      abschnitte.unshift({ id: "description", titel: "Aufhänger · description", kopf: null,
+                           teile: [kopfzeile], text: kopfzeile.textContent.replace(/\s+/g, " ").trim() });
+    }
     form.querySelector(".verb__hinweis").textContent =
       "Admin: Links das Original, rechts deine Fassung. Sie geht nicht in die Leserpost, sondern liegt für Claude bereit — sag im Chat: „Setz meine Fassungen um.“";
     warum.placeholder = "Was soll Claude dazu wissen? (freiwillig)";
