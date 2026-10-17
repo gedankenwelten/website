@@ -167,3 +167,44 @@ html.verb-offen { overflow: hidden; }
   .verb__hinweis { font-size: .9rem; }
   .verb__fuss { flex-direction: column; align-items: stretch; }
 }
+
+/* Gespräch im Blatt — nur im Admin-Modus (17.10.2026). */
+.verb__gespraech { display: flex; flex-direction: column; gap: .55rem; }
+.verb__verlauf {
+  max-height: 18rem; overflow: auto; display: flex; flex-direction: column; gap: .6rem;
+}
+.verb__blase {
+  font-size: .95rem; line-height: 1.55; color: var(--tinte);
+  padding: .55rem .8rem .6rem; border-radius: 6px; border: 1px solid var(--linie);
+}
+.verb__blase p { margin: .3em 0 0; }
+.verb__blase > b {
+  display: block; font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--tinte-fern);
+}
+.verb__blase--andreas { align-self: flex-end; max-width: 82%; background: var(--papier-tief); }
+.verb__blase--claude { align-self: flex-start; max-width: 94%; border-left: 2px solid var(--akzent); }
+.verb__blase--fehler { border-left-color: var(--rot); color: var(--tinte-leise); }
+.verb__vorschlag {
+  margin-top: .55rem; padding: .45rem .75rem; border: 1px dashed var(--linie); border-radius: 4px;
+  max-height: 12rem; overflow: auto;
+}
+.verb__fragezeile { display: flex; gap: .6rem; align-items: flex-end; }
+.verb__frage {
+  flex: 1; box-sizing: border-box; resize: vertical; min-height: 2.7rem;
+  font-family: inherit; font-size: .95rem; line-height: 1.5; color: var(--tinte);
+  background: var(--papier-tief); border: 1px solid var(--linie); border-radius: 4px; padding: .55rem .8rem;
+}
+.verb__frage:focus { outline: none; border-color: var(--akzent); }
+.verb__fragen, .verb__uebernehmen {
+  flex: 0 0 auto; font-family: "Inter", -apple-system, sans-serif; font-size: 11px;
+  letter-spacing: .13em; text-transform: uppercase; cursor: pointer;
+  color: var(--akzent); background: none; border: 1px solid var(--akzent); border-radius: 4px;
+  padding: .5rem .9rem;
+}
+.verb__uebernehmen { margin-top: .5rem; }
+.verb__fragen:disabled { opacity: .55; cursor: default; }
+@media (max-width: 760px) {
+  .verb__frage { font-size: 16px; }
+  .verb__fragezeile { flex-direction: column; align-items: stretch; }
+}

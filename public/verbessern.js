@@ -143,6 +143,11 @@
   const abschnitte = abschnitteBauen();
   if (!abschnitte.length) return;
 
+  /* ── Gespräch im Blatt (nur Admin) ── je Abschnitt ein eigener Verlauf. */
+  const gespraeche = new Map();
+  let gespraechZeigen = () => {};
+  let fuerClaudeOderLeer = () => [];
+
   if (admin) {
     document.documentElement.classList.add("gw-admin");
     form.querySelector(".verb__hinweis").textContent =
@@ -163,6 +168,89 @@
     }
     klein.append(umschalten);
     senden.textContent = "Für Claude vormerken";
+
+    const g = document.createElement("div");
+    g.className = "verb__gespraech";
+    g.innerHTML = `<div class="verb__verlauf" aria-live="polite" hidden></div>
+      <div class="verb__fragezeile">
+        <textarea class="verb__frage" rows="2" placeholder="Mit Claude über diesen Abschnitt sprechen … (⌘↵ schickt)"
+                  aria-label="Frage an Claude zu diesem Abschnitt"></textarea>
+        <button type="button" class="verb__fragen">Fragen</button>
+      </div>`;
+    warum.before(g);
+    felder.push(g);
+    const verlaufEl = g.querySelector(".verb__verlauf");
+    const frageEl = g.querySelector(".verb__frage");
+    const fragenKnopf = g.querySelector(".verb__fragen");
+    const absaetzeIn = (el, t) => absaetze(t).forEach((x) => {
+      const p = document.createElement("p"); p.textContent = x; el.append(p);
+    });
+    const blase = (w) => {
+      const d = document.createElement("div");
+      d.className = `verb__blase verb__blase--${w.rolle}` + (w.fehler ? " verb__blase--fehler" : "");
+      const wer = document.createElement("b");
+      wer.textContent = w.rolle === "andreas" ? "Du" : "Claude";
+      d.append(wer);
+      absaetzeIn(d, w.text);
+      if (w.fassung) {
+        const vor = document.createElement("div");
+        vor.className = "verb__vorschlag";
+        absaetzeIn(vor, w.fassung);
+        const k = document.createElement("button");
+        k.type = "button"; k.className = "verb__uebernehmen"; k.textContent = "In meine Fassung übernehmen";
+        k.addEventListener("click", () => { fassung.value = w.fassung; vergleichen(); fassung.focus(); });
+        d.append(vor, k);
+      }
+      return d;
+    };
+    gespraechZeigen = (i) => {
+      const liste = gespraeche.get(i) ?? [];
+      verlaufEl.replaceChildren(...liste.map(blase));
+      verlaufEl.hidden = !liste.length;
+      verlaufEl.scrollTop = verlaufEl.scrollHeight;
+    };
+    // Was Claude als Verlauf zurückbekommt: ohne Fehlermeldungen, Vorschläge im Text.
+    const fuerClaude = (liste) => liste.filter((w) => !w.fehler).map((w) => ({
+      rolle: w.rolle, text: w.fassung ? `${w.text}\n\n[Vorgeschlagene Fassung]\n${w.fassung}` : w.text,
+    }));
+    async function fragen() {
+      const frage = frageEl.value.trim();
+      if (!frage || aktiv < 0 || fragenKnopf.disabled) return;
+      const i = aktiv, a = abschnitte[i];
+      const liste = gespraeche.get(i) ?? [];
+      const bisher = fuerClaude(liste);
+      liste.push({ rolle: "andreas", text: frage });
+      gespraeche.set(i, liste);
+      frageEl.value = "";
+      fragenKnopf.disabled = true;
+      fragenKnopf.textContent = "Claude denkt …";
+      gespraechZeigen(i);
+      try {
+        const r = await fetch(basis + "/api/rueckmeldung/gespraech", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            note: box.dataset.note, titel: box.dataset.titel, abschnitt_titel: a.titel,
+            original: a.text, fassung: aktiv === i ? fassung.value : (entwuerfe.get(i) ?? a.text),
+            verlauf: bisher, frage,
+          }),
+        });
+        const d = await r.json().catch(() => ({}));
+        liste.push(r.ok && d.ok
+          ? { rolle: "claude", text: d.antwort || "", fassung: d.fassung || null }
+          : { rolle: "claude", text: d.fehler || "Das hat nicht geklappt.", fehler: true });
+      } catch {
+        liste.push({ rolle: "claude", text: "Das hat nicht geklappt. Ist das Tailnet erreichbar?", fehler: true });
+      }
+      fragenKnopf.disabled = false;
+      fragenKnopf.textContent = "Fragen";
+      if (aktiv === i) gespraechZeigen(i);
+    }
+    fuerClaudeOderLeer = (i) => fuerClaude(gespraeche.get(i) ?? []);
+    fragenKnopf.addEventListener("click", fragen);
+    frageEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); fragen(); }
+    });
     // Gedanken haben öffentlich keinen Satz unter dem Text — im Admin-Modus schon.
     if (!document.querySelector("[data-verbessern]")) {
       const p = document.createElement("p");
@@ -258,6 +346,7 @@
     fassung.value = entwuerfe.get(i) ?? abschnitte[i].text;
     fassung.scrollTop = 0;
     vergleichen();
+    gespraechZeigen(i);
   }
 
   const sagen = (was, fehler = false) => {
@@ -335,12 +424,14 @@
           warum: warum.value.trim(),
           mail: admin ? "" : mail.value.trim(),
           t: Date.now() - seit,
+          ...(admin ? { gespraech: fuerClaudeOderLeer(aktiv) } : {}),
           website: form.elements.website?.value ?? "",
         }),
       });
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.ok) {
         const mitAdresse = !!mail.value.trim();
+        gespraeche.delete(aktiv);
         entwuerfe.delete(aktiv);
         aktiv = -1;            // das Abgeschickte ist kein Entwurf mehr
         warum.value = "";
