@@ -7,10 +7,22 @@
    bleiben bis zum Neuladen im Speicher — wer den Abschnitt wechselt oder
    das Blatt schließt, verliert nichts. */
 
-(() => {
+(async () => {
   const text = document.getElementById("text");
   const box = document.getElementById("verb");
   if (!text || !box) return;
+
+  /* ── Admin-Eingang ── Nur über die Tailnet-Spiegelung (…ts.net:4443) fragt das
+     Skript den Dienst, ob dieser Besuch Andreas ist. Die Antwort setzt Caddy dort mit
+     einem Schlüssel, den es öffentlich nicht gibt — der Hostname allein entscheidet nichts. */
+  let admin = false;
+  if (/\.ts\.net$/.test(location.hostname)) {
+    try {
+      const r = await fetch("/api/rueckmeldung/vorschlag", { cache: "no-store" });
+      admin = !!(await r.json()).admin;
+    } catch { admin = false; }
+  }
+  if (!admin && box.dataset.oeffentlich === "0") return;
 
   const form = document.getElementById("verbForm");
   const wahl = document.getElementById("verbAbschnitt");
@@ -98,6 +110,30 @@
 
   const abschnitte = abschnitteBauen();
   if (!abschnitte.length) return;
+
+  if (admin) {
+    document.documentElement.classList.add("gw-admin");
+    form.querySelector(".verb__hinweis").textContent =
+      "Admin: Links das Original, rechts deine Fassung. Sie geht nicht in die Leserpost, sondern liegt für Claude bereit — sag im Chat: „Setz meine Fassungen um.“";
+    warum.placeholder = "Was soll Claude dazu wissen? (freiwillig)";
+    mail.hidden = true;
+    felder.splice(felder.indexOf(mail), 1);
+    form.querySelector(".verb__klein").textContent =
+      "Admin-Eingang über das Tailnet. Landet in owner-inbox/Admin-Fassungen.md, nicht im /moin.";
+    senden.textContent = "Für Claude vormerken";
+    // Gedanken haben öffentlich keinen Satz unter dem Text — im Admin-Modus schon.
+    if (!document.querySelector("[data-verbessern]")) {
+      const p = document.createElement("p");
+      p.className = "verbessern-hinweis";
+      p.setAttribute("data-pagefind-ignore", "");
+      const a = document.createElement("a");
+      a.href = "#";
+      a.setAttribute("data-verbessern", "");
+      a.textContent = "Admin: Abschnitt neu fassen";
+      p.append(a);
+      text.append(p);
+    }
+  }
 
   // Doppelte Titel (zweimal „Faktencheck") im Menü unterscheidbar halten.
   const gesehen = {};
@@ -255,7 +291,7 @@
           original: a.text,
           fassung: neu,
           warum: warum.value.trim(),
-          mail: mail.value.trim(),
+          mail: admin ? "" : mail.value.trim(),
           t: Date.now() - seit,
           website: form.elements.website?.value ?? "",
         }),
@@ -267,10 +303,14 @@
         aktiv = -1;            // das Abgeschickte ist kein Entwurf mehr
         warum.value = "";
         felderZeigen(false);
-        sagen(mitAdresse
-          ? "Danke. Wir sehen es uns an, und du bekommst Bescheid — so oder so."
-          : "Danke. Wir sehen es uns an.");
-        window.umami?.track?.("vorschlag");   // nur die Zahl, nie der Text
+        if (d.admin) {
+          sagen(`Liegt bereit (#${d.id}). Sag im Chat: „Setz meine Fassungen um.“`);
+        } else {
+          sagen(mitAdresse
+            ? "Danke. Wir sehen es uns an, und du bekommst Bescheid — so oder so."
+            : "Danke. Wir sehen es uns an.");
+          window.umami?.track?.("vorschlag");   // nur die Zahl, nie der Text
+        }
         setTimeout(() => { if (!box.hidden) schliessen(); }, 3200);
       } else {
         senden.disabled = false;

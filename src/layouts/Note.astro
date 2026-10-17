@@ -53,6 +53,10 @@ const nichtSuchbar = ladeGraph().katalog.has(note.id)
    Gedanken — eine persönliche Reflexion lässt sich nicht berichtigen —
    und nicht bei Katalogen. Ohne Skript ist der Satz ein mailto. */
 const verbesserbar = rubrik !== "Gedanken" && !nichtSuchbar;
+/* Admin-Eingang (17.10.2026): Über die Tailnet-Spiegelung darf Andreas auch die
+   Gedanken anfassen. Das Blatt liegt darum auf jeder Note; öffentlich bleibt es
+   dort stumm (data-oeffentlich="0"), das Skript fragt den Dienst, ob er Admin ist. */
+const anfassbar = !nichtSuchbar;
 const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
   + encodeURIComponent(`Neue Fassung zu „${d.title ?? note.id}“`);
 ---
@@ -211,7 +215,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
   <Stern id={note.id} />
 </article>
 <Fusszeile rubrik={rubrik} />
-{verbesserbar && <Verbessern note={note.id} titel={d.title ?? note.id} />}
+{anfassbar && <Verbessern note={note.id} titel={d.title ?? note.id} oeffentlich={verbesserbar} />}
 
 <figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
 

@@ -24,9 +24,9 @@ import { BUILD } from "../lib/site.mjs";
  * (die Caddy-Route `/api/rueckmeldung*` deckt das mit).
  */
 import "../styles/verbessern.css";
-const { note, titel } = Astro.props;
+const { note, titel, oeffentlich = true } = Astro.props;
 ---
-<div class="verb" id="verb" hidden data-note={note} data-titel={titel} data-stand={BUILD}>
+<div class="verb" id="verb" hidden data-note={note} data-titel={titel} data-stand={BUILD} data-oeffentlich={oeffentlich ? "1" : "0"}>
   <div class="verb__grund" data-verb-zu></div>
 
   <form class="verb__blatt" id="verbForm" role="dialog" aria-modal="true" aria-labelledby="verbTitel" novalidate>
