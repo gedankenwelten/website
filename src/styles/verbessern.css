@@ -52,9 +52,11 @@ html.verb-offen { overflow: hidden; }
 }
 
 .verb__blatt {
-  position: relative; margin: 5vh auto 0; align-self: flex-start;
-  width: min(68rem, calc(100vw - 2.4rem));
-  max-height: 90vh; overflow: auto; box-sizing: border-box;
+  /* Das Blatt nimmt sich das Fenster (Andreas, 17.10.2026): fast die ganze Höhe, die ganze
+     Breite bis auf einen Rand — die beiden Seiten wachsen in den Platz, der übrig bleibt. */
+  position: relative; margin: 2.5vh auto 0; align-self: flex-start;
+  width: calc(100vw - 3rem);
+  height: 95vh; overflow: auto; box-sizing: border-box;
   display: flex; flex-direction: column; gap: .85rem;
   background: var(--papier); border: 1px solid var(--linie); border-radius: 6px;
   box-shadow: var(--schatten);
@@ -94,8 +96,8 @@ html.verb-offen { overflow: hidden; }
 
 /* Zwei Spalten gleicher Höhe: links das Papier, wie es in der Note
    steht, rechts dasselbe zum Bearbeiten. */
-.verb__seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
-.verb__seite { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.verb__seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; flex: 1 1 auto; min-height: 14rem; }
+.verb__seite { display: flex; flex-direction: column; gap: .4rem; min-width: 0; min-height: 0; }
 .verb__seite h3 {
   margin: 0; font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 600;
   letter-spacing: .16em; text-transform: uppercase; color: var(--tinte-fern);
@@ -104,7 +106,7 @@ html.verb-offen { overflow: hidden; }
 
 .verb__original,
 .verb__seite textarea {
-  height: min(52vh, 34rem); box-sizing: border-box; overflow: auto;
+  flex: 1 1 auto; height: auto; min-height: 0; box-sizing: border-box; overflow: auto;
   font-family: inherit; font-size: 1rem; line-height: 1.6; color: var(--tinte);
   border: 1px solid var(--linie); border-radius: 4px; padding: .8rem .95rem;
 }
@@ -155,7 +157,9 @@ html.verb-offen { overflow: hidden; }
 /* Auf dem Telefon untereinander: oben das Original (kürzer), darunter
    das Feld. Das Original bleibt sichtbar, während man schreibt. */
 @media (max-width: 760px) {
-  .verb__blatt { margin-top: 2vh; max-height: 96vh; padding: 1.05rem 1rem 1rem; gap: .7rem; width: calc(100vw - 1.2rem); }
+  .verb__blatt { margin-top: 2vh; height: auto; max-height: 96vh; padding: 1.05rem 1rem 1rem; gap: .7rem; width: calc(100vw - 1.2rem); }
+  .verb__seiten { flex: none; min-height: 0; }
+  .verb__original, .verb__seite textarea { flex: none; }
   .verb__zeile { flex-wrap: wrap; }
   .verb__wahl { order: 3; flex-basis: 100%; }
   .verb__wahl select { max-width: none; }
