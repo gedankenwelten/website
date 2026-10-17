@@ -35,7 +35,9 @@
       if (w === "aus") localStorage.removeItem(SPEICHER);
       else if (await istUnserEingang(w)) localStorage.setItem(SPEICHER, w);
     } catch { /* ohne Speicher kein Admin */ }
-    history.replaceState(null, "", location.pathname + location.search);
+    // Einmal frisch laden: Der Schalter ist gesetzt, die Adresse aus der Zeile verschwunden.
+    location.replace(location.pathname + location.search);
+    return;
   }
   const aufSpiegel = /\.ts\.net$/.test(location.hostname);
   let basis = null;                       // null: gar nicht erst fragen
