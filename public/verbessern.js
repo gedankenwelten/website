@@ -12,16 +12,46 @@
   const box = document.getElementById("verb");
   if (!text || !box) return;
 
-  /* ── Admin-Eingang ── Nur über die Tailnet-Spiegelung (…ts.net:4443) fragt das
-     Skript den Dienst, ob dieser Besuch Andreas ist. Die Antwort setzt Caddy dort mit
-     einem Schlüssel, den es öffentlich nicht gibt — der Hostname allein entscheidet nichts. */
-  let admin = false;
-  if (/\.ts\.net$/.test(location.hostname)) {
+  /* ── Admin-Eingang ── Andreas' Fassungen gehen an den Dienst über das Tailnet; dort setzt
+     Caddy einen Schlüssel, den es öffentlich nicht gibt. Auf der Tailnet-Spiegelung (…ts.net)
+     ist das dieselbe Herkunft. Auf gedankenwelten.org nur, wenn dieser Browser die Adresse des
+     Eingangs kennt — einmal eingeschaltet über #gw-admin=<Adresse>, aus mit #gw-admin=aus.
+     Die Adresse steht nur im localStorage, nie im Code. Ohne Tailnet scheitert die Frage
+     still, und alles bleibt, wie es für jeden Leser ist. */
+  const SPEICHER = "gw-admin";
+  // Nur unser eigener Eingang wird angenommen — verglichen über die Prüfsumme der Adresse,
+  // damit kein präparierter Link einem Leser einen fremden Eingang unterschiebt.
+  const EINGANG_SHA256 = "4c929ec38ef310d5cd627c158ede0b407d034d6d3cd779689728c07387e894f9";
+  const istUnserEingang = async (w) => {
     try {
-      const r = await fetch("/api/rueckmeldung/vorschlag", { cache: "no-store" });
+      const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(w));
+      return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("") === EINGANG_SHA256;
+    } catch { return false; }
+  };
+  const schalter = location.hash.match(/^#gw-admin=(.+)$/);
+  if (schalter) {
+    const w = decodeURIComponent(schalter[1]);
+    try {
+      if (w === "aus") localStorage.removeItem(SPEICHER);
+      else if (await istUnserEingang(w)) localStorage.setItem(SPEICHER, w);
+    } catch { /* ohne Speicher kein Admin */ }
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  const aufSpiegel = /\.ts\.net$/.test(location.hostname);
+  let basis = null;                       // null: gar nicht erst fragen
+  if (aufSpiegel) basis = "";
+  else {
+    try { basis = localStorage.getItem(SPEICHER); } catch { basis = null; }
+    if (basis !== null && !(await istUnserEingang(basis))) basis = null;
+  }
+  let admin = false;
+  if (basis !== null) {
+    try {
+      const r = await fetch(basis + "/api/rueckmeldung/vorschlag", { cache: "no-store" });
       admin = !!(await r.json()).admin;
     } catch { admin = false; }
   }
+  const ziel = (admin ? basis : "") + "/api/rueckmeldung/vorschlag";
   if (!admin && box.dataset.oeffentlich === "0") return;
 
   const form = document.getElementById("verbForm");
@@ -118,8 +148,18 @@
     warum.placeholder = "Was soll Claude dazu wissen? (freiwillig)";
     mail.hidden = true;
     felder.splice(felder.indexOf(mail), 1);
-    form.querySelector(".verb__klein").textContent =
-      "Admin-Eingang über das Tailnet. Landet in owner-inbox/Admin-Fassungen.md, nicht im /moin.";
+    const klein = form.querySelector(".verb__klein");
+    klein.textContent = "Admin-Eingang über das Tailnet. Landet in owner-inbox/Admin-Fassungen.md, nicht im /moin. ";
+    const umschalten = document.createElement("a");
+    if (aufSpiegel) {
+      umschalten.href = "https://gedankenwelten.org" + location.pathname + "#gw-admin=" + encodeURIComponent(location.origin);
+      umschalten.textContent = "Auch auf gedankenwelten.org einschalten";
+    } else {
+      umschalten.href = "#gw-admin=aus";
+      umschalten.textContent = "Admin in diesem Browser ausschalten";
+      umschalten.addEventListener("click", () => setTimeout(() => location.reload(), 50));
+    }
+    klein.append(umschalten);
     senden.textContent = "Für Claude vormerken";
     // Gedanken haben öffentlich keinen Satz unter dem Text — im Admin-Modus schon.
     if (!document.querySelector("[data-verbessern]")) {
@@ -279,7 +319,7 @@
     senden.disabled = true;
     sagen("");
     try {
-      const r = await fetch("/api/rueckmeldung/vorschlag", {
+      const r = await fetch(ziel, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
