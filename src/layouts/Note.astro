@@ -7,7 +7,7 @@ import { alleWege } from "../lib/faden.mjs";
 const wege = alleWege(7);
 import { filterbareThemen } from "../lib/rubriken.mjs";
 import { ladeGraph } from "../lib/graph.mjs";
-import { auszugVon } from "../lib/notizen.mjs";
+import { auszugVon, lesezeitVon } from "../lib/notizen.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -29,6 +29,10 @@ const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart
 const hm = (s) => `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}`;
 
 const datum = lesbar(d.aktualisiert);
+/* Statt der geschätzten Videodauer (der späteste Zeitstempel, also zu
+   kurz und in „0:03 h" schwer zu lesen) die Lesezeit der Note selbst —
+   wie bei Quartz (Andreas, 17.10.2026). Die Leiste links behält ihre Dauer. */
+const lesezeit = lesezeitVon(note.body);
 /* Offen sagen, wann eine Note entstand und wann sie zuletzt inhaltlich
    wuchs (Andreas, 17.10.2026). `erstellt:` tragen nur die Panoramen; sonst
    ist es `date:` — laut Pipeline der Verarbeitungstag, also dasselbe.
@@ -91,7 +95,15 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
     {/* Die sichtbare Klinke am Tor: dieselbe Tür wie der Doppelklick aufs
         Banner (raum-tor.js), nur dass man sie nicht kennen muss. Man steht
         dann im Saal dieser Note. */}
-    {kopf.banner && <a class="raumtor" href={`/raum?von=${encodeURIComponent(Astro.url.pathname.replace(/\.html$/, ""))}`}>Gedankenraum</a>}
+    {/* Unter dem Bild eine Zeile: links die Tür zum Gedankenraum, rechts
+        die Malerhand (leser.js holt den 🎨-Block hierher). Vorher saß die
+        Malerhand am Ende der Kennzeile und rutschte, sobald die länger
+        wurde, in eine eigene Zeile (Andreas, 17.10.2026). */}
+    {kopf.banner && (
+      <div class="unterbild">
+        <a class="raumtor" href={`/raum?von=${encodeURIComponent(Astro.url.pathname.replace(/\.html$/, ""))}`}>Gedankenraum</a>
+      </div>
+    )}
 
     <div class="kennung">
       {/* Die Rubrikmarke ist die einzige Navigation im Kopf der Note —
@@ -101,7 +113,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
       {gewachsen
         ? <><i>·</i><span>erstellt {erstellt}</span><i>·</i><span>aktualisiert {datum}</span></>
         : (erstellt ?? datum) && <><i>·</i><span>{erstellt ? "erstellt" : "aktualisiert"} {erstellt ?? datum}</span></>}
-      {dauer > 0 && <><i>·</i>{hm(dauer)} h</>}
+      <i>·</i><span>{lesezeit} Min. Lesezeit</span>
       {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
     </div>
 

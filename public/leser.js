@@ -1078,13 +1078,13 @@ window.gwSchau = (() => {
    das Bild. Ohne Javascript bleibt es im Text stehen, wo es lesbar ist,
    nur eben unbegleitet. */
 {
-  const kennung = document.querySelector(".blatt > header .kennung");
+  const unterbild = document.querySelector(".blatt > header .unterbild");
   const osterei = [...document.querySelectorAll("#text > details")]
     .find((d) => (d.querySelector("summary")?.textContent ?? "").includes("🎨"));
-  if (kennung && osterei && document.querySelector(".banner")) {
+  if (unterbild && osterei) {
     osterei.classList.add("malerhand");
-    // Ans Ende der Kennzeile, rechts außen — nicht als eigene Zeile.
-    kennung.append(osterei);
+    // Rechts neben die Tür zum Gedankenraum, direkt unter das Bild.
+    unterbild.append(osterei);
   }
 }
 

@@ -224,13 +224,17 @@ body {
 [data-theme="dunkel"] a:hover img, [data-theme="dunkel"] .banner:hover { filter: none; }
 .blatt > header { margin-bottom: 3.6rem; }
 
-/* Die Klinke am Tor zum Gedankenraum — rechts unter dem Bild, leise wie
-   die Kennzeile, damit sie einlädt und nicht führt. Sie sitzt in den
-   40 px, die `.strang img` dem Banner ohnehin nach unten gibt (darum der
-   negative Rand), damit zwischen Bild und Titel keine neue Leere entsteht.
-   So spezifisch, weil `.strang a:not(.ts)` sonst seine Unterstreichung anhängt. */
+/* Die Zeile unter dem Bild: links die Klinke zum Gedankenraum, rechts die
+   Malerhand — leise wie die Kennzeile, damit sie einladen und nicht führen.
+   Sie sitzt in den 40 px, die `.strang img` dem Banner ohnehin nach unten
+   gibt (darum der negative Rand), damit zwischen Bild und Titel keine neue
+   Leere entsteht. Aufgeklappt nimmt die Malerhand die ganze Breite. */
+header.strang .unterbild {
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-wrap: wrap; gap: .4rem 1rem; margin-top: -1.85rem;
+}
+/* So spezifisch, weil `.strang a:not(.ts)` sonst seine Unterstreichung anhängt. */
 header.strang a.raumtor {
-  display: block; width: max-content; margin: -1.85rem 0 0 auto;
   font-family: "Inter", -apple-system, sans-serif;
   font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
   color: var(--tinte-fern); text-decoration: none;
@@ -238,7 +242,11 @@ header.strang a.raumtor {
 }
 header.strang a.raumtor:hover { color: var(--akzent); border-bottom-color: var(--akzent); }
 header.strang a.raumtor[hidden] { display: none; }
-header.strang a.raumtor + .kennung { margin-top: .9rem; }
+header.strang .unterbild + .kennung { margin-top: .9rem; }
+.unterbild > details.malerhand { margin: 0 0 0 auto; font-size: .78rem; }
+.unterbild > details.malerhand[open] { flex: 0 0 100%; }
+
+.kennung { margin-top: .9rem; }
 
 .kennung {
   display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
@@ -246,17 +254,6 @@ header.strang a.raumtor + .kennung { margin-top: .9rem; }
   color: var(--tinte-fern); margin: 2rem 0 1.25rem;
   font-family: "Inter", -apple-system, sans-serif;
 }
-/* Die Malerhand sitzt in dieser Zeile, rechts außen — statt als eigene
-   Zeile unter dem Bild, die zusammen mit dem Abstand darunter 140 px
-   Leere zwischen Banner und Titel ließ (Andreas, 02.08.: „zwischen
-   Überschrift und worum gehts zu viel Platz"). Aufgeklappt nimmt sie die
-   ganze Zeile. */
-.kennung > details.malerhand {
-  margin: 0 0 0 auto;
-  /* Die Kennzeile spricht in Versalien — die Malerhand nicht. */
-  text-transform: none; letter-spacing: normal; font-size: .78rem;
-}
-.kennung > details.malerhand[open] { flex: 0 0 100%; margin-top: .4rem; }
 .kennung b { color: var(--akzent); font-weight: 600; }
 .kennung i { color: var(--linie); font-style: normal; }
 .kennung__rubrik {

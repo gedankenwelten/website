@@ -20,6 +20,21 @@ import { datumVon } from "./datum.mjs";
    Prosa — keine Überschrift, kein Callout, kein Bild, keine Quelle-Zeile,
    nichts aus <details>. Gekürzt am Satzende. Kein Ersatz für die
    Beschreibung: Die trägt ein Urteil, der Auszug nur den Anfang. */
+/* Lesezeit wie bei Quartz: 200 Wörter in der Minute. Gezählt wird, was
+   man liest — nicht Link-Adressen, Bildpfade, Frontmatter-Reste oder das
+   Markdown-Gerüst. Eingeklapptes (<details>) zählt mit: Wer es öffnet,
+   liest es auch. */
+export function lesezeitVon(rumpf) {
+  const text = String(rumpf ?? "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!\[\[[^\]]*\]\]|!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/<[^>]+>|https?:\/\/\S+|\[![a-z]+\][-+]?/gi, " ");
+  const woerter = (text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? []).length;
+  return Math.max(1, Math.round(woerter / 200));
+}
+
 export function auszugVon(rumpf, max = 240) {
   let ohneDetails = String(rumpf ?? "").replace(/<details>[\s\S]*?<\/details>/g, "");
   // Eine Vita beginnt oft mit Kauflinks oder der politischen Einordnung;
