@@ -22,7 +22,8 @@ import { alleFaeden, alleWege } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken, themenwolke } from "../lib/rubriken.mjs";
-import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen } from "../lib/wiederkehr.mjs";
+import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen, zufallsdenker, zufallsfund,
+         aussenweltDieserWoche, gehoertDieserWoche } from "../lib/wiederkehr.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -78,15 +79,19 @@ const feld = [...inhaltlich].sort((a, b) =>
    denselben Speicher zu, statt fünfhundert Wege ein zweites Mal zu suchen. */
 const wege = alleWege(7);
 
-/* Die Wiederkehr: drei Zeilen zu je zwei Karten, mitten im Feld — nicht
+/* Die Wiederkehr: fünf Zeilen zu je zwei Karten, mitten im Feld — nicht
    oben, sonst sähe, wer die Seite betritt, jede Woche dasselbe Bild zuerst.
    Nach neun Karten (drei volle Reihen am Schreibtisch) *Wiedergelesen*
    (Pool `Wiederkehr.md`, jede Woche eine andere, mit echtem Datum) und
-   *Gefunden* (wohin die Suche die Leser in dreißig Tagen brachte, älter
-   als zwei Wochen); nach achtzehn die Meistgelesenen der Woche und des
-   Monats, nach siebenundzwanzig die des Jahres und seit Beginn. Was eine
-   Karte schon zeigt, überspringt die nächste. */
-const WIEDERKEHR_NACH = [9, 18, 27];
+   *Gefunden* (wo Leser aus der Suche in dreißig Tagen einstiegen, älter
+   als zwei Wochen); nach achtzehn der Zufall, *Zufallsdenker* und
+   *Zufallsfund* (seit 18.10.2026); nach siebenundzwanzig *Außenwelt*
+   (eingestiegen über einen fremden Link) und *Gehört* (wo das Video
+   trug); nach sechsunddreißig und fünfundvierzig die Meistgelesenen —
+   die Zahlen haben die anderen Plätze ohnehin auf ihrer Seite, die
+   neuen Karten brauchen den besseren. Was eine Karte schon zeigt,
+   überspringt die nächste. */
+const WIEDERKEHR_NACH = [9, 18, 27, 36, 45];
 const gezeigt = new Set();
 const nimm = (art, e, satz) => {
   if (!e) return null;
@@ -98,6 +103,8 @@ const heute = new Date();
 const wiederkehr = wiederkehrDieserWoche(heute);
 const zeilen = [
   [nimm("Wiedergelesen", wiederkehr, wiederkehr?.warum), nimm("Gefunden", gefundenDieserWoche(heute, gezeigt))],
+  [nimm("Zufallsdenker", zufallsdenker(heute, gezeigt)), nimm("Zufallsfund", zufallsfund(heute, gezeigt))],
+  [nimm("Außenwelt", aussenweltDieserWoche(heute, gezeigt)), nimm("Gehört", gehoertDieserWoche(heute, gezeigt))],
   [nimm("Meistgelesen · Woche", meistgelesen("woche", gezeigt, heute)), nimm("Meistgelesen · Monat", meistgelesen("monat", gezeigt, heute))],
   [nimm("Meistgelesen · Jahr", meistgelesen("jahr", gezeigt, heute)), nimm("Meistgelesen · Insgesamt", meistgelesen("immer", gezeigt, heute))],
 ].map((z) => z.filter(Boolean));

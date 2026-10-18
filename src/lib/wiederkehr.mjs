@@ -24,6 +24,20 @@
  *   Personen"). Notes jünger als zwei Wochen sind ausgeschlossen — die
  *   stehen ohnehin oben. Unter den Meistgelesenen rotiert die Woche.
  *
+ *   **Zufallsdenker** · **Zufallsfund** (seit 18.10.2026) — der Zufall gegen
+ *   die Zählung: Meistgelesen und Gefunden verstärken, was schon gelesen
+ *   wird. Jede Woche eine ältere Denker-Note (die tiefsten, und die Suche
+ *   findet sie am seltensten) und eine aus einer Rubrik, die reihum wechselt.
+ *   Älter als dreißig Tage, mit Beschreibung, nicht unter den ersten zwanzig
+ *   einer Meistgelesen-Liste. Gezogen nach Kalenderwoche — wer in derselben
+ *   Woche wiederkommt, sieht denselben Fund.
+ *
+ *   **Außenwelt** — wo Leser über einen Link von einer anderen Seite
+ *   eingestiegen sind; eine Empfehlung durch Menschen, nicht durch die
+ *   Suche. Die Quelle nennt die Karte nicht. **Gehört** — wo Leser dem
+ *   Video am längsten zugehört haben. Beide rotieren wöchentlich unter
+ *   den ersten sieben.
+ *
  *   **Meistgelesen** — vier Zeiträume (Woche, Monat, Jahr, seit Beginn),
  *   je die eine Note mit den meisten Aufrufen, ohne Rotation; was eine
  *   frühere Karte schon zeigt, überspringt die nächste (Andreas, 13.09.:
@@ -39,6 +53,9 @@ const POOL = path.join(INHALT, "Wiederkehr.md");
 const GELESEN = path.join(INHALT, "gelesen.json");
 const JUNG_TAGE = 14;      // so frisch, dass es im Feld ohnehin oben steht
 const KREIS = 7;           // unter wie vielen Meistgelesenen die Woche rotiert
+const ALT_TAGE = 30;       // so alt muss ein Zufallsfund mindestens sein
+const BELIEBT = 20;        // die ersten so vielen jeder Meistgelesen-Liste zieht der Zufall nicht
+const RUNDE = ["Zeitgeist", "Geistesblitz", "Kultur", "Panorama", "Gedanken", "Spuren", "GoodNews"];
 
 /** ISO-Kalenderwoche als fortlaufende Zahl — stabil über Jahresgrenzen. */
 function wochenzahl(d = new Date()) {
@@ -88,7 +105,7 @@ export function ladeGelesen() {
 }
 
 /** Die Pfade eines Zeitraums (`woche` · `monat` · `jahr` · `immer` ·
- *  `gefunden`) — eine ältere `gelesen.json` ohne Zeiträume kennt nur den
+ *  `gefunden` · `aussenwelt` · `gehoert`) — eine ältere `gelesen.json` ohne Zeiträume kennt nur den
  *  Monat, eine ohne `gefunden` nimmt dafür den Monat. */
 function pfadeFuer(zeitraum) {
   const g = ladeGelesen();
@@ -128,10 +145,11 @@ function aufrufeJeNote(pfade) {
   };
 
   // `leser` = Leser-Sitzungen (seit 18.10.2026); ältere Dateien kennen nur Aufrufe.
-  for (const { pfad, leser, aufrufe } of pfade) {
+  // `wert` sortiert, wo nicht Köpfe zählen (gehörte Minuten).
+  for (const { pfad, wert, leser, aufrufe } of pfade) {
     const note = nachUrl.get(String(pfad).normalize("NFC"));
     if (!note) continue;
-    const n = leser ?? aufrufe;
+    const n = wert ?? leser ?? aufrufe;
     if (note.rubrik === "DenkerVita") {
       const p = personNote(note);
       if (p) gut(p, n);
@@ -169,4 +187,65 @@ export function meistgelesen(zeitraum, ohne = new Set(), heute = new Date()) {
   if (!pfade.length) return null;
   const e = rangliste(pfade, heute, ohne)[0];
   return e ? { ...e, tage, stand, zeitraum } : null;
+}
+
+/* ── Wöchentlich rotierend: Außenwelt, Gehört ─────────────────── */
+
+function rotierend(zeitraum, heute, ohne) {
+  const { pfade, tage, stand } = pfadeFuer(zeitraum);
+  if (!pfade.length) return null;
+  const reihe = rangliste(pfade, heute, ohne).slice(0, KREIS);
+  if (!reihe.length) return null;
+  return { ...reihe[wochenzahl(heute) % reihe.length], tage, stand };
+}
+
+export const aussenweltDieserWoche = (heute = new Date(), ohne = new Set()) => rotierend("aussenwelt", heute, ohne);
+export const gehoertDieserWoche = (heute = new Date(), ohne = new Set()) => rotierend("gehoert", heute, ohne);
+
+/* ── Der Zufall ───────────────────────────────────────────────── */
+
+/** Eine Zahl aus Woche und Salz — dieselbe Woche, derselbe Fund. */
+function wurf(woche, salz) {
+  let h = Math.imul(woche ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(salz + 1, 0xc2b2ae35);
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+  h = Math.imul(h ^ (h >>> 12), 0x297a2d39);
+  return (h ^ (h >>> 15)) >>> 0;
+}
+
+/** Was die Zählung ohnehin nach vorn bringt — der Zufall lässt es liegen. */
+let beliebtCache = null;
+function beliebt(heute) {
+  if (beliebtCache) return beliebtCache;
+  beliebtCache = new Set();
+  for (const z of ["woche", "monat", "jahr", "immer", "gefunden"])
+    for (const e of rangliste(pfadeFuer(z).pfade, heute, new Set()).slice(0, BELIEBT))
+      beliebtCache.add(e.note.id);
+  return beliebtCache;
+}
+
+function zufall(rubrik, salz, heute, ohne) {
+  const grenze = new Date(heute.getTime() - ALT_TAGE * 86400000).toISOString().slice(0, 10);
+  const weg = beliebt(heute);
+  const topf = ladeIndex().alle
+    .filter((n) => n.rubrik === rubrik && n.beschreibung && n.datum && n.datum < grenze)
+    .filter((n) => !ohne.has(n.id) && !weg.has(n.id))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  if (!topf.length) return null;
+  return { note: topf[wurf(wochenzahl(heute), salz) % topf.length] };
+}
+
+/** Jede Woche eine ältere Denker-Note. */
+export function zufallsdenker(heute = new Date(), ohne = new Set()) {
+  return zufall("Denker", 1, heute, ohne);
+}
+
+/** Jede Woche eine ältere Note aus der Rubrik, die gerade dran ist — ist
+ *  der Topf leer, die nächste. */
+export function zufallsfund(heute = new Date(), ohne = new Set()) {
+  const w = wochenzahl(heute);
+  for (let i = 0; i < RUNDE.length; i++) {
+    const e = zufall(RUNDE[(w + i) % RUNDE.length], 2, heute, ohne);
+    if (e) return e;
+  }
+  return null;
 }
