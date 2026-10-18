@@ -792,7 +792,7 @@
 /* ── Die Wiederkehr ──
    Fünf Zeilen zu je zwei Karten im Gitter, alle neun Karten eine:
    Wiedergelesen + Gefunden, Zufallsdenker + Zufallsfund, Außenwelt +
-   Gehört, dann die Meistgelesenen (Woche + Monat, Jahr + seit Beginn).
+   Claudes Wahl, dann die Meistgelesenen (Woche + Monat, Jahr + seit Beginn).
    Nicht oben — sonst empfinge die Seite jeden mit demselben Bild. */
 .wiederkehr {
   grid-column: 1 / -1;

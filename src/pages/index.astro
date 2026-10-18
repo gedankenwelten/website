@@ -23,7 +23,7 @@ import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken, themenwolke } from "../lib/rubriken.mjs";
 import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen, zufallsdenker, zufallsfund,
-         aussenweltDieserWoche, gehoertDieserWoche } from "../lib/wiederkehr.mjs";
+         aussenweltDieserWoche, claudesWahl } from "../lib/wiederkehr.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -86,8 +86,8 @@ const wege = alleWege(7);
    *Gefunden* (wo Leser aus der Suche in dreißig Tagen einstiegen, älter
    als zwei Wochen); nach achtzehn der Zufall, *Zufallsdenker* und
    *Zufallsfund* (seit 18.10.2026); nach siebenundzwanzig *Außenwelt*
-   (eingestiegen über einen fremden Link) und *Gehört* (wo das Video
-   trug); nach sechsunddreißig und fünfundvierzig die Meistgelesenen —
+   (eingestiegen über einen fremden Link) und *Claudes Wahl* (die KI wählt
+   einmal in der Woche, mit einem Satz warum; `Claudes-Wahl.md`); nach sechsunddreißig und fünfundvierzig die Meistgelesenen —
    die Zahlen haben die anderen Plätze ohnehin auf ihrer Seite, die
    neuen Karten brauchen den besseren. Was eine Karte schon zeigt,
    überspringt die nächste. */
@@ -101,10 +101,13 @@ const nimm = (art, e, satz) => {
 };
 const heute = new Date();
 const wiederkehr = wiederkehrDieserWoche(heute);
+// Zuerst vormerken, damit keine Zufalls- oder Zählkarte dieselbe Note zieht.
+const wahl = claudesWahl();
+if (wahl) gezeigt.add(wahl.note.id);
 const zeilen = [
   [nimm("Wiedergelesen", wiederkehr, wiederkehr?.warum), nimm("Gefunden", gefundenDieserWoche(heute, gezeigt))],
   [nimm("Zufallsdenker", zufallsdenker(heute, gezeigt)), nimm("Zufallsfund", zufallsfund(heute, gezeigt))],
-  [nimm("Außenwelt", aussenweltDieserWoche(heute, gezeigt)), nimm("Gehört", gehoertDieserWoche(heute, gezeigt))],
+  [nimm("Außenwelt", aussenweltDieserWoche(heute, gezeigt)), nimm("Claudes Wahl", wahl, wahl?.warum)],
   [nimm("Meistgelesen · Woche", meistgelesen("woche", gezeigt, heute)), nimm("Meistgelesen · Monat", meistgelesen("monat", gezeigt, heute))],
   [nimm("Meistgelesen · Jahr", meistgelesen("jahr", gezeigt, heute)), nimm("Meistgelesen · Insgesamt", meistgelesen("immer", gezeigt, heute))],
 ].map((z) => z.filter(Boolean));

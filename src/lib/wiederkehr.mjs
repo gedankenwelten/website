@@ -34,9 +34,10 @@
  *
  *   **Außenwelt** — wo Leser über einen Link von einer anderen Seite
  *   eingestiegen sind; eine Empfehlung durch Menschen, nicht durch die
- *   Suche. Die Quelle nennt die Karte nicht. **Gehört** — wo Leser dem
- *   Video am längsten zugehört haben. Beide rotieren wöchentlich unter
- *   den ersten sieben.
+ *   Suche. Die Quelle nennt die Karte nicht; sie rotiert wöchentlich unter
+ *   den ersten sieben. **Claudes Wahl** (seit 18.10.2026, statt „Gehört") —
+ *   einmal in der Woche wählt die KI, die die Notes schreibt, eine aus,
+ *   mit einem Satz warum (`Claudes-Wahl.md` im Vault, oberste Zeile gilt).
  *
  *   **Meistgelesen** — vier Zeiträume (Woche, Monat, Jahr, seit Beginn),
  *   je die eine Note mit den meisten Aufrufen, ohne Rotation; was eine
@@ -50,6 +51,7 @@ import path from "node:path";
 import { INHALT, ladeIndex, findeNote } from "./notizen.mjs";
 
 const POOL = path.join(INHALT, "Wiederkehr.md");
+const WAHL = path.join(INHALT, "Claudes-Wahl.md");
 const GELESEN = path.join(INHALT, "gelesen.json");
 const JUNG_TAGE = 14;      // so frisch, dass es im Feld ohnehin oben steht
 const KREIS = 7;           // unter wie vielen Meistgelesenen die Woche rotiert
@@ -105,7 +107,7 @@ export function ladeGelesen() {
 }
 
 /** Die Pfade eines Zeitraums (`woche` · `monat` · `jahr` · `immer` ·
- *  `gefunden` · `aussenwelt` · `gehoert`) — eine ältere `gelesen.json` ohne Zeiträume kennt nur den
+ *  `gefunden` · `aussenwelt`) — eine ältere `gelesen.json` ohne Zeiträume kennt nur den
  *  Monat, eine ohne `gefunden` nimmt dafür den Monat. */
 function pfadeFuer(zeitraum) {
   const g = ladeGelesen();
@@ -189,7 +191,22 @@ export function meistgelesen(zeitraum, ohne = new Set(), heute = new Date()) {
   return e ? { ...e, tage, stand, zeitraum } : null;
 }
 
-/* ── Wöchentlich rotierend: Außenwelt, Gehört ─────────────────── */
+/* ── Claudes Wahl ─────────────────────────────────────────────── */
+
+/** Die oberste Zeile aus `Claudes-Wahl.md` — oder null. Format:
+ *  `- YYYY-MM-DD · [[Note]] — Satz`. */
+export function claudesWahl() {
+  if (!fs.existsSync(WAHL)) return null;
+  const text = fs.readFileSync(WAHL, "utf8");
+  for (const m of text.matchAll(/^-[ \t]*(\d{4}-\d{2}-\d{2})[ \t]*·[ \t]*\[\[([^\]|\n]+)(?:\|[^\]\n]*)?\]\][ \t]*(?:[—–-][ \t]*(.+))?$/gm)) {
+    const note = findeNote(m[2]);
+    if (!note) continue;                                // ein Tippfehler darf den Build nicht kippen
+    return { note, gewaehlt: m[1], warum: (m[3] ?? "").replace(/[*_`]/g, "").trim() || null };
+  }
+  return null;
+}
+
+/* ── Wöchentlich rotierend: Außenwelt ─────────────────────────── */
 
 function rotierend(zeitraum, heute, ohne) {
   const { pfade, tage, stand } = pfadeFuer(zeitraum);
@@ -200,7 +217,6 @@ function rotierend(zeitraum, heute, ohne) {
 }
 
 export const aussenweltDieserWoche = (heute = new Date(), ohne = new Set()) => rotierend("aussenwelt", heute, ohne);
-export const gehoertDieserWoche = (heute = new Date(), ohne = new Set()) => rotierend("gehoert", heute, ohne);
 
 /* ── Der Zufall ───────────────────────────────────────────────── */
 
