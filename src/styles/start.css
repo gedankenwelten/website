@@ -827,32 +827,37 @@
   .wiederkehr__platz .wiederkehr__warum {
     display: block; -webkit-line-clamp: unset; position: relative;
     max-height: calc(3 * 1.5em);
-    transition: max-height .55s cubic-bezier(.2,.8,.2,1);
+    /* Zurück etwas zügiger als hinaus; beide weich an beiden Enden. */
+    transition: max-height .7s cubic-bezier(.45, 0, .25, 1);
   }
   .wiederkehr__platz.hat-mehr .wiederkehr__warum::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5em;
     background: linear-gradient(to bottom, transparent, var(--papier-tief));
-    pointer-events: none; transition: opacity .25s;
+    pointer-events: none; transition: opacity .6s ease;
   }
   .wiederkehr__platz.fest .wiederkehr__karte {
     position: absolute; inset: 0 0 auto 0; min-height: 100%; z-index: 1;
-    transition: box-shadow .4s, z-index 0s .55s;
+    transition: box-shadow .7s ease, z-index 0s .7s;
   }
   .wiederkehr__platz.fest .wiederkehr__schau { z-index: 2; }
   .wiederkehr__platz.hat-mehr:hover .wiederkehr__karte,
   .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__karte {
     z-index: 5; box-shadow: 0 22px 44px -22px rgba(0, 0, 0, .38);
-    transition: box-shadow .4s .35s, z-index 0s;
+    transition: box-shadow 1.2s ease .3s, z-index 0s;
   }
   .wiederkehr__platz.hat-mehr:hover .wiederkehr__schau,
   .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__schau { z-index: 6; }
   .wiederkehr__platz.hat-mehr:hover .wiederkehr__warum,
   .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__warum {
-    max-height: 30em; transition-delay: .35s;
+    /* Genau so weit, wie der Text reicht (`--voll`, vom Skript gemessen):
+       Sonst verteilte sich die Bewegung auf eine Höhe, die es nicht gibt,
+       und der sichtbare Teil wäre im ersten Drittel schon vorbei. */
+    max-height: var(--voll, 30em);
+    transition: max-height 1.3s cubic-bezier(.33, 0, .15, 1) .3s;
   }
   .wiederkehr__platz.hat-mehr:hover .wiederkehr__warum::after,
   .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__warum::after {
-    opacity: 0; transition-delay: .35s;
+    opacity: 0; transition: opacity 1s ease .5s;
   }
 }
 @media (min-width: 1180px) and (prefers-reduced-motion: reduce) {

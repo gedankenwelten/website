@@ -804,7 +804,9 @@ const kurzMonat = (d) => {
       const hoehe = Math.max(...plaetze.map((p) => p.offsetHeight));
       for (const p of plaetze) {
         const w = p.querySelector(".wiederkehr__warum");
-        p.classList.toggle("hat-mehr", !!w && w.scrollHeight > w.clientHeight + 2);
+        const mehr = !!w && w.scrollHeight > w.clientHeight + 2;
+        p.classList.toggle("hat-mehr", mehr);
+        if (mehr) p.style.setProperty("--voll", `${w.scrollHeight}px`);
         p.style.height = `${hoehe}px`;
         p.classList.add("fest");
       }
