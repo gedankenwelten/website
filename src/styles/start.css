@@ -803,6 +803,18 @@
 }
 .wiederkehr[hidden] { display: none; }
 .wiederkehr[data-karten="1"] { grid-template-columns: minmax(0, 1fr); }
+.wiederkehr__platz { position: relative; display: grid; min-width: 0; }
+/* Die Vorschau wie im Feld, als kleine Plakette oben links auf dem Bild. */
+.wiederkehr__schau {
+  position: absolute; top: calc(.8rem + .4rem); left: calc(.8rem + .4rem);
+  color: var(--tinte-leise);
+  background: color-mix(in oklab, var(--papier) 85%, transparent);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.wiederkehr__platz:hover .griff__wort { max-width: 8rem; opacity: 1; }
+/* Das Bild steht oben, auf einer Linie mit der Kennzeile — so liegt der
+   Knopf immer in seiner Ecke, gleich wie lang der Text daneben ist. */
+.wiederkehr__platz .wiederkehr__bild { align-self: start; }
 .wiederkehr__karte {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -840,5 +852,6 @@
   /* minmax(0, …), nicht 1fr: Sonst zwingt das 1200 px breite Bild die
      Spalte auf seine Mindestbreite und die Karte läuft rechts hinaus. */
   .wiederkehr__karte { grid-template-columns: minmax(0, 1fr); gap: .7rem; }
+  .wiederkehr__schau { display: none; }   /* wie die Griffe im Feld: am Telefon nicht */
   .wiederkehr__titel { font-size: 1.05rem; }
 }

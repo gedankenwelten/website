@@ -413,6 +413,10 @@ const kurzMonat = (d) => {
           {zeileNach.has(i + 1) && (
             <li class="wiederkehr" aria-label={zeileNach.get(i + 1).map((k) => k.art).join(" und ")} data-karten={zeileNach.get(i + 1).length}>
               {zeileNach.get(i + 1).map((k) => (
+                /* Der Vorschau-Knopf liegt neben dem Link, nicht in ihm (ein Knopf
+                   in einem Link ist ungültig) — oben links über dem Bild, wo er nie
+                   Text verdeckt. Der Klick läuft über denselben Griff wie im Feld. */
+                <div class="wiederkehr__platz">
                 <a class="wiederkehr__karte" href={k.note.url}>
                   <span class="wiederkehr__bild">
                     <img src={k.note.vorschau ?? rubrikBild(k.note.rubrik)} alt=""
@@ -429,6 +433,16 @@ const kurzMonat = (d) => {
                     {k.satz && <span class="wiederkehr__warum">{k.satz}</span>}
                   </span>
                 </a>
+                <button class="griff wiederkehr__schau" type="button" data-schau={k.note.url}
+                        title={`Den Anfang von „${k.note.titel}" lesen, ohne die Seite zu verlassen`}>
+                  <svg viewBox="0 0 16 16" aria-hidden="true" class="griff__zeichen">
+                    <path d="M8 3.4C5.4 3.4 3.2 5 2 8c1.2 3 3.4 4.6 6 4.6S12.8 11 14 8c-1.2-3-3.4-4.6-6-4.6Z"
+                          fill="none" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="1.7" fill="currentColor"/>
+                  </svg>
+                  <span class="griff__wort">Vorschau</span>
+                </button>
+                </div>
               ))}
             </li>
           )}
