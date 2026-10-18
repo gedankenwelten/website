@@ -17,6 +17,11 @@ export const SITE = {
   umami: {
     host: "https://analytics.gedankenwelten.org",
     id: "a4a71367-eeb4-42a6-b570-ef915b848718",
+    /* Gezählt wird nur auf der Hauptadresse (Umamis `data-domains`). Der
+       Entwicklungsserver, die Vorschau und der Tailnet-Eingang schwiegen
+       vorher nicht: Soroush stand im Oktober als „Meistgelesen · Monat“
+       mit 144 Aufrufen auf der Startseite, 155 von 156 kamen von hier. */
+    domains: "gedankenwelten.org",
   },
   /* Solange die Fassung nicht die Hauptadresse trägt, bleibt sie für
      Suchmaschinen unsichtbar — 826 Seiten doppelt wären das Gegenteil

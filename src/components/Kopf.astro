@@ -150,6 +150,6 @@ try { if (fernseherEinrichten(location.hash)) history.replaceState(null, "", loc
     man sich ihrem Bild zuwendet — bevor man eintaucht. Solche Aufrufe tragen raum=1 in der
     Adresse, damit die Statistik „im Raum angesehen“ von „gelesen“ trennen kann. */}
 <script is:inline>window.umamiKnapp = (_typ, p) => { delete p.screen; delete p.language; try { if (window.frameElement?.id === "seite" && p.url) { const u = new URL(p.url, location.origin); u.searchParams.set("raum", "1"); p.url = /^https?:/.test(p.url) ? u.href : u.pathname + u.search; } } catch {} return p; };</script>
-<script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id} data-before-send="umamiKnapp"></script>
+<script defer src={`${SITE.umami.host}/script.js`} data-website-id={SITE.umami.id} data-domains={SITE.umami.domains} data-before-send="umamiKnapp"></script>
 
 <Vorspann />

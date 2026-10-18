@@ -16,10 +16,10 @@
  *   gepflegt, eine Zeile pro Note mit einem Satz, warum. Die Uhr ist die
  *   Kalenderwoche. Ein ⭐ vor dem Link heftet eine Note an.
  *
- *   **Gefunden** — was Leser in den letzten dreißig Tagen tatsächlich
- *   aufgeschlagen haben (`gelesen.json`, aus der Umami-Datenbank). Die
- *   Suche bringt sie immer wieder zu denselben älteren Notes; die
- *   sollen sichtbar sein. Vitas zählen dabei für die Note ihrer Person,
+ *   **Gefunden** — wo Leser aus einer Suchmaschine in den letzten dreißig
+ *   Tagen eingestiegen sind (`gelesen.json`, Zeitraum `gefunden`; bis
+ *   18.10.2026 waren es alle Aufrufe des Monats). Die Suche bringt sie
+ *   immer wieder zu denselben älteren Notes; die sollen sichtbar sein. Vitas zählen dabei für die Note ihrer Person,
  *   nicht für sich (Andreas: „Vitas außen vor, eher die Notes der
  *   Personen"). Notes jünger als zwei Wochen sind ausgeschlossen — die
  *   stehen ohnehin oben. Unter den Meistgelesenen rotiert die Woche.
@@ -87,13 +87,14 @@ export function ladeGelesen() {
   catch { return { stand: null, tage: 0, pfade: [] }; }
 }
 
-/** Die Pfade eines Zeitraums (`woche` · `monat` · `jahr` · `immer`) —
- *  eine ältere `gelesen.json` ohne Zeiträume kennt nur den Monat. */
+/** Die Pfade eines Zeitraums (`woche` · `monat` · `jahr` · `immer` ·
+ *  `gefunden`) — eine ältere `gelesen.json` ohne Zeiträume kennt nur den
+ *  Monat, eine ohne `gefunden` nimmt dafür den Monat. */
 function pfadeFuer(zeitraum) {
   const g = ladeGelesen();
   const z = g.zeitraeume?.[zeitraum];
   if (z) return { pfade: z.pfade ?? [], tage: z.tage, stand: g.stand };
-  if (zeitraum === "monat") return { pfade: g.pfade ?? [], tage: g.tage, stand: g.stand };
+  if (zeitraum === "monat" || zeitraum === "gefunden") return { pfade: g.pfade ?? [], tage: g.tage, stand: g.stand };
   return { pfade: [], tage: null, stand: g.stand };
 }
 
@@ -126,13 +127,15 @@ function aufrufeJeNote(pfade) {
     return kandidaten.sort((a, b) => String(b.datum ?? "").localeCompare(String(a.datum ?? "")))[0] ?? null;
   };
 
-  for (const { pfad, aufrufe } of pfade) {
+  // `leser` = Leser-Sitzungen (seit 18.10.2026); ältere Dateien kennen nur Aufrufe.
+  for (const { pfad, leser, aufrufe } of pfade) {
     const note = nachUrl.get(String(pfad).normalize("NFC"));
     if (!note) continue;
+    const n = leser ?? aufrufe;
     if (note.rubrik === "DenkerVita") {
       const p = personNote(note);
-      if (p) gut(p, aufrufe);
-    } else gut(note, aufrufe);
+      if (p) gut(p, n);
+    } else gut(note, n);
   }
   return summe;
 }
@@ -152,7 +155,7 @@ function rangliste(pfade, heute, ohne) {
 
 /** Die gefundene Note dieser Woche — oder null, ohne Daten. */
 export function gefundenDieserWoche(heute = new Date(), ohne = new Set()) {
-  const { pfade, tage, stand } = pfadeFuer("monat");
+  const { pfade, tage, stand } = pfadeFuer("gefunden");
   if (!pfade.length) return null;
   const reihe = rangliste(pfade, heute, ohne).slice(0, KREIS);
   if (!reihe.length) return null;
