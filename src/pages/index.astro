@@ -139,8 +139,11 @@ const markenVon = (n) => [
 
 /* Wie viele Karten sichtbar starten. Alle stehen im Dokument — sonst
    könnte der Rubrikfilter nicht sofort antworten, und ein Filter, der
-   erst lädt, ist zäher als gar keiner. Sichtbar ist erst dieser Anfang. */
-const ERSTE_LADUNG = 48;
+   erst lädt, ist zäher als gar keiner. Sichtbar ist erst dieser Anfang.
+   54 = fünfmal neun Karten mit je einer Wiederkehr-Reihe dahinter, dann
+   noch drei volle Reihen; am Schreibtisch (drei Spalten) geht es auf
+   (Andreas, 18.10.2026). */
+const ERSTE_LADUNG = 54;
 
 /* Die Zeitleiste läuft von heute nach unten in die Vergangenheit — lesen
    heißt hier zurückgehen. Der Anteil sagt, wie weit eine Station liegt. */
@@ -566,7 +569,7 @@ const kurzMonat = (d) => {
   const balken = document.getElementById("verwandtschaft");
   const balkenTitel = document.getElementById("verwandtschaftTitel");
   const wiederkehrZeilen = [...document.querySelectorAll(".wiederkehr")];
-  const PORTION = 48;
+  const PORTION = 54;   // wie ERSTE_LADUNG
   let rubrik = "";      // "" heißt: alles
   let thema = "";       // "" heißt: kein Thema gewählt
   const themenVon = kacheln.map((k) => new Set((k.dataset.themen ?? "").split(" ")));
