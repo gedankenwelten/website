@@ -816,11 +816,48 @@
    Knopf immer in seiner Ecke, gleich wie lang der Text daneben ist. */
 .wiederkehr__platz .wiederkehr__karte { align-items: start; }
 /* Der Satz, warum eine Karte hier steht, ist oft das Beste an ihr — drei
-   Zeilen schneiden ihn ab. Am Schreibtisch klappt er beim Drüberfahren
-   ganz auf (Andreas, 19.10.2026); schmaler stehen die Karten einzeln
-   untereinander, dort steht er immer ganz. */
-.wiederkehr__platz:hover .wiederkehr__warum,
-.wiederkehr__platz:focus-within .wiederkehr__warum { -webkit-line-clamp: unset; }
+   Zeilen schneiden ihn ab. Am Schreibtisch rollt sich eine Karte, die mehr
+   zu sagen hat, nach kurzem Verweilen über das Feld darunter aus, ohne
+   dass das Raster sich bewegt (Andreas, 19.10.2026). Das Skript misst die
+   Reihe, hält ihre Höhe fest (`.fest`) und markiert, wer mehr Text hat
+   (`.hat-mehr`). Schmaler stehen die Karten einzeln untereinander, dort
+   steht der Satz immer ganz. */
+@media (min-width: 1180px) {
+  /* Spezifischer als die Grundregel weiter unten, die auf drei Zeilen kappt. */
+  .wiederkehr__platz .wiederkehr__warum {
+    display: block; -webkit-line-clamp: unset; position: relative;
+    max-height: calc(3 * 1.5em);
+    transition: max-height .55s cubic-bezier(.2,.8,.2,1);
+  }
+  .wiederkehr__platz.hat-mehr .wiederkehr__warum::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5em;
+    background: linear-gradient(to bottom, transparent, var(--papier-tief));
+    pointer-events: none; transition: opacity .25s;
+  }
+  .wiederkehr__platz.fest .wiederkehr__karte {
+    position: absolute; inset: 0 0 auto 0; min-height: 100%; z-index: 1;
+    transition: box-shadow .4s, z-index 0s .55s;
+  }
+  .wiederkehr__platz.fest .wiederkehr__schau { z-index: 2; }
+  .wiederkehr__platz.hat-mehr:hover .wiederkehr__karte,
+  .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__karte {
+    z-index: 5; box-shadow: 0 22px 44px -22px rgba(0, 0, 0, .38);
+    transition: box-shadow .4s .35s, z-index 0s;
+  }
+  .wiederkehr__platz.hat-mehr:hover .wiederkehr__schau,
+  .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__schau { z-index: 6; }
+  .wiederkehr__platz.hat-mehr:hover .wiederkehr__warum,
+  .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__warum {
+    max-height: 30em; transition-delay: .35s;
+  }
+  .wiederkehr__platz.hat-mehr:hover .wiederkehr__warum::after,
+  .wiederkehr__platz.hat-mehr:focus-within .wiederkehr__warum::after {
+    opacity: 0; transition-delay: .35s;
+  }
+}
+@media (min-width: 1180px) and (prefers-reduced-motion: reduce) {
+  .wiederkehr__platz .wiederkehr__warum, .wiederkehr__platz.fest .wiederkehr__karte { transition: none; }
+}
 .wiederkehr__karte {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);

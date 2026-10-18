@@ -788,6 +788,43 @@ const kurzMonat = (d) => {
     }, { rootMargin: "0px 0px 900px 0px" }).observe(mehr);
   }
 
+  /* ── Die Wiederkehr rollt sich aus ──
+     Am Schreibtisch hält jede Reihe die Höhe, die sie zusammengeklappt hat,
+     und die Karten liegen darin absolut. Hat eine mehr Text, als in drei
+     Zeilen passt, rollt sie sich beim Verweilen über das Feld darunter
+     aus (start.css), und nichts im Raster rückt. Neu gemessen wird, wenn
+     die Reihe ihre Breite ändert (auch beim ersten Sichtbarwerden nach
+     einem Filter) und wenn der Schriftgrad wechselt. */
+  {
+    const breit = matchMedia("(min-width: 1180px)");
+    const legen = (zeile) => {
+      const plaetze = [...zeile.querySelectorAll(".wiederkehr__platz")];
+      for (const p of plaetze) { p.classList.remove("fest"); p.style.height = ""; }
+      if (!breit.matches || !zeile.offsetWidth) return;
+      const hoehe = Math.max(...plaetze.map((p) => p.offsetHeight));
+      for (const p of plaetze) {
+        const w = p.querySelector(".wiederkehr__warum");
+        p.classList.toggle("hat-mehr", !!w && w.scrollHeight > w.clientHeight + 2);
+        p.style.height = `${hoehe}px`;
+        p.classList.add("fest");
+      }
+    };
+    const zeilen = [...document.querySelectorAll(".wiederkehr")];
+    const breite = new WeakMap();
+    const ro = new ResizeObserver((eintraege) => {
+      for (const e of eintraege) {
+        const b = Math.round(e.contentRect.width);
+        if (breite.get(e.target) === b) continue;
+        breite.set(e.target, b);
+        legen(e.target);
+      }
+    });
+    zeilen.forEach((z) => ro.observe(z));
+    new MutationObserver(() => zeilen.forEach(legen))
+      .observe(document.documentElement, { attributes: true, attributeFilter: ["data-schrift"] });
+    breit.addEventListener("change", () => zeilen.forEach(legen));
+  }
+
   /* ══ Die Themenwolke ══
      Statt des Feldes, nicht darüber: Wer die Themen sehen will, will
      gerade nicht die Karten. Ein Wort filtert das Feld und bringt es
