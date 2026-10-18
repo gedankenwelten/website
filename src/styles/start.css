@@ -814,7 +814,13 @@
 .wiederkehr__platz:hover .griff__wort { max-width: 8rem; opacity: 1; }
 /* Das Bild steht oben, auf einer Linie mit der Kennzeile — so liegt der
    Knopf immer in seiner Ecke, gleich wie lang der Text daneben ist. */
-.wiederkehr__platz .wiederkehr__bild { align-self: start; }
+.wiederkehr__platz .wiederkehr__karte { align-items: start; }
+/* Der Satz, warum eine Karte hier steht, ist oft das Beste an ihr — drei
+   Zeilen schneiden ihn ab. Am Schreibtisch klappt er beim Drüberfahren
+   ganz auf (Andreas, 19.10.2026); schmaler stehen die Karten einzeln
+   untereinander, dort steht er immer ganz. */
+.wiederkehr__platz:hover .wiederkehr__warum,
+.wiederkehr__platz:focus-within .wiederkehr__warum { -webkit-line-clamp: unset; }
 .wiederkehr__karte {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -847,6 +853,7 @@
 }
 @media (max-width: 1179px) {
   .wiederkehr { grid-template-columns: minmax(0, 1fr); }
+  .wiederkehr__warum { -webkit-line-clamp: unset; }
 }
 @media (max-width: 700px) {
   /* minmax(0, …), nicht 1fr: Sonst zwingt das 1200 px breite Bild die
