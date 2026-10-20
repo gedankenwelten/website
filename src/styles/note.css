@@ -245,6 +245,9 @@ header.strang a.raumtor[hidden] { display: none; }
 header.strang .unterbild + .kennung { margin-top: .9rem; }
 .unterbild > details.malerhand { margin: 0 0 0 auto; font-size: .78rem; }
 .unterbild > details.malerhand[open] { flex: 0 0 100%; }
+/* Die Schreibhand (✒️) rückt an die Malerhand heran statt ans andere Ende. */
+.unterbild > details.malerhand + details.schreibhand { margin-left: -.6rem; }
+details.schreibhand summary::before { content: "angelehnt an"; }
 
 .kennung { margin-top: .9rem; }
 

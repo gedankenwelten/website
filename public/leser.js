@@ -1086,6 +1086,14 @@ window.gwSchau = (() => {
     // Rechts neben die Tür zum Gedankenraum, direkt unter das Bild.
     unterbild.append(osterei);
   }
+  // Daneben die Schreibhand (✒️, seit 20.10.2026): in wessen Tonlage die Note
+  // erzählt ist. Gebaut von stimmen.py aus dem Frontmatter, nie von Hand.
+  const feder = [...document.querySelectorAll("#text > details")]
+    .find((d) => (d.querySelector("summary")?.textContent ?? "").includes("\u2712"));
+  if (unterbild && feder) {
+    feder.classList.add("malerhand", "schreibhand");
+    unterbild.append(feder);
+  }
 }
 
 /* ── Ein Klick im Stern schaut erst hinein ──
