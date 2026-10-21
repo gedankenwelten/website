@@ -1,5 +1,5 @@
 /**
- * Der Wortmarken-Pool — neun Handschriften für denselben Namen.
+ * Der Wortmarken-Pool — zwölf Handschriften für denselben Namen.
  *
  * Übernommen aus der Quartz-Fassung (`quartz/components/PageTitle.tsx`).
  * Die Bilder liegen in `public/wortmarke/` als `wordmark-<stil>-<hell|dunkel>.png`;
@@ -12,9 +12,13 @@
  * Teilung; im Monat kommt jede Marke jetzt vier- bis fünfmal. Seit
  * 28.09.2026 neun: Hilma af Klint (Spiralen, Schneckenhäuser, Rosetten —
  * innere Welten als Diagramm) und Hokusai (die Welle, die aus dem letzten
- * Buchstaben steigt). Neun geht wieder durch drei.
+ * Buchstaben steigt). Neun geht wieder durch drei. Seit 21.10.2026 zwölf:
+ * Maria Sibylla Merian (Raupe, Puppe, Falter — Verwandlung, die zweite
+ * Säule bekommt eine Hand), die Wiener Secession (Gold und Schwarz,
+ * Quadrate, die strengste Marke im Pool) und Escher (das G aus Kacheln,
+ * am Ende werden Vögel daraus). Zwölf geht durch drei.
  */
-export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt", "klint", "hokusai"];
+export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt", "klint", "hokusai", "merian", "secession", "escher"];
 
 /**
  * Welche Marke an einem Tag gilt — dieselbe Rechnung wie in der
