@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import remarkGedankenwelten from "./src/plugins/remark-gedankenwelten.mjs";
+import rehypeExterneLinks from "./src/plugins/rehype-externe-links.mjs";
 import { INHALT, RUBRIKEN } from "./src/lib/notizen.mjs";
 import { slugify, noteUrl } from "./src/lib/slug.mjs";
 import { SEITEN } from "./src/lib/seiten.mjs";
@@ -63,6 +64,7 @@ export default defineConfig({
   redirects: aliasWeiterleitungen(),
   markdown: {
     remarkPlugins: [remarkGedankenwelten],
+    rehypePlugins: [rehypeExterneLinks],
     // Obsidian-Notes enthalten rohes HTML (<details>, <br>) — durchlassen
     allowDangerousHtml: true,
     syntaxHighlight: false,
