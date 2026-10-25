@@ -13,6 +13,7 @@ export const SEITEN = [
   { datei: "Datenschutz.md", titel: "Datenschutzerklärung" },
   { datei: "MCP.md", titel: "MCP-Server" },
   { datei: "Quellen & Links.md", titel: "Quellen & Links" },
+  { datei: "Wie die Notes entstehen.md", titel: "Wie die Notes entstehen" },
 ];
 
 export function alleSeiten() {

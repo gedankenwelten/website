@@ -115,6 +115,12 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
         : (erstellt ?? datum) && <><i>·</i><span>{erstellt ? "erstellt" : "aktualisiert"} {erstellt ?? datum}</span></>}
       <i>·</i><span>{lesezeit} Min. Lesezeit</span>
       {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
+      {/* Herkunft offen, nicht als Haftungsausschluss (der schützt nicht), sondern
+          weil es stimmt — und seit 02.08.2026 verlangt es die KI-Verordnung
+          (Art. 50). Eigene Texte tragen `entstehung: mensch` (Andreas, 25.10.2026). */}
+      <i>·</i>{d.entstehung === "mensch"
+        ? <span>von Andi geschrieben</span>
+        : <a class="kennung__herkunft" href="/Wie-die-Notes-entstehen">mit KI geschrieben</a>}
     </div>
 
     <h1>{d.title}</h1>

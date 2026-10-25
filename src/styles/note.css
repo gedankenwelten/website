@@ -264,6 +264,12 @@ details.schreibhand summary::before { content: "angelehnt an"; }
   border-bottom: 1px solid transparent; transition: border-color .2s;
 }
 .kennung__rubrik:hover { border-bottom-color: var(--akzent); }
+/* Die Herkunft: so leise wie Datum und Lesezeit, nur eben ein Weg zur Erklärung. */
+.kennung__herkunft {
+  color: inherit; text-decoration: none;
+  border-bottom: 1px dotted var(--linie); transition: border-color .2s;
+}
+.kennung__herkunft:hover { border-bottom: 1px solid var(--akzent); }
 
 /* Eine Stufe kleiner als im ersten Entwurf (3,05 rem): Zeitgeist-Titel
    sind lang, und drei Zeilen Riesenschrift über dem Standfirst trugen
