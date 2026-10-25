@@ -120,7 +120,19 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
           (Art. 50). Eigene Texte tragen `entstehung: mensch` (Andreas, 25.10.2026). */}
       <i>·</i>{d.entstehung === "mensch"
         ? <span>von Andi geschrieben</span>
-        : <a class="kennung__herkunft" href="/Wie-die-Notes-entstehen">mit KI geschrieben</a>}
+        : (
+          /* Beim Darüberfahren klappt der Kern auf (Andreas, 25.10.2026);
+             auf dem Telefon gibt es kein Hovern, dort führt der Link zur Seite. */
+          <span class="herkunft">
+            <a class="kennung__herkunft" href="/Wie-die-Notes-entstehen" aria-describedby="herkunft-karte">mit KI geschrieben</a>
+            <span class="herkunft__karte" id="herkunft-karte" role="tooltip">
+              <b>Ein Impuls, keine Wahrheit.</b> Die Texte sollen zum Nachdenken anregen, mehr nicht.
+              Geschrieben mit KI (Claude), ausgewählt und verantwortet von Andi. Nicht jede Note hat er Satz für Satz gelesen.
+              Einen Fehler gefunden? <em>Anfassen erlaubt</em> steht unter jeder Note.
+              <a href="/Wie-die-Notes-entstehen">Wie die Notes entstehen →</a>
+            </span>
+          </span>
+        )}
     </div>
 
     <h1>{d.title}</h1>

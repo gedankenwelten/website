@@ -271,6 +271,34 @@ details.schreibhand summary::before { content: "angelehnt an"; }
 }
 .kennung__herkunft:hover { border-bottom: 1px solid var(--akzent); }
 
+/* Die Karte zur Herkunft: klappt beim Darüberfahren auf, nur wo es Hovern gibt. */
+.herkunft { position: relative; }
+.herkunft__karte { display: none; }
+@media (hover: hover) {
+  .herkunft__karte {
+    display: block; visibility: hidden; opacity: 0;
+    position: absolute; top: calc(100% + .7rem); left: -1rem; z-index: 30;
+    width: min(22rem, 80vw); padding: .9rem 1.05rem;
+    background: var(--papier); color: var(--tinte); box-shadow: var(--schatten);
+    border: 1px solid var(--linie); border-radius: 4px;
+    font-family: "Literata", Georgia, serif; font-size: .92rem; line-height: 1.5;
+    letter-spacing: 0; text-transform: none; text-align: left;
+    transition: opacity .18s ease .12s, visibility 0s linear .3s;
+  }
+  .herkunft__karte b { color: var(--tinte); font-weight: 600; }
+  .herkunft__karte a {
+    display: block; margin-top: .55rem; color: var(--akzent); text-decoration: none;
+    font-family: "Inter", -apple-system, sans-serif; font-size: .8rem;
+  }
+  .herkunft__karte a:hover { text-decoration: underline; }
+  /* Eine unsichtbare Brücke, damit die Karte beim Hinüberfahren nicht zuklappt. */
+  .herkunft__karte::before { content: ""; position: absolute; left: 0; right: 0; top: -.8rem; height: .8rem; }
+  .herkunft:hover .herkunft__karte,
+  .herkunft:focus-within .herkunft__karte {
+    visibility: visible; opacity: 1; transition: opacity .18s ease .12s, visibility 0s;
+  }
+}
+
 /* Eine Stufe kleiner als im ersten Entwurf (3,05 rem): Zeitgeist-Titel
    sind lang, und drei Zeilen Riesenschrift über dem Standfirst trugen
    mehr Gewicht als der Text darunter halten konnte. */
