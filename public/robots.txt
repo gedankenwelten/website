@@ -37,4 +37,7 @@ Disallow: /
 User-agent: BLEXBot
 Disallow: /
 
+User-agent: Barkrowler
+Disallow: /
+
 Sitemap: https://gedankenwelten.org/sitemap.xml
