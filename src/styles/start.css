@@ -904,3 +904,119 @@
   .wiederkehr__schau { display: none; }   /* wie die Griffe im Feld: am Telefon nicht */
   .wiederkehr__titel { font-size: 1.05rem; }
 }
+
+/* ── Die Menschen dahinter ──
+   Der letzte Chip, „DenkerVita", legt statt des Feldes das Register aus
+   (28.10.2026): oben die zehn Meistaufgesuchten der letzten dreißig Tage
+   in der Größe der Feldkarten, darunter alle von A bis Z, kleiner, vier je
+   Zeile. Jede Vita klappt die Notes ihres Menschen unter ihrer Reihe auf —
+   über die ganze Breite, als dieselben Karten wie im Feld. */
+.menschen[hidden], .menschen__teil[hidden], .menschen-treffer[hidden],
+.feld__gitter[hidden], .feld__fuss[hidden] { display: none; }
+.menschen__satz {
+  max-width: 44rem; margin: -.4rem 0 2.6rem;
+  font-size: 1rem; line-height: 1.55; color: var(--tinte-leise); text-wrap: pretty;
+}
+.menschen__teil + .menschen__teil { margin-top: 4.4rem; }
+.menschen__titel {
+  margin: 0 0 1.6rem; font-size: 1.35rem; line-height: 1.25; font-weight: 600; letter-spacing: -.012em;
+}
+.menschen__titel i {
+  margin-left: .6rem; font-style: normal;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px; font-weight: 400;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--tinte-fern);
+}
+/* `dense`: Die aufgeklappte Reihe braucht die ganze Breite und rutscht
+   darum unter die Reihe ihres Menschen; die Karten dahinter füllen die
+   Lücke davor wieder auf. */
+.menschen__liste { grid-auto-flow: row dense; }
+.mensch { display: flex; flex-direction: column; min-width: 0; }
+.mensch[hidden] { display: none; }
+.mensch__woche { color: var(--r-denkervita); }
+.mensch.ist-offen .kachel__titel { color: var(--akzent); }
+.mensch__auf { cursor: pointer; }
+.mensch__pfeil {
+  display: inline-block; width: 5px; height: 5px; margin: 0 .15rem 0 .5rem;
+  border: solid currentColor; border-width: 0 1.2px 1.2px 0;
+  transform: translateY(-2px) rotate(45deg); transition: transform .25s ease;
+}
+.mensch.ist-offen .mensch__pfeil { transform: translateY(1px) rotate(-135deg); }
+
+.mensch__notes {
+  grid-column: 1 / -1; min-width: 0;
+  padding: 1.5rem 1.6rem 2rem;
+  border: 1px solid var(--linie); border-radius: 6px; background: var(--papier-tief);
+  animation: kachel-kommt .44s cubic-bezier(.2,.85,.25,1) backwards;
+}
+.mensch__notes-kopf { display: flex; align-items: baseline; gap: .7rem; margin: 0 0 1.4rem; }
+.mensch__notes-kopf b { font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
+.mensch__notes .feld__gitter { row-gap: 2.4rem; }
+
+.menschen__liste--klein { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 1.6rem; row-gap: 2.4rem; }
+.mensch--klein .kachel__bild img { height: 7.4rem; }
+.mensch--klein .kachel__titel { font-size: 1.04rem; }
+.mensch--klein .kachel__teaser { -webkit-line-clamp: 3; font-size: .87rem; }
+.mensch--klein .kachel__teaser.ist-offen { -webkit-line-clamp: unset; }
+
+.menschen__abc { display: flex; flex-wrap: wrap; gap: .3rem; margin: -.4rem 0 2.4rem; }
+.menschen__abc a {
+  min-width: 2rem; padding: .36rem .35rem; text-align: center;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 11.5px; letter-spacing: .04em;
+  color: var(--tinte-leise); text-decoration: none;
+  background: var(--papier); border: 1px solid var(--linie); border-radius: 100px;
+  transition: color .2s, border-color .2s;
+}
+.menschen__abc a:hover { color: var(--akzent); border-color: var(--akzent); }
+.menschen__abc a.ist-leer { opacity: .3; pointer-events: none; }
+.menschen__buchstabe { scroll-margin-top: calc(var(--kopf) + var(--lenkung, 0px) + 1.4rem); }
+.menschen__buchstabe[hidden] { display: none; }
+.menschen__buchstabe + .menschen__buchstabe { margin-top: 2.8rem; }
+.menschen__marke {
+  margin: 0 0 1.2rem; padding-bottom: .4rem; border-bottom: 1px solid var(--linie);
+  font-size: 1.6rem; line-height: 1; font-weight: 600; color: var(--r-denkervita);
+}
+.menschen__laedt { color: var(--tinte-fern); font-style: italic; }
+
+/* Ein Name im Sieb: die Vita breit über den Notes, wie eine Karte der
+   Wiederkehr. Allein steht sie über die volle Breite. */
+.menschen-treffer {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
+  margin: 0 0 2.8rem;
+}
+.menschen-treffer[data-karten="1"] { grid-template-columns: minmax(0, 1fr); }
+.menschen-treffer[data-karten="1"] .wiederkehr__karte { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+.menschen-treffer .wiederkehr__titel { font-size: 1.3rem; font-weight: 600; }
+.menschen-treffer .wiederkehr__kennung b { color: var(--r-denkervita); }
+
+@media (max-width: 1179px) {
+  .menschen__liste--klein { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.2rem; }
+  .menschen-treffer { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  /* Am Telefon wie das Feld: Zeile für Zeile, Bild klein rechts. Der
+     Griff zu den Notes bleibt — er ist hier der einzige Weg dorthin. */
+  .menschen__liste, .menschen__liste--klein { display: flex; flex-direction: column; gap: 0; }
+  .mensch {
+    display: grid; grid-template-columns: minmax(0, 1fr) 92px;
+    grid-template-areas: "kennung bild" "titel bild" "teaser bild" "griffe griffe";
+    column-gap: .9rem; row-gap: .15rem; align-items: start;
+    padding: .9rem 0; border-top: 1px solid color-mix(in oklab, var(--linie) 70%, transparent);
+  }
+  .mensch:first-child { border-top: 0; padding-top: .2rem; }
+  .mensch[hidden] { display: none; }
+  .mensch--klein { grid-template-areas: "titel bild" "teaser bild" "griffe griffe"; }
+  .mensch .kachel__weg { display: contents; }
+  .mensch .kachel__bild { grid-area: bild; margin: .15rem 0 0; box-shadow: none; border-radius: 6px; }
+  .mensch .kachel__bild img, .mensch--klein .kachel__bild img { width: 92px; height: 66px; }
+  .mensch .kachel__kennung { grid-area: kennung; margin-bottom: 0; font-size: 9px; }
+  .mensch .kachel__titel { grid-area: titel; font-size: 1.02rem; line-height: 1.28; }
+  .mensch .kachel__teaser { grid-area: teaser; margin: .2rem 0 0; -webkit-line-clamp: 2; font-size: .84rem; line-height: 1.4; }
+  .mensch .griffe { display: flex; grid-area: griffe; margin-top: .4rem; }
+  .mensch .griff__wort { max-width: none; opacity: 1; }
+  .mensch__notes { padding: 1rem .9rem 1.2rem; margin: .4rem 0 .8rem; }
+  .mensch__notes .feld__gitter { row-gap: 0; }
+  .menschen__titel { font-size: 1.15rem; }
+  .menschen__titel i { display: block; margin: .3rem 0 0; }
+  .menschen-treffer { margin-bottom: 1.6rem; }
+}
+.mensch__alle { margin-top: 2rem; padding-top: 1.4rem; }

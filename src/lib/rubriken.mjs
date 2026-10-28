@@ -12,8 +12,9 @@
  * geschrieben wurde, sagt über ihn nichts. Wer eine Person sucht, sucht
  * einen Buchstaben.
  */
-import { ladeIndex } from "./notizen.mjs";
+import { ladeIndex, rubrikBild } from "./notizen.mjs";
 import { ladeGraph } from "./graph.mjs";
+import { ladeGelesen } from "./wiederkehr.mjs";
 
 /**
  * Die Sätze stammen aus den Regeln des Hauses (`rules/gedankenwelten.md`),
@@ -103,7 +104,9 @@ export function knapperTitel(titel, rubrik) {
  * überall unter dem Wort danach.
  */
 export function registerWort(name) {
-  const teile = name.trim().split(/\s+/);
+  /* Was in Klammern steht, ist ein Beiname, kein Name: „Manuel (Koschi
+     Politik)" stand sonst unter „Politik)" — also unter P. */
+  const teile = name.replace(/\s*\([^)]*\)/g, "").trim().split(/\s+/);
   return teile[teile.length - 1] ?? name;
 }
 
@@ -275,4 +278,70 @@ export function alleRubriken() {
   return Object.keys(RUBRIKEN_INFO)
     .map((r) => ({ name: r, anzahl: notesDerRubrik(r).length }))
     .filter((r) => r.anzahl > 0);
+}
+
+/* ── Die Menschen dahinter ──────────────────────────────────────────
+   Die Vitas haben im Feld der Startseite keine Karte (sie sind ein
+   Register, kein Gedanke), aber einen eigenen Chip, ganz hinten
+   (28.10.2026, Andreas). Dahinter stehen die zehn, die in den letzten
+   dreißig Tagen am häufigsten aufgesucht wurden, und darunter alle nach
+   Nachnamen. Wer eine Vita aufklappt, sieht die Notes zu diesem Menschen
+   als Karten — vom Menschen aus, nicht von der Note.
+
+   Welche Notes zu einer Vita gehören, steht nicht in einem Tag, sondern
+   in den Links: jede Note, die auf die Vita verweist, und jede, auf die
+   die Vita verweist. Ein Namens-Tag wäre eine zweite Buchführung, die
+   irgendwann vom Link abwiche. */
+
+const vitaName = (n) => (n.titel ?? n.basis).replace(/\s*[—–-]\s*DenkerVita\s*$/i, "").trim();
+
+let menschenGemerkt = null;
+/** Alle Vitas, nach Nachnamen, mit den Notes ihres Menschen (neueste zuerst). */
+export function menschen() {
+  if (menschenGemerkt) return menschenGemerkt;
+  const g = ladeGraph();
+  const alle = ladeIndex().alle.filter((n) => !g.katalog.has(n.id) && n.basis.toLowerCase() !== "index");
+  const nachId = new Map(alle.map((n) => [n.id, n]));
+  menschenGemerkt = alle
+    .filter((n) => n.rubrik === "DenkerVita")
+    .map((v) => {
+      const ids = new Set([...(g.herein.get(v.id) ?? []), ...(g.hinaus.get(v.id) ?? [])]);
+      const notes = [...ids].map((id) => nachId.get(id))
+        .filter((n) => n && n.rubrik !== "DenkerVita")
+        .sort((a, b) => String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
+      return {
+        id: v.id,
+        name: vitaName(v),
+        url: v.url,
+        bild: v.vorschau ?? rubrikBild("DenkerVita"),
+        teaser: v.beschreibung,
+        notes,
+      };
+    })
+    .sort((a, b) =>
+      registerWort(a.name).localeCompare(registerWort(b.name), "de", { sensitivity: "base" })
+      || a.name.localeCompare(b.name, "de"));
+  return menschenGemerkt;
+}
+
+/** Der Buchstabe, unter dem ein Mensch im Register steht (Š unter S, Ö unter O). */
+export function registerBuchstabe(name) {
+  const b = registerWort(name).normalize("NFD").replace(/\p{M}/gu, "")[0]?.toUpperCase() ?? "?";
+  return /\p{L}/u.test(b) ? b : "#";
+}
+
+/**
+ * Die Vitas, die in einem Zeitraum am häufigsten aufgesucht wurden — aus
+ * `gelesen.json` (Leser-Sitzungen, ohne Andreas und ohne Maschinen).
+ * Ohne Daten (unter `astro dev`, vor dem ersten Sync) eine leere Liste.
+ */
+export function gefragteMenschen(zeitraum = "monat", wieviele = 10) {
+  const g = ladeGelesen();
+  const pfade = g.zeitraeume?.[zeitraum]?.pfade ?? (zeitraum === "monat" ? g.pfade ?? [] : []);
+  const nachUrl = new Map(menschen().map((m) => [m.url.normalize("NFC"), m]));
+  return pfade
+    .map((p) => ({ mensch: nachUrl.get(String(p.pfad).normalize("NFC")), leser: p.leser ?? p.aufrufe ?? 0 }))
+    .filter((e) => e.mensch)
+    .sort((a, b) => b.leser - a.leser)
+    .slice(0, wieviele);
 }

@@ -120,6 +120,26 @@ if (schicht) {
        würde — `filters` zählt nur innerhalb der schon gewählten. */
     filterZaehlen(antwort.totalFilters?.Rubrik ?? antwort.filters?.Rubrik);
     alle = antwort.results;
+
+    /* Ein Name zuerst (28.10.2026): Trifft die Anfrage den Namen einer
+       Vita, steht der Mensch über den Notes, die ihn erwähnen. Pagefind
+       wiegt nur Wörter — dass „Reicher" ein Mensch ist, weiß es nicht.
+       Höchstens drei; bei mehr ist es kein Name, sondern ein Wortanfang. */
+    if (!rubrik || rubrik === "DenkerVita") {
+      const vitas = rubrik ? antwort : await pagefind.search(b, { filters: { Rubrik: "DenkerVita" } });
+      if (laeuft !== meine) return;
+      const kopf = [];
+      for (const r of vitas.results.slice(0, 6)) {
+        const d = await r.data();
+        if (nameTrifft(d.meta.titel ?? d.meta.title ?? "", b)) kopf.push(r);
+        if (kopf.length === 3) break;
+      }
+      if (laeuft !== meine) return;
+      if (kopf.length) {
+        const vorn = new Set(kopf.map((r) => r.id));
+        alle = [...kopf, ...alle.filter((r) => !vorn.has(r.id))];
+      }
+    }
     gezeigt = 0;
     liste.replaceChildren();
     hinweis.hidden = false;
@@ -127,6 +147,17 @@ if (schicht) {
       ? `${alle.length} ${alle.length === 1 ? "Note" : "Notes"}${rubrik ? ` in ${rubrik}` : ""}`
       : `Nichts gefunden zu „${b}"${rubrik ? ` in ${rubrik}` : ""}.`;
     await nachlegen();
+  }
+
+  /* Jedes Suchwort muss am Anfang eines Wortes im Namen stehen — „reich"
+     trifft Mark Reicher, „ich" nicht. Umlaute und Groß/klein zählen nicht. */
+  const glatt = (w) => w.toLowerCase().replace(/ß/g, "ss")
+    .normalize("NFD").replace(/\p{M}/gu, "")
+    .replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u");
+  function nameTrifft(titel, anfrage) {
+    const name = (glatt(titel.replace(/\s*[—–-]\s*DenkerVita\s*$/i, "")).match(/[\p{L}\p{N}]+/gu) ?? []);
+    const worte = glatt(anfrage).match(/[\p{L}\p{N}]+/gu) ?? [];
+    return worte.length > 0 && worte.every((q) => q.length >= 3 && name.some((w) => w.startsWith(q)));
   }
 
   async function nachlegen() {

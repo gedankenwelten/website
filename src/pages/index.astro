@@ -21,7 +21,7 @@ import "../styles/start.css";
 import { alleFaeden, alleWege } from "../lib/faden.mjs";
 import { ladeIndex, rubrikBild } from "../lib/notizen.mjs";
 import { ladeGraph, sternFuer } from "../lib/graph.mjs";
-import { alleRubriken, themenwolke } from "../lib/rubriken.mjs";
+import { alleRubriken, themenwolke, gefragteMenschen, RUBRIKEN_INFO } from "../lib/rubriken.mjs";
 import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen, zufallsdenker, zufallsfund,
          aussenweltDieserWoche, claudesWahl } from "../lib/wiederkehr.mjs";
 import Suche from "../components/Suche.astro";
@@ -53,6 +53,16 @@ const inhaltlich = notes.filter((n) => !OHNE_IM_FELD.has(n.rubrik));
 const vitaZahl = notes.length - inhaltlich.length;
 
 const rubriken = alleRubriken().filter((r) => !OHNE_IM_FELD.has(r.name));
+
+/* Unter „Alles" bleiben die Vitas draußen — das Feld zeigt Gedanken,
+   keine Personen. Aber sie bekommen den letzten Chip (28.10.2026,
+   Andreas): Gut ein Viertel aller Aufrufe geht auf eine Vita, die meisten
+   kommen aus einer Suchmaschine, also mit einem Namen im Kopf. Hinter dem
+   Chip stehen die zehn meistaufgesuchten der letzten dreißig Tage (über
+   eine Woche entschieden ab Platz vier ein, zwei Besuche — das wäre
+   Zufall, kein Interesse), darunter das ganze Register aus `vitas.json`. */
+const gefragt = gefragteMenschen("monat", 10);
+const dieseWoche = new Set(gefragteMenschen("woche", 3).map((e) => e.mensch.id));
 
 /* Die Themen über alle Rubriken (→ rubriken.mjs). Jede Karte trägt nur
    die Themen, die in der Wolke stehen — der Filter braucht keine anderen. */
@@ -270,6 +280,12 @@ const kurzMonat = (d) => {
           {r.name} <i>{r.anzahl}</i>
         </button>
       ))}
+      {vitaZahl > 0 && (
+        <button class="chip" type="button" data-rubrik="DenkerVita">
+          <span class="regal__punkt regal__punkt--denkervita"></span>
+          DenkerVita <i>{vitaZahl}</i>
+        </button>
+      )}
     </div>
 
     <div class="lenkung__ansicht">
@@ -333,11 +349,60 @@ const kurzMonat = (d) => {
       <span class="verwandtschaft__wort">Gesucht</span>
       <b id="siebWort"></b>
       <span class="sieb__zahl" id="siebZahl"></span>
-      <span class="sieb__vitas" id="siebVitaListe"></span>
       <button type="button" id="siebVoll">Im Volltext</button>
       <button type="button" id="siebAus">Aufheben</button>
     </p>
 
+
+    {/* Trifft das Sieb einen Namen, steht dessen Vita als breite Karte
+        über den Notes — auch unter „Alles", wo Vitas sonst keine Karte
+        haben. Gefüllt aus `vitas.json`, erst wenn es einen Treffer gibt. */}
+    <div class="menschen-treffer" id="siebMenschen" hidden></div>
+
+    {/* ── Die Menschen dahinter (Chip „DenkerVita") ── */}
+    <section class="menschen" id="menschen" hidden aria-label="Die Menschen dahinter"
+             data-quelle={`/vitas.json?v=${BUILD}`}>
+      <p class="menschen__satz">{RUBRIKEN_INFO.DenkerVita.satz}</p>
+
+      {gefragt.length > 0 && (
+        <div class="menschen__teil" id="gefragt">
+          <h2 class="menschen__titel">Am häufigsten aufgesucht <i>in den letzten 30 Tagen</i></h2>
+          <ol class="feld__gitter menschen__liste">
+            {gefragt.map(({ mensch: m }, i) => (
+              <li class="mensch" data-u={m.url} data-name={m.name}
+                  data-notes={JSON.stringify(m.notes.map((n) => n.url))}>
+                <a class="kachel__weg" href={m.url}>
+                  <span class="kachel__bild">
+                    <img src={m.bild} alt="" width="1200" height="500" loading="lazy" decoding="async">
+                  </span>
+                  <span class="kachel__kennung">
+                    <span class="regal__punkt regal__punkt--denkervita"></span>
+                    Platz {i + 1}
+                    {dieseWoche.has(m.id) && <em class="mensch__woche">↑ diese Woche vorn</em>}
+                  </span>
+                  <span class="kachel__titel">{m.name}</span>
+                </a>
+                {m.teaser && <p class="kachel__teaser">{m.teaser}</p>}
+                {m.notes.length > 0 && (
+                  <div class="griffe">
+                    <button class="griff mensch__auf" type="button" aria-expanded="false">
+                      <span class="griff__wort griff__wort--bleibt">{m.notes.length} {m.notes.length === 1 ? "Note" : "Notes"}</span>
+                      <i class="mensch__pfeil" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <div class="menschen__teil">
+        <h2 class="menschen__titel">Alle von A bis Z <i>nach Nachnamen</i></h2>
+        <nav class="menschen__abc" id="abc" aria-label="Sprung zum Buchstaben"></nav>
+        <div id="register"><p class="menschen__laedt">Das Register wird geholt …</p></div>
+      </div>
+    </section>
 
     <ol class="feld__gitter" id="gitter">
       {feld.map((n, i) => (
@@ -595,6 +660,10 @@ const kurzMonat = (d) => {
   const passt = (k, i) => (!rubrik || k.dataset.rubrik === rubrik) && (!thema || themenVon[i].has(thema))
     && (!treffer || treffer.has(i));
   const siebbalken = document.getElementById("siebbalken");
+  const gitterEl = document.getElementById("gitter");
+  const feldFuss = document.querySelector(".feld__fuss");
+  const menschenEl = document.getElementById("menschen");
+  const siebMenschen = document.getElementById("siebMenschen");
   let gezeigt = PORTION;
   let quelle = null;    // Platznummer der Karte, deren Nachbarschaft steht
 
@@ -603,6 +672,23 @@ const kurzMonat = (d) => {
      nicht. Dasselbe gilt für die Nachbarschaft: Die verwandten Karten
      sind längst da, sie stehen nur woanders. */
   function auslegen() {
+    /* Der letzte Chip legt kein Feld aus, sondern das Register der
+       Menschen — die Karten treten ganz zurück, Thema und Wiederkehr auch. */
+    const imRegister = rubrik === "DenkerVita";
+    menschenEl.hidden = !imRegister;
+    gitterEl.hidden = imRegister;
+    feldFuss.hidden = imRegister;
+    if (imRegister) {
+      quelle = null; balken.hidden = true;
+      for (const z of wiederkehrZeilen) z.hidden = true;
+      themenbalken.hidden = true;
+      siebMenschen.hidden = true;
+      menschenAuslegen();
+      chipsZaehlen();
+      siebZeigen(null);
+      teilenKnopf.hidden = false;
+      return;
+    }
     if (quelle !== null) {
       const nah = new Set(kacheln[quelle].dataset.nah.split(",").map(Number));
       kacheln.forEach((k, i) => {
@@ -616,6 +702,7 @@ const kurzMonat = (d) => {
       for (const z of wiederkehrZeilen) z.hidden = true;
       themenbalken.hidden = true;
       siebbalken.hidden = true;
+      siebMenschen.hidden = true;
       mehr.hidden = true;
       stand.textContent = `${nah.size} verwandt`;
       kappungPruefen();
@@ -672,7 +759,10 @@ const kurzMonat = (d) => {
       });
     }
     for (const c of chips) {
-      const n = treffer || thema ? zahl.get(c.dataset.rubrik) ?? 0 : null;
+      // Die Vitas zählt das Sieb nach Namen; ein Thema filtert sie nicht.
+      const n = c.dataset.rubrik === "DenkerVita"
+        ? (treffer ? gefundeneVitas.length : null)
+        : treffer || thema ? zahl.get(c.dataset.rubrik) ?? 0 : null;
       c.querySelector("i").textContent = n ?? c._groesse;
       c.classList.toggle("chip--leer", n === 0 && c.dataset.rubrik !== rubrik);
     }
@@ -730,7 +820,7 @@ const kurzMonat = (d) => {
      Muss nach jedem Umblenden neu laufen: Eine versteckte Karte hat kein
      Layout, also auch keine messbare Höhe. */
   function kappungPruefen() {
-    for (const t of document.querySelectorAll(".kachel:not([hidden]) .kachel__teaser")) {
+    for (const t of document.querySelectorAll(".kachel:not([hidden]) .kachel__teaser, .mensch:not([hidden]) .kachel__teaser")) {
       if (t.classList.contains("ist-offen")) continue;
       const gekappt = t.scrollHeight - t.clientHeight > 4;
       t.classList.toggle("ist-gekappt", gekappt);
@@ -891,7 +981,6 @@ const kurzMonat = (d) => {
   const siebTaste = document.getElementById("siebTaste");
   const siebWort = document.getElementById("siebWort");
   const siebZahl = document.getElementById("siebZahl");
-  const siebVitaListe = document.getElementById("siebVitaListe");
   const teilenKnopf = document.getElementById("teilen");
   let gesucht = "";     // was tatsächlich gesucht wurde, nach Korrektur
   let eingabe = "";     // was dasteht
@@ -1008,23 +1097,32 @@ const kurzMonat = (d) => {
     treffer = summe;
     gesucht = korrigiert.join(" ");
 
-    // Die Vitas: gleiche Regeln, eigene Liste.
+    // Die Vitas: gleiche Regeln, eigene Liste. Ein Name muss aber
+    // wirklich getroffen sein — „Ma" ist noch kein Mark Reicher.
     let vitas = null;
     for (const [q] of suchwoerter) {
       const { gefunden } = gemeint(q, vitaForm);
-      const hier = new Set([...gefunden.keys()].flatMap((t) => [...vitaWort.get(t)]));
+      const hier = new Set([...gefunden].filter(([, guete]) => guete >= .5)
+        .flatMap(([t]) => [...vitaWort.get(t)]));
       vitas = vitas ? new Set([...vitas].filter((n) => hier.has(n))) : hier;
     }
-    return [...vitas].slice(0, 3).map((n) => vitaListe[n]);
+    return [...vitas].map((n) => vitaListe[n]);
   }
 
   let gefundeneVitas = [];
   function siebZeigen(passend) {
     siebbalken.hidden = !treffer;
     siebTaste.hidden = !treffer;
+    if (rubrik !== "DenkerVita") menschenTrefferZeigen();
     if (!treffer) return;
     const anders = glatt(gesucht) !== glatt(eingabe.trim());
     siebWort.textContent = `„${gesucht}"`;
+    if (rubrik === "DenkerVita") {
+      const n = gefundeneVitas.length;
+      siebWort.textContent = `„${eingabe.trim()}"`;
+      siebZahl.textContent = n ? `${n} ${n === 1 ? "Vita" : "Vitas"}` : "keine Vita mit diesem Namen";
+      return;
+    }
     const ohneFilter = treffer.size;
     const imText = [...ausText].filter((i) => passt(kacheln[i], i)).length;
     siebZahl.textContent = passend
@@ -1032,13 +1130,6 @@ const kurzMonat = (d) => {
       : ohneFilter
         ? `hier keine · ${ohneFilter} ohne ${rubrik && thema ? "Rubrik und Thema" : rubrik ? "Rubrik" : "Thema"}`
         : "keine Note im Feld";
-    siebVitaListe.replaceChildren(...gefundeneVitas.map((v) => {
-      const a = document.createElement("a");
-      a.className = "sieb__vita";
-      a.href = v.u;
-      a.innerHTML = `<i>Vita</i> ${v.n.replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;")}`;
-      return a;
-    }));
   }
 
   function siebSetzen(text) {
@@ -1185,6 +1276,203 @@ const kurzMonat = (d) => {
     umhaengen(document.body.classList.contains("lenkung-steht"));
   }
 
+  /* ══ Die Menschen dahinter ══
+     Der Chip „DenkerVita" zeigt statt der Karten das Register: oben die
+     Gefragten (stehen im Dokument), darunter alle nach Nachnamen (kommen
+     aus `vitas.json`, beim ersten Mal). Jede Vita klappt die Notes ihres
+     Menschen auf — als Kopien der Karten, die im Feld ohnehin stehen. */
+  let register = null, registerBereit = null, registerGebaut = false;
+  function registerLaden() {
+    registerBereit ??= fetch(menschenEl.dataset.quelle)
+      .then((r) => r.json())
+      .then((l) => { register = l; return l; })
+      .catch((e) => { registerBereit = null; throw e; });
+    return registerBereit;
+  }
+
+  const esc = (t) => String(t ?? "").replace(/[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const notesWort = (n) => `${n} ${n === 1 ? "Note" : "Notes"}`;
+
+  function menschKarte(v) {
+    const li = document.createElement("li");
+    li.className = "mensch mensch--klein";
+    li.dataset.u = v.u;
+    li.dataset.name = v.n;
+    li.dataset.notes = JSON.stringify(v.z);
+    li.innerHTML = `<a class="kachel__weg" href="${esc(v.u)}">
+        <span class="kachel__bild"><img src="${esc(v.b)}" alt="" width="1200" height="500" loading="lazy" decoding="async"></span>
+        <span class="kachel__titel">${esc(v.n)}</span></a>
+      ${v.t ? `<p class="kachel__teaser">${esc(v.t)}</p>` : ""}
+      ${v.z.length ? `<div class="griffe"><button class="griff mensch__auf" type="button" aria-expanded="false">
+        <span class="griff__wort griff__wort--bleibt">${notesWort(v.z.length)}</span>
+        <i class="mensch__pfeil" aria-hidden="true"></i></button></div>` : ""}`;
+    return li;
+  }
+
+  function registerBauen() {
+    if (registerGebaut || !register) return;
+    registerGebaut = true;
+    const gruppen = new Map();
+    for (const v of register) (gruppen.get(v.w) ?? gruppen.set(v.w, []).get(v.w)).push(v);
+    const teile = [], marken = [];
+    for (const [b, liste] of gruppen) {
+      const teil = document.createElement("section");
+      teil.className = "menschen__buchstabe";
+      teil.id = `abc-${b}`;
+      teil.dataset.b = b;
+      teil.innerHTML = `<h3 class="menschen__marke">${esc(b)}</h3>`;
+      const ol = document.createElement("ol");
+      ol.className = "feld__gitter menschen__liste menschen__liste--klein";
+      ol.append(...liste.map(menschKarte));
+      teil.append(ol);
+      teile.push(teil);
+      const a = document.createElement("a");
+      a.href = `#abc-${b}`;
+      a.dataset.b = b;
+      a.textContent = b;
+      marken.push(a);
+    }
+    document.getElementById("register").replaceChildren(...teile);
+    document.getElementById("abc").replaceChildren(...marken);
+  }
+
+  /* Das Sieb wirkt auch hier: Es lässt die Menschen stehen, deren Name
+     trifft — oben wie unten. */
+  function menschenFiltern() {
+    const nur = treffer ? new Set(gefundeneVitas.map((v) => v.u)) : null;
+    for (const li of menschenEl.querySelectorAll(".mensch")) li.hidden = !!nur && !nur.has(li.dataset.u);
+    for (const teil of menschenEl.querySelectorAll(".menschen__buchstabe")) {
+      const leer = !teil.querySelector(".mensch:not([hidden])");
+      teil.hidden = leer;
+      document.querySelector(`#abc a[data-b="${CSS.escape(teil.dataset.b)}"]`)?.classList.toggle("ist-leer", leer);
+    }
+    const gefragtEl = document.getElementById("gefragt");
+    if (gefragtEl) gefragtEl.hidden = !!nur && !gefragtEl.querySelector(".mensch:not([hidden])");
+    // Eine offene Reihe, deren Mensch das Sieb verdeckt, geht mit.
+    if ([...menschenEl.querySelectorAll(".mensch.ist-offen")].some((li) => li.hidden)) notesZu();
+    kappungPruefen();
+  }
+
+  function menschenAuslegen() {
+    menschenFiltern();
+    if (registerGebaut) return;
+    registerLaden()
+      .then(() => { registerBauen(); menschenFiltern(); })
+      .catch(() => {
+        document.getElementById("register").innerHTML =
+          `<p class="menschen__laedt">Das Register kam nicht an. <a href="/DenkerVita">Zur Seite aller Vitas</a></p>`;
+      });
+  }
+
+  /* ── Die Notes eines Menschen ──
+     Klappen unter seiner Reihe auf, über die ganze Breite (das Raster
+     füllt die Lücke davor mit `dense` auf). Immer nur eine zur Zeit —
+     bei zwei offenen sähe man nicht mehr, was zu wem gehört. */
+  let kachelVon = null;
+  function kachelKopie(k) {
+    const c = k.cloneNode(true);
+    c.hidden = false;
+    c.removeAttribute("style");
+    c.classList.remove("geht", "kommt", "kachel--quelle");
+    c.querySelector("[data-nah-auf]")?.remove();   // die Nachbarschaft gehört ins Feld
+    return c;
+  }
+  function notesZu() {
+    for (const p of menschenEl.querySelectorAll(".mensch__notes")) p.remove();
+    for (const li of menschenEl.querySelectorAll(".mensch.ist-offen")) {
+      li.classList.remove("ist-offen");
+      li.querySelector(".mensch__auf")?.setAttribute("aria-expanded", "false");
+    }
+  }
+  function notesAuf(li) {
+    const war = li.classList.contains("ist-offen");
+    notesZu();
+    if (war) return;
+    kachelVon ??= new Map(kacheln.map((k) => [pfad(k.querySelector("a").href), k]));
+    const reihe = document.createElement("li");
+    reihe.className = "mensch__notes";
+    reihe.innerHTML = `<p class="mensch__notes-kopf"><span class="verwandtschaft__wort">Notes zu</span> <b></b></p>
+      <ol class="feld__gitter"></ol>`;
+    reihe.querySelector("b").textContent = li.dataset.name;
+    const ol = reihe.querySelector("ol");
+    const karten = JSON.parse(li.dataset.notes || "[]")
+      .map((u) => kachelVon.get(pfad(u))).filter(Boolean).map(kachelKopie);
+    /* Neun zuerst (drei volle Reihen) — Koschi allein hat über vierzig,
+       aufgeklappt wäre das eine Wand statt eines Blicks. */
+    karten.forEach((k, n) => { k.hidden = n >= 9; ol.append(k); });
+    if (karten.length > 9) {
+      const fuss = document.createElement("p");
+      fuss.className = "feld__fuss mensch__alle";
+      fuss.innerHTML = `<button type="button">Alle ${karten.length} zeigen</button>`;
+      fuss.querySelector("button").addEventListener("click", () => {
+        for (const k of karten) k.hidden = false;
+        fuss.remove();
+        kappungPruefen();
+      });
+      reihe.append(fuss);
+    }
+    li.after(reihe);
+    li.classList.add("ist-offen");
+    li.querySelector(".mensch__auf")?.setAttribute("aria-expanded", "true");
+    kappungPruefen();
+  }
+
+  menschenEl.addEventListener("click", (e) => {
+    const auf = e.target.closest(".mensch__auf");
+    if (auf) { notesAuf(auf.closest(".mensch")); return; }
+    const marke = e.target.closest("#abc a");
+    if (marke) {
+      // Weich springen, und ohne die Adresse mit #abc-… zu füllen.
+      e.preventDefault();
+      document.getElementById(`abc-${marke.dataset.b}`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+      return;
+    }
+    const teaser = e.target.closest(".kachel__teaser");
+    if (teaser && (teaser.classList.contains("ist-gekappt") || teaser.classList.contains("ist-offen"))) {
+      const offen = teaser.classList.toggle("ist-offen");
+      teaser.classList.toggle("ist-gekappt", !offen);
+      teaser.title = offen ? "Wieder einklappen" : "Ganz anzeigen";
+      return;
+    }
+    const schauKnopf = e.target.closest("[data-schau]");
+    if (schauKnopf) { gwSchau.oeffnen(schauKnopf.dataset.schau); return; }
+    const fadenKnopf = e.target.closest("[data-faden]");
+    if (fadenKnopf) fadenAbHier(fadenKnopf.dataset.faden, fadenKnopf);
+  });
+
+  /* ── Ein Name im Sieb ──
+     Unter „Alles" haben Vitas keine Karte. Trifft das Sieb aber einen
+     Namen, steht seine Vita breit über den Notes — wer „Reicher" tippt,
+     sucht meist den Menschen, nicht eine Erwähnung. Höchstens drei: Bei
+     mehr ist es kein Name mehr, sondern ein Wortanfang. */
+  let trefferLauf = 0;
+  function menschenTrefferZeigen() {
+    const lauf = ++trefferLauf;
+    const welche = treffer && quelle === null ? gefundeneVitas.slice(0, 3) : [];
+    if (!welche.length) { siebMenschen.hidden = true; siebMenschen.replaceChildren(); return; }
+    registerLaden().then(() => {
+      if (lauf !== trefferLauf) return;
+      const nachU = new Map(register.map((v) => [v.u, v]));
+      siebMenschen.replaceChildren(...welche.map((w) => nachU.get(w.u)).filter(Boolean).map((v) => {
+        const a = document.createElement("a");
+        a.className = "wiederkehr__karte";
+        a.href = v.u;
+        a.innerHTML = `<span class="wiederkehr__bild"><img src="${esc(v.b)}" alt="" width="1200" height="500" decoding="async"></span>
+          <span class="wiederkehr__text">
+            <span class="wiederkehr__kennung"><b>Vita</b>
+              <span class="regal__punkt regal__punkt--denkervita"></span>
+              ${v.z.length ? `${notesWort(v.z.length)} zu diesem Menschen` : "DenkerVita"}</span>
+            <span class="wiederkehr__titel">${esc(v.n)}</span>
+            ${v.t ? `<span class="wiederkehr__warum">${esc(v.t)}</span>` : ""}
+          </span>`;
+        return a;
+      }));
+      siebMenschen.dataset.karten = String(siebMenschen.children.length);
+      siebMenschen.hidden = !siebMenschen.children.length;
+    }).catch(() => { siebMenschen.hidden = true; });
+  }
+
   /* ══ Die Auswahl in der Adresse ══
      Rubrik, Thema und Sieb stehen in der Adresse — das ist das eigentliche
      Speichern. Ein Lesezeichen hält es, ein Link trägt es weiter, auf dem
@@ -1291,7 +1579,9 @@ const kurzMonat = (d) => {
      das Layout steht also schon vor dem ersten Byte Bild. */
   if (zurueckAuf) {
     history.scrollRestoration = "manual";   // sonst zöge der Browser dagegen
-    scrollTo({ top: zurueckAuf, behavior: "instant" });
+    // Im Register stehen die Einträge erst, wenn `vitas.json` da ist.
+    const hin = () => scrollTo({ top: zurueckAuf, behavior: "instant" });
+    rubrik === "DenkerVita" ? registerLaden().then(() => requestAnimationFrame(hin), hin) : hin();
   }
 
   /* ══ Die Vorschau ══ steht in leser.js (`gwSchau`) — Startseite und
@@ -1301,6 +1591,11 @@ const kurzMonat = (d) => {
      Würfel aus einer Rubrik hinaus, die man ausdrücklich gewählt hat. */
   document.getElementById("wuerfel").addEventListener("click", (e) => {
     e.preventDefault();
+    if (rubrik === "DenkerVita") {
+      const topf = gefundeneVitas.length ? gefundeneVitas : vitaListe;
+      location.href = topf[Math.floor(Math.random() * topf.length)].u;
+      return;
+    }
     const topf = kacheln.filter(passt);
     location.href = topf[Math.floor(Math.random() * topf.length)].querySelector("a").href;
   });
