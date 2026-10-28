@@ -64,6 +64,14 @@ export default function remarkGedankenwelten() {
     let letzterT = null, letzterV = null;
     const fehlLinks = [];
 
+    /* Das 🎨-Kästchen unter dem Banner hält den Bild-Prompt fest — für
+       uns, nicht für die Suche. Ohne Ausnahme zitierte die Suche ihn als
+       Textausschnitt („no realistic faces" bei Hans Maggi, 28.10.2026). */
+    visit(tree, "html", (node) => {
+      if (node.value.includes("<summary>🎨"))
+        node.value = node.value.replace(/<details(?![^>]*data-pagefind-ignore)/, "<details data-pagefind-ignore");
+    });
+
     // Die Video-Kennung muss VOR den Zitaten feststehen — ohne sie lässt sich
     // kein Zitat-Ende nachschlagen.
     visit(tree, "link", (node) => {
