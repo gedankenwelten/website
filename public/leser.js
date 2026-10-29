@@ -834,8 +834,18 @@ window.gwSchau = (() => {
       if (!li || !rollen) return;
       /* Von Hand gerollt statt `scrollIntoView`: Das würde bei Bedarf auch
          die ganze Seite verschieben, und dann wandert einem der Stern unter
-         dem Zeiger weg. Hier rollt nur der Kasten. */
-      halt.scrollTo({ top: Math.max(0, li.offsetTop - kopfHoehe - 12), behavior: "smooth" });
+         dem Zeiger weg. Hier rollt nur der Kasten.
+         Gemessen wird, wo der Eintrag *ankommt*, nicht wo er gerade steht:
+         Der vorige liegt beim Lesen meist darüber und ist noch offen. Klappt
+         er zu, rückt alles darunter um seine Begründung nach oben — und
+         der Titel des neuen verschwand unter dem Kopf. Darum die offenen
+         Begründungen davor abziehen; sie gehen alle auf null. */
+      let zu = 0;
+      for (const l of eintraege.values()) {
+        if (l === li) break;
+        zu += l.querySelector(".verwandt__warum")?.offsetHeight ?? 0;
+      }
+      halt.scrollTo({ top: Math.max(0, li.offsetTop - zu - kopfHoehe - 12), behavior: "smooth" });
     }
 
     /* ── Der Text zeigt auch ──
