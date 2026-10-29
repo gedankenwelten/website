@@ -12,7 +12,7 @@
  * geschrieben wurde, sagt über ihn nichts. Wer eine Person sucht, sucht
  * einen Buchstaben.
  */
-import { ladeIndex, rubrikBild } from "./notizen.mjs";
+import { ladeIndex, rubrikBild, findeNote } from "./notizen.mjs";
 import { ladeGraph } from "./graph.mjs";
 import { ladeGelesen } from "./wiederkehr.mjs";
 
@@ -289,9 +289,28 @@ export function alleRubriken() {
    als Karten — vom Menschen aus, nicht von der Note.
 
    Welche Notes zu einer Vita gehören, steht nicht in einem Tag, sondern
-   in den Links: jede Note, die auf die Vita verweist, und jede, auf die
-   die Vita verweist. Ein Namens-Tag wäre eine zweite Buchführung, die
-   irgendwann vom Link abwiche. */
+   in den Links. Ein Namens-Tag wäre eine zweite Buchführung, die
+   irgendwann vom Link abwiche. Gezählt wird aber nur, wo der Mensch
+   selbst vorkommt, nicht wo er verwandt ist (29.10.2026, Andreas —
+   Hans Maggi stand mit 11 Notes da, Carlo Cipolla mit 10; vorkommen tun
+   sie in 2 und 1):
+   - die Note verlinkt die Vita im Kopf, vor der ersten Überschrift —
+     dort steht der Kasten „Wer spricht?" mit Sprechern, Gästen,
+     Interviewern;
+   - oder Note und Vita sind verlinkt und der Name steht im Titel der
+     Note (alte Notes ohne Vita-Verweis im Kopf, „Erich Fromm — Haben
+     oder Sein").
+   Verweise aus den Verbindungen, aus Panoramen, aus dem Fließtext zählen
+   nicht. */
+
+/** Die Wörter, an denen man den Menschen im Titel einer Note erkennt. */
+function namensWoerter(name) {
+  const ohneKlammer = name.replace(/\(.*?\)/g, " ").trim().split(/\s+/);
+  const nachname = ohneKlammer[ohneKlammer.length - 1] ?? name;
+  const klammer = [...name.matchAll(/\(([^)]+)\)/g)].map((m) => m[1]);
+  const ascii = nachname.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+  return [...new Set([nachname, ascii, ...klammer].filter((w) => w.length >= 3).map((w) => w.toLowerCase()))];
+}
 
 const vitaName = (n) => (n.titel ?? n.basis).replace(/\s*[—–-]\s*DenkerVita\s*$/i, "").trim();
 
@@ -305,9 +324,19 @@ export function menschen() {
   menschenGemerkt = alle
     .filter((n) => n.rubrik === "DenkerVita")
     .map((v) => {
-      const ids = new Set([...(g.herein.get(v.id) ?? []), ...(g.hinaus.get(v.id) ?? [])]);
+      const woerter = namensWoerter(vitaName(v));
+      const imTitel = (n) => {
+        const t = `${n.titel ?? ""} ${n.basis}`.toLowerCase();
+        return woerter.some((w) => t.includes(w));
+      };
+      const verlinkt = new Set([...(g.herein.get(v.id) ?? []), ...(g.hinaus.get(v.id) ?? [])]);
+      const ids = new Set([...verlinkt].filter((id) => {
+        const n = nachId.get(id);
+        if (!n || n.rubrik === "DenkerVita") return false;
+        return (n.kopfZiele ?? []).some((z) => findeNote(z)?.id === v.id) || imTitel(n);
+      }));
       const notes = [...ids].map((id) => nachId.get(id))
-        .filter((n) => n && n.rubrik !== "DenkerVita")
+        .filter(Boolean)
         .sort((a, b) => String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
       return {
         id: v.id,

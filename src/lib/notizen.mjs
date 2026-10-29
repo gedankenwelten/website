@@ -167,6 +167,16 @@ export function ladeIndex() {
          still auf das Rubrikbild zurück (13.09.2026). */
       const kopf = rumpf.split(/\n#{2,6}\s/, 1)[0];
       const bannerEmbed = /!\[\[([^\]|\n]+?\.(?:jpe?g|png|webp|gif|avif))(?:\|[^\]\n]*)?\]\]/i.exec(kopf);
+      /* Wen eine Note wirklich behandelt, steht in ihrem Kopf: Im Kasten
+         „Wer spricht?" vor der ersten Überschrift verlinken Sprecher, Gäste
+         und Interviewer ihre Vita. Ein Verweis weiter unten — im Text, in
+         den Verbindungen — ist Verwandtschaft, kein Vorkommen (29.10.2026,
+         Andreas: Hans Maggi stand mit 11 Notes da, er kommt in 2 vor). */
+      const kopfZiele = [...new Set(
+        [...kopf.matchAll(/(!?)\[\[([^\]|\n]+)(?:\|[^\]\n]*)?\]\]/g)]
+          .filter((m) => m[1] !== "!")
+          .map((m) => m[2].trim()),
+      )];
       const bannerDatei = bannerEmbed ? bannerEmbed[1].split("/").pop().trim() : null;
       const banner = bannerDatei ? `/assets/${encodeURIComponent(bannerDatei)}` : null;
       // Für Streifen und Kacheln reicht die verkleinerte Fassung —
@@ -236,6 +246,7 @@ export function ladeIndex() {
         tags: [].concat(fm.tags ?? []).filter(Boolean).map(String),
         aliase: [].concat(fm.aliases ?? []).filter(Boolean),
         ziele,
+        kopfZiele,
         begruendet,
       });
     }
