@@ -285,7 +285,7 @@ export function alleRubriken() {
    Register, kein Gedanke), aber einen eigenen Chip, ganz hinten
    (28.10.2026, Andreas). Dahinter stehen die zehn, die in den letzten
    dreißig Tagen am häufigsten aufgesucht wurden, und darunter alle nach
-   Nachnamen. Wer eine Vita aufklappt, sieht die Notes zu diesem Menschen
+   Nachnamen. Wer eine Vita aufklappt, sieht die Notes zu dieser Person
    als Karten — vom Menschen aus, nicht von der Note.
 
    Welche Notes zu einer Vita gehören, steht nicht in einem Tag, sondern
