@@ -182,9 +182,34 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
       Suchindex heraus (`data-pagefind-ignore`): Die Begründungen stehen
       in *ihren* Notes noch einmal, und als Treffer wäre diese hier eine
       Fundstelle für einen Text, der woanders steht. */}
-  {(kopf.verbindungen?.length > 0 || kopf.nachbesprechung) && (
+  {(kopf.verbindungen?.length > 0 || kopf.nachbesprechung || kopf.eigeneNotes) && (
     <aside class="verwandt" data-pagefind-ignore>
       <div class="verwandt__halt">
+        {/* Bei einer Vita: was es von dieser Person zu lesen gibt, ganz
+            oben. Im Text steht die Liste erst am Ende, nach der Biografie;
+            hier sieht man sie, sobald die Seite aufgeht. Nur Titel — die
+            Erläuterungen bleiben unten im Text. */}
+        {kopf.eigeneNotes && (
+          <nav class="nachgang nachgang--notes" aria-label="Gedankenwelten-Notes">
+            <a class="nachgang__kopf" href={`#${kopf.eigeneNotes.anker}`}>
+              Notes <i>{kopf.eigeneNotes.zahl}</i> <span aria-hidden="true">↓</span>
+            </a>
+            {kopf.eigeneNotes.gruppen.map((g) => <>
+              {g.titel && <p class="nachgang__gruppe">{g.titel}</p>}
+              <ol class="nachgang__liste">
+                {g.notes.map((n) => {
+                  const rub = n.url.split("/")[1]?.toLowerCase();
+                  return (
+                    <li><a href={n.url}>
+                      {rub && <span class={`regal__punkt regal__punkt--${rub}`} aria-hidden="true"></span>}
+                      <span>{n.titel}</span>
+                    </a></li>
+                  );
+                })}
+              </ol>
+            </>)}
+          </nav>
+        )}
         {/* Die Nachbesprechung steht weit unten, nach dem Video und den
             Publikumsfragen. Hier oben nennt sie ihre Themen, und ein Klick
             rollt hin — wer neugierig geworden ist, soll nicht suchen. */}

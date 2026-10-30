@@ -630,6 +630,24 @@ h1 {
 }
 .nachgang__liste a:hover { color: var(--akzent); }
 
+/* Die eigenen Notes einer Vita. Sie führen hinaus in andere Notes, nicht
+   in diese — darum kein Akzentstrich, sondern der Rubrikpunkt wie bei
+   „Verwandt". Die Zahl steht wie dort hinter dem Kopf. */
+.nachgang__kopf i {
+  font-style: normal; font-variant-numeric: tabular-nums; letter-spacing: .06em;
+}
+.nachgang--notes .nachgang__liste a {
+  display: flex; align-items: baseline; gap: .55rem;
+  padding-left: 0; border-left: 0 !important;
+}
+.nachgang--notes .regal__punkt { position: relative; top: -.12em; width: 5px; height: 5px; flex: none; }
+.nachgang__gruppe {
+  margin: 1rem 0 .5rem;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: .72rem; font-weight: 600; color: var(--tinte-leise);
+}
+.nachgang__kopf + .nachgang__gruppe { margin-top: 0; }
+
 /* Wer an eine Überschrift springt, soll sie sehen und nicht unter der
    Kopfleiste suchen. */
 #text :is(h2, h3)[id] { scroll-margin-top: calc(var(--kopf) + 1.4rem); }

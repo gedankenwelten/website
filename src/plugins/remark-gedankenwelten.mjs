@@ -458,6 +458,47 @@ export default function remarkGedankenwelten() {
       }
     }
 
+    /* ── Die eigenen Notes einer Vita ───────────────────────────────
+       `## Gedankenwelten-Notes` steht am Ende jeder DenkerVita, nach der
+       ganzen Biografie — wer wissen will, was es von dieser Person zu
+       lesen gibt, muss erst hinunter (Andreas, 30.10.2026). Also nennt
+       die Randspalte die Titel gleich oben. Fette Zwischenzeilen
+       („Über sie", „Wo sie mitspricht") bleiben als Gruppen erhalten;
+       tote Links sind schon `span` und fallen heraus. */
+    fm.eigeneNotes = null;
+    {
+      const zaehler = new GithubSlugger();
+      let drin = false;
+      let gruppe = null;
+      const gruppen = [];
+      for (const n of tree.children) {
+        if (n.type === "heading") {
+          const t = text(n).trim();
+          const id = zaehler.slug(t);
+          if (n.depth <= 2) drin = n.depth === 2 && /^gedankenwelten-notes\b/i.test(t);
+          if (drin) fm.eigeneNotes = { anker: id, gruppen, zahl: 0 };
+          continue;
+        }
+        if (!drin) continue;
+        if (n.type === "paragraph" && n.children.length === 1 && n.children[0].type === "strong") {
+          gruppe = { titel: text(n).trim(), notes: [] };
+          gruppen.push(gruppe);
+          continue;
+        }
+        if (n.type !== "list") continue;
+        for (const li of n.children) {
+          let link = null;
+          visit(li, "link", (l) => { link ??= l; });
+          if (!link?.url?.startsWith("/")) continue;
+          if (!gruppe) { gruppe = { titel: null, notes: [] }; gruppen.push(gruppe); }
+          gruppe.notes.push({ url: link.url, titel: text(link).trim() });
+          fm.eigeneNotes.zahl++;
+        }
+      }
+      if (fm.eigeneNotes) fm.eigeneNotes.gruppen = gruppen.filter((g) => g.notes.length);
+      if (!fm.eigeneNotes?.zahl) fm.eigeneNotes = null;
+    }
+
     /* ── Kopf-Elemente aus dem Fließtext ziehen ─────────────────────── */
 
     // Das <h1> doppelt den Titel — das Layout setzt ihn selbst
