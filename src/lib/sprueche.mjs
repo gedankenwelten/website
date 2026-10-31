@@ -20,11 +20,11 @@ export const SPRUECHE = [
   },
   {
     text: "Eine Welt, wie man sie sich wünscht, kann nur entstehen, wenn man sie selbst auch lebt.",
-    wer: "Luc",
+    wer: "Andi",
   },
   {
     text: "Wir nehmen nicht die Wirklichkeit wahr, sondern nur das Bild, das wir uns von der Wirklichkeit machen.",
-    wer: "Luc",
+    wer: "Andi",
   },
   {
     text: "Die Gedanken sind frei, wer kann sie erraten? Sie fliehen vorbei wie nächtliche Schatten.",
