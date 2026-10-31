@@ -28,6 +28,7 @@ import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
 import Fusszeile from "../components/Fusszeile.astro";
+import { SPRUECHE, spruchIndex } from "../lib/sprueche.mjs";
 import Schau from "../components/Schau.astro";
 import "../styles/mobil.css";
 
@@ -229,6 +230,21 @@ const kurzMonat = (d) => {
         b.src = `/wortmarke/wordmark-${w.dataset.wm}-${w.dataset.theme === "dunkel" ? "dark" : "light"}.png`;
         b.dataset.stil = w.dataset.wm;
         b.onload = () => b.closest(".wortmarke").classList.add("hat-bild");
+      }
+    </script>
+    {/* Der Spruch des Tages, links gegenüber dem Satz (31.10.2026). Der
+        Build schreibt den seines Tages hinein; das Skript darunter tauscht
+        ihn gegen den Tag des Lesers, bevor gezeichnet wird. */}
+    <figure class="start__spruch" id="spruch">
+      <blockquote class="start__spruch-text">{SPRUECHE[spruchIndex()].text}</blockquote>
+      <figcaption class="start__spruch-wer">{SPRUECHE[spruchIndex()].wer}</figcaption>
+    </figure>
+    <script is:inline define:vars={{ SPRUECHE }}>
+      {
+        const d = new Date(), f = document.getElementById("spruch");
+        const s = SPRUECHE[Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000) % SPRUECHE.length];
+        f.querySelector("blockquote").textContent = s.text;
+        f.querySelector("figcaption").textContent = s.wer;
       }
     </script>
     {/* Die Vitas werden genannt, nicht verschwiegen: Sie fehlen im Feld,
