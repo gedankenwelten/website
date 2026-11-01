@@ -1,0 +1,63 @@
+/* Die Fragen-Seite: Text im schmalen Strang, die Karten darunter breiter —
+   drei nebeneinander, auf dem Telefon untereinander mit dem Bild links. */
+
+.fragen__inhalt {
+  display: flex; flex-wrap: wrap; gap: .4rem .5rem; margin: 1.6rem 0 .4rem;
+}
+.fragen__inhalt a {
+  font-family: "Inter", -apple-system, sans-serif; font-size: 12.5px;
+  padding: .35rem .7rem; border: 1px solid var(--linie); border-radius: 999px;
+  color: var(--tinte-leise); text-decoration: none; transition: border-color .2s, color .2s;
+}
+.fragen__inhalt a:hover { border-color: var(--akzent); color: var(--akzent); }
+
+.fragen__frage { margin-top: 3.2rem; scroll-margin-top: 4.5rem; }
+.fragen__wurzel { margin-bottom: 0; }
+
+.fragen__karten {
+  list-style: none; padding: 0; margin: 1.4rem auto 0;
+  max-width: 64rem; padding-inline: 1.25rem;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem;
+}
+.fragenkarte { margin: 0; }
+.fragenkarte__weg { display: block; color: inherit; text-decoration: none; }
+.fragenkarte__bild {
+  display: block; overflow: hidden; border-radius: 3px;
+  box-shadow: var(--schatten); margin-bottom: .75rem;
+}
+.fragenkarte__bild img {
+  display: block; width: 100%; height: 9.5rem; object-fit: cover;
+  filter: saturate(.9); opacity: .93; transition: opacity .35s ease, filter .35s ease;
+}
+.fragenkarte__weg:hover .fragenkarte__bild img { opacity: 1; filter: none; }
+.fragenkarte__text { display: block; }
+.fragenkarte__kennung {
+  display: flex; align-items: center; gap: .45rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 9.5px;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--tinte-fern);
+  margin-bottom: .4rem;
+}
+.fragenkarte__titel {
+  display: block; font-size: 1.08rem; line-height: 1.25; font-weight: 600;
+  letter-spacing: -.01em; text-wrap: pretty; transition: color .2s;
+}
+.fragenkarte__weg:hover .fragenkarte__titel { color: var(--akzent); }
+.fragenkarte__warum {
+  display: block; margin-top: .35rem; font-size: .93rem; line-height: 1.45;
+  color: var(--tinte-leise); text-wrap: pretty;
+}
+
+.fragen__nachsatz {
+  margin-top: 1.4rem; font-size: .93rem; color: var(--tinte-leise);
+  border-left: 2px solid var(--akzent-weich); padding-left: .9rem;
+}
+.fragen__schluss { margin-top: 3.5rem; color: var(--tinte-leise); font-style: italic; }
+
+@media (max-width: 760px) {
+  .fragen__karten { grid-template-columns: 1fr; gap: 1.1rem; padding-inline: 0; margin-inline: 0; }
+  .fragenkarte__weg { display: grid; grid-template-columns: 6.5rem 1fr; gap: .9rem; align-items: start; }
+  .fragenkarte__bild { margin-bottom: 0; }
+  .fragenkarte__bild img { height: 4.6rem; }
+  .fragenkarte__titel { font-size: 1rem; }
+  .fragenkarte__warum { font-size: .88rem; }
+}

@@ -1,0 +1,119 @@
+---
+import { BUILD } from "../lib/site.mjs";
+/**
+ * Die Fragen-Seite (01.11.2026, junge Leser). Zwölf Fragen, je drei Notes —
+ * und die Notes stehen hier als Karten mit Bild, nicht als nackte Links:
+ * Wer mit fünfzehn kommt, entscheidet über ein Bild und eine Zeile, ob er
+ * hineingeht. Die Quelle bleibt `Fragen.md` im Pool; diese Seite liest sie
+ * nur und holt zu jedem Wikilink Banner und Rubrik aus dem Index.
+ */
+import fs from "node:fs";
+import path from "node:path";
+import matter from "gray-matter";
+import "../styles/note.css";
+import "../styles/fragen.css";
+import "../styles/mobil.css";
+import Kopf from "../components/Kopf.astro";
+import Kopfleiste from "../components/Kopfleiste.astro";
+import Fusszeile from "../components/Fusszeile.astro";
+import Suche from "../components/Suche.astro";
+import Schau from "../components/Schau.astro";
+import { INHALT, findeNote, rubrikBild } from "../lib/notizen.mjs";
+
+const { data: d, content } = matter(fs.readFileSync(path.join(INHALT, "Fragen.md"), "utf8"));
+
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/* Nur das, was in Fragen.md vorkommt: Links, Wikilinks, Kursives. Für mehr
+   ist die Seite nicht gedacht — sie soll kurz bleiben. */
+function zeile(md) {
+  return esc(md)
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, ziel, text) => {
+      const n = findeNote(ziel);
+      return n ? `<a href="${n.url}">${text ?? n.titel}</a>` : (text ?? ziel);
+    })
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+const absaetze = (block) =>
+  block.split(/\n\s*\n/).map((a) => a.trim()).filter((a) => a && a !== "---" && !a.startsWith("- [["));
+
+// Der Schluss nach dem letzten Trennstrich gehört nicht mehr zur letzten Frage.
+const [rumpf, schluss = ""] = content.split(/\n---\n(?![\s\S]*\n---\n)/);
+const [einstieg, ...teile] = rumpf.split(/^## /m);
+
+const fragen = teile.map((teil) => {
+  const [titel, ...rest] = teil.split("\n");
+  const block = rest.join("\n");
+  const karten = [...block.matchAll(/^- \[\[([^\]|]+)(?:\|([^\]]+))?\]\]\s*·\s*(.+)$/gm)].map(([, ziel, text, warum]) => {
+    const n = findeNote(ziel);
+    if (!n) console.warn(`Fragen.md: Ziel nicht gefunden — ${ziel}`);
+    return n && { url: n.url, rubrik: n.rubrik, bild: n.vorschau ?? rubrikBild(n.rubrik), titel: text ?? n.titel,
+             // In der Liste stand die Zeile nach einem Punkt, auf der Karte steht sie für sich.
+             warum: warum.charAt(0).toUpperCase() + warum.slice(1) };
+  }).filter(Boolean);
+  // Absätze vor den Karten tragen die Wurzel, Absätze danach (die Hilfe-Zeile) stehen unter ihnen.
+  const vor = block.split(/^- \[\[/m)[0];
+  const nach = block.slice(block.lastIndexOf("\n- [[") + 1).split("\n").slice(1).join("\n");
+  return { titel: titel.trim(), id: titel.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, ""),
+           vor: absaetze(vor), karten, nach: karten.length ? absaetze(nach) : [] };
+});
+---
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+  <Kopf titel={d.title} beschreibung={d.description} art="website" />
+</head>
+<body class="ist-beiseite ist-fragen">
+<Kopfleiste />
+<article class="blatt blatt--beiseite blatt--fragen">
+  <header class="strang">
+    <div class="kennung"><b><a class="kennung__rubrik" href="/">Gedankenwelten</a></b></div>
+    <h1>{d.title}</h1>
+    {d.description && <p class="standfirst">{d.description}</p>}
+  </header>
+
+  <div class="strang">
+    {absaetze(einstieg).map((a) => <p set:html={zeile(a)} />)}
+    <nav class="fragen__inhalt" aria-label="Die Fragen">
+      {fragen.map((f) => <a href={`#${f.id}`}>{f.titel}</a>)}
+    </nav>
+  </div>
+
+  {fragen.map((f) => (
+    <section class="fragen__frage" id={f.id}>
+      <div class="strang">
+        <h2>{f.titel}</h2>
+        {f.vor.map((a) => <p class="fragen__wurzel" set:html={zeile(a)} />)}
+      </div>
+      <ol class="fragen__karten">
+        {f.karten.map((k) => (
+          <li class="fragenkarte">
+            <a class="fragenkarte__weg" href={k.url}>
+              <span class="fragenkarte__bild">
+                <img src={k.bild} alt="" width="1200" height="500" loading="lazy" decoding="async">
+              </span>
+              <span class="fragenkarte__text">
+                <span class="fragenkarte__kennung">
+                  <span class={`regal__punkt regal__punkt--${k.rubrik.toLowerCase()}`}></span>{k.rubrik}
+                </span>
+                <span class="fragenkarte__titel">{k.titel}</span>
+                <span class="fragenkarte__warum" set:html={zeile(k.warum)} />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+      {f.nach.length > 0 && (
+        <div class="strang">{f.nach.map((a) => <p class="fragen__nachsatz" set:html={zeile(a)} />)}</div>
+      )}
+    </section>
+  ))}
+
+  {schluss.trim() && <div class="strang fragen__schluss">{absaetze(schluss).map((a) => <p set:html={zeile(a)} />)}</div>}
+</article>
+<Fusszeile />
+<Schau />
+<Suche />
+<script src={`/leser.js?v=${BUILD}`} is:inline></script>
+</body>
+</html>
