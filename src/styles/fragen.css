@@ -59,6 +59,29 @@
 }
 .fragen__schluss { margin-top: 3.5rem; color: var(--tinte-leise); font-style: italic; }
 
+.eigenefrage { margin-top: 1.4rem; }
+.eigenefrage__label {
+  display: block; font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--tinte-fern); margin-bottom: .45rem;
+}
+.eigenefrage textarea {
+  display: block; width: 100%; box-sizing: border-box; min-height: 6.5rem; resize: vertical;
+  font: inherit; font-size: 1.02rem; line-height: 1.5; color: var(--tinte);
+  background: var(--papier-tief); border: 1px solid var(--linie); border-radius: 4px; padding: .8rem .9rem;
+}
+.eigenefrage textarea:focus { outline: none; border-color: var(--akzent); }
+.eigenefrage__fuss { display: flex; align-items: center; gap: 1rem; margin-top: .8rem; flex-wrap: wrap; }
+.eigenefrage__knopf {
+  font-family: "Inter", -apple-system, sans-serif; font-size: 12.5px; letter-spacing: .08em;
+  text-transform: uppercase; padding: .55rem 1.1rem; border-radius: 999px; cursor: pointer;
+  background: var(--tinte); color: var(--papier); border: 1px solid var(--tinte);
+}
+.eigenefrage__knopf:hover { background: var(--akzent); border-color: var(--akzent); }
+.eigenefrage__knopf:disabled { opacity: .5; cursor: default; }
+.eigenefrage__antwort { margin: 0; font-size: .95rem; color: var(--tinte-leise); }
+.eigenefrage__antwort.ist-fehler { color: var(--rot, #a33); }
+.fragen__eigene .fragen__nachsatz { margin-top: 1.8rem; }
+
 @media (max-width: 760px) {
   .fragen__karten { grid-template-columns: 1fr; gap: 1.1rem; width: var(--spalte); }
   .fragenkarte__weg { display: grid; grid-template-columns: 6.5rem 1fr; gap: .9rem; align-items: start; }

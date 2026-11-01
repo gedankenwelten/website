@@ -109,6 +109,67 @@ const fragen = teile.map((teil) => {
     </section>
   ))}
 
+  {/* Die eigene Frage (01.11.2026). Geht durch dieselbe Tür wie das
+      Feedback (/api/rueckmeldung): Honigfeld, Mindestzeit, Ratenbremse,
+      keine IP. Kein Namens-, kein Mailfeld — wir antworten nicht einzeln,
+      und wer nichts angibt, von dem wissen wir nichts. Darum steht die
+      Hilfe direkt darunter: Wer hier in Not schreibt, bekommt keine Antwort. */}
+  <section class="fragen__frage fragen__eigene" id="eigene-frage">
+    <div class="strang">
+      <h2>Deine Frage fehlt?</h2>
+      <p class="fragen__wurzel">Dann schreib sie hier hinein. Du brauchst keinen Namen und keine Adresse. Wir antworten nicht einzeln, aber manche Fragen werden zu einer Note. Dann kann deine Frage dort stehen, ohne deinen Namen.</p>
+      <form class="eigenefrage" id="frageForm" novalidate>
+        <label class="eigenefrage__label" for="frageText">Deine Frage</label>
+        <textarea id="frageText" name="text" rows="3" maxlength="600" placeholder="Was dich beschäftigt …"></textarea>
+        <div class="rueck__honig" aria-hidden="true">
+          <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <div class="eigenefrage__fuss">
+          <button class="eigenefrage__knopf" type="submit">Abschicken</button>
+          <p class="eigenefrage__antwort" id="frageAntwort" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+      <p class="fragen__nachsatz">Geht es um etwas, das dich gerade selbst belastet? Hier antwortet niemand sofort. Dort schon, kostenlos: <a href="https://krisenchat.de">krisenchat.de</a> zum Schreiben, unter 25, Tag und Nacht · <a href="tel:116111">116 111</a> Nummer gegen Kummer (Mo–Sa 14–20 Uhr) · <a href="tel:08001110111">0800 111 0 111</a> TelefonSeelsorge, Tag und Nacht · in Österreich und der Schweiz die <a href="tel:147">147</a>.</p>
+    </div>
+  </section>
+  <script is:inline>
+    (() => {
+      const form = document.getElementById("frageForm");
+      if (!form) return;
+      const feld = document.getElementById("frageText");
+      const antwort = document.getElementById("frageAntwort");
+      const knopf = form.querySelector("button");
+      const seit = Date.now();
+      const sagen = (was, fehler = false) => { antwort.textContent = was; antwort.classList.toggle("ist-fehler", fehler); };
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const t = feld.value.trim();
+        if (t.length < 3) { feld.focus(); return; }
+        knopf.disabled = true;
+        sagen("");
+        try {
+          const r = await fetch("/api/rueckmeldung", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: t, mail: "", seite: "/Fragen#eigene-frage", t: Date.now() - seit, website: form.elements.website?.value ?? "" }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (r.ok && d.ok) {
+            form.reset();
+            sagen("Danke. Deine Frage ist angekommen.");
+            window.umami?.track?.("frage");   // nur die Zahl, nie der Text
+          } else {
+            sagen(d.fehler || "Das hat nicht geklappt. Versuch es später noch einmal.", true);
+          }
+        } catch {
+          sagen("Das hat nicht geklappt. Versuch es später noch einmal.", true);
+        } finally {
+          knopf.disabled = false;
+        }
+      });
+    })();
+  </script>
+
   {schluss.trim() && <div class="strang fragen__schluss">{absaetze(schluss).map((a) => <p set:html={zeile(a)} />)}</div>}
 </article>
 <Fusszeile />

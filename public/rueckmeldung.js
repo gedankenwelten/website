@@ -68,7 +68,7 @@
       if (r.ok && d.ok) {
         form.reset();
         felderZeigen(false);
-        sagen("Danke. Das landet bei Andi.");
+        sagen("Danke. Das landet bei Luc.");
         window.umami?.track?.("rueckmeldung");   // nur die Zahl, nie der Text
         setTimeout(() => { if (!box.hidden) schliessen(); }, 2600);
       } else {
