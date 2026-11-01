@@ -50,8 +50,11 @@
   color: var(--tinte-leise); text-wrap: pretty;
 }
 
+/* Der Strang setzt den oberen Rand seiner Absätze zurück — der Abstand
+   zu den Karten gehört darum dem Block, nicht dem Absatz. */
+.fragen__nach { margin-top: 2.2rem; }
 .fragen__nachsatz {
-  margin-top: 1.4rem; font-size: .93rem; color: var(--tinte-leise);
+  margin-top: 0; font-size: .93rem; color: var(--tinte-leise);
   border-left: 2px solid var(--akzent-weich); padding-left: .9rem;
 }
 .fragen__schluss { margin-top: 3.5rem; color: var(--tinte-leise); font-style: italic; }

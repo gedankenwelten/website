@@ -104,7 +104,7 @@ const fragen = teile.map((teil) => {
         ))}
       </ol>
       {f.nach.length > 0 && (
-        <div class="strang">{f.nach.map((a) => <p class="fragen__nachsatz" set:html={zeile(a)} />)}</div>
+        <div class="strang fragen__nach">{f.nach.map((a) => <p class="fragen__nachsatz" set:html={zeile(a)} />)}</div>
       )}
     </section>
   ))}
