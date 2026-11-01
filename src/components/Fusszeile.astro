@@ -31,6 +31,7 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
 <footer class={`fusszeile${fest ? " fusszeile--fest" : ""}`}>
   {!fest && <p class="fusszeile__satz">{SITE.satz}</p>}
   <nav class="fusszeile__wege" aria-label="Beiwerk">
+    <a href="/Fragen" title="Zwölf Fragen, jede führt zu drei Notes">Fragen</a>
     <a href="/raum" title="Ein Museum aus den Notes — man beginnt in einem zufälligen Saal">Gedankenraum</a>
     <a href="/Feeds">RSS-Feeds</a>
     {rubrik && <a href={`/${rubrik}/index.xml`} title={`Feed der Rubrik ${rubrik}`}>{rubrik} abonnieren</a>}
