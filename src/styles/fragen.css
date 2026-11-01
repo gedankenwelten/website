@@ -15,8 +15,11 @@
 .fragen__wurzel { margin-bottom: 0; }
 
 .fragen__karten {
-  list-style: none; padding: 0; margin: 1.4rem auto 0;
-  max-width: 64rem; padding-inline: 1.25rem;
+  /* An der Textkante beginnen, nicht an der Fenstermitte: Der Strang sitzt
+     links, rechts liegt die Randspalte — die nehmen die Karten mit. */
+  list-style: none; padding: 0;
+  margin: 1.4rem 0 0 calc(var(--marge) + var(--luft));
+  width: calc(var(--spalte) + var(--spalt) + var(--neben) / 2);
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem;
 }
 .fragenkarte { margin: 0; }
@@ -54,7 +57,7 @@
 .fragen__schluss { margin-top: 3.5rem; color: var(--tinte-leise); font-style: italic; }
 
 @media (max-width: 760px) {
-  .fragen__karten { grid-template-columns: 1fr; gap: 1.1rem; padding-inline: 0; margin-inline: 0; }
+  .fragen__karten { grid-template-columns: 1fr; gap: 1.1rem; width: var(--spalte); }
   .fragenkarte__weg { display: grid; grid-template-columns: 6.5rem 1fr; gap: .9rem; align-items: start; }
   .fragenkarte__bild { margin-bottom: 0; }
   .fragenkarte__bild img { height: 4.6rem; }
