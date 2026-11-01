@@ -468,6 +468,19 @@ h1 {
 .eigen p:last-child { margin-bottom: 0; }
 .eigen p { margin: 0 0 .8rem; }
 
+/* ── Hilfe-Hinweis vor schweren Themen ──
+   Ruhig, nicht alarmierend: kein Rot, kein Kasten, der schreit.
+   Wer es braucht, findet die Nummer; wer nicht, liest weiter. */
+.hilfe {
+  margin: 0 0 2.2rem; padding: 1.1rem 1.4rem; background: var(--papier-tief);
+  border-left: 2px solid var(--gruen); border-radius: 0 3px 3px 0;
+  font-size: var(--lese-neben); line-height: 1.6; color: var(--tinte-leise);
+}
+.hilfe .block-label { color: var(--gruen); margin-bottom: .5rem; }
+.hilfe p { margin: 0 0 .6rem; }
+.hilfe p:last-child { margin-bottom: 0; }
+.hilfe a { color: var(--tinte); white-space: nowrap; }
+
 /* ── Sokrates-Frage ── */
 .frage {
   margin: 3.2rem 0; text-align: center; font-size: 1.16rem;

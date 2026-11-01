@@ -44,6 +44,7 @@ const CALLOUT = {
   tip:       ["kopfnote"],
   question:  ["frage"],
   note:      ["eigen"],
+  hilfe:     ["hilfe"],     // Hinweis vor schweren Themen, mit Nummern (seit 01.11.2026)
   success:   ["befund", "befund--ja"],
   warning:   ["befund", "befund--hm"],
   danger:    ["befund", "befund--nein"],
