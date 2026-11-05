@@ -40,4 +40,10 @@ Disallow: /
 User-agent: Barkrowler
 Disallow: /
 
+User-agent: SERankingBacklinksBot
+Disallow: /
+
+User-agent: SEOJuice-SearchBot
+Disallow: /
+
 Sitemap: https://gedankenwelten.org/sitemap.xml
