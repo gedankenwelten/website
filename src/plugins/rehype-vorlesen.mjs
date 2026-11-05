@@ -43,6 +43,19 @@ const leise = (wert) => ({
   children: [{ type: "text", value: wert }],
 });
 const text = (wert) => ({ type: "text", value: wert });
+// Die DOI-Nummer: stumm für die Stimme und, seit den leisen Belegen, auch
+// unsichtbar fürs Auge (CSS). Sie steht im Link und beim Darüberfahren.
+const nummer = (wert) => ({
+  type: "element", tagName: "span",
+  properties: { ariaHidden: "true", className: ["beleg__nr"] },
+  children: [{ type: "text", value: wert }],
+});
+// Was das Auge statt der Nummer sieht, wenn der Link sonst leer wäre.
+const kurz = () => ({
+  type: "element", tagName: "span",
+  properties: { ariaHidden: "true", className: ["beleg__kurz"] },
+  children: [{ type: "text", value: "DOI" }],
+});
 
 /** Ersetzt in einem Textknoten jeden Treffer durch die Knoten, die `aus` liefert. */
 function zerlege(wert, muster, aus) {
@@ -100,12 +113,16 @@ function doiInLinks(baum) {
   for (const a of links) {
     let getroffen = false;
     jederText(a, (t) => {
-      const teile = zerlege(t.value, DOI_IM_LINK, (m) => ({ knoten: [stumm(m[0])] }));
+      const teile = zerlege(t.value, DOI_IM_LINK, (m) => {
+        a.properties.title ??= m[0].replace(/^[\s—–,;·]+/, "").trim();
+        return { knoten: [nummer(m[0])] };
+      });
       if (teile) getroffen = true;
       return teile;
     }, true);
     if (!getroffen) continue;
     const uebrig = hoerbar(a).replace(/[\s()[\]—–,;:.·*]/g, "");
+    if (!uebrig) a.children.push(kurz());
     a.children.push(leise(uebrig ? " (DOI)" : "Quelle (DOI)"));
   }
 }
@@ -125,8 +142,8 @@ function doiOhneLink(baum) {
         laenge: ganz.length,
         knoten: [{
           type: "element", tagName: "a",
-          properties: { href: `https://doi.org/${doi}`, target: "_blank", rel: ["noopener"] },
-          children: [stumm(ganz), leise("Quelle (DOI)")],
+          properties: { href: `https://doi.org/${doi}`, target: "_blank", rel: ["noopener"], title: ganz.trim() },
+          children: [nummer(ganz), kurz(), leise("Quelle (DOI)")],
         }],
       };
     });
@@ -150,6 +167,51 @@ function zeichen(baum) {
       return { knoten: [stumm(m[0])] };
     });
   });
+}
+
+/* ── 3b. Leise Belege ──
+   Ein Absatz mit fünf Studien darin liest sich wie eine Liste, man weiß nicht
+   mehr, was Sache ist (Andreas, 05.11.2026; 470 Absätze im Fließtext tragen
+   drei und mehr DOI-Belege, fast alle in Panoramen). Die Klammer um einen
+   Beleg bleibt, wo sie ist, mit Autor, Jahr und Einordnung („Übersichtsarbeit“,
+   „Preprint“), aber kleiner und blasser: `span.beleg`. Erkannt wird eine Klammer,
+   die direkt vor einem DOI-Link aufgeht oder in der Autor und Jahr vor ihm
+   stehen, bis zu der Klammer, die sie schließt. */
+const istDoiLink = (k) => k?.type === "element" && k.tagName === "a"
+  && /^https?:\/\/(dx\.)?doi\.org\//.test(String(k.properties?.href ?? ""));
+
+function leiseBelege(baum) {
+  (function lauf(k) {
+    if (k.type !== "element" && k.type !== "root") return;
+    if (k.type === "element" && (AUSSEN_VOR.has(k.tagName) || k.tagName === "a"
+        || k.properties?.className?.includes?.("beleg"))) return;
+    const c = k.children ?? [];
+    for (let i = 0; i < c.length; i++) {
+      const t = c[i];
+      if (t.type !== "text" || !istDoiLink(c[i + 1])) continue;
+      const auf = t.value.lastIndexOf("(");
+      if (auf < 0 || t.value.slice(auf).includes(")")) continue;
+      // die schließende Klammer suchen, über Links und Text hinweg
+      let tiefe = 1, j = i + 1, zu = -1;
+      for (; j < c.length && zu < 0; j++) {
+        if (c[j].type !== "text") continue;
+        for (let x = 0; x < c[j].value.length; x++) {
+          const z = c[j].value[x];
+          if (z === "(") tiefe++;
+          else if (z === ")" && --tiefe === 0) { zu = x; break; }
+        }
+      }
+      if (zu < 0) continue;
+      j--;                                   // c[j] trägt die schließende Klammer
+      const ende = c[j];
+      const innen = [text(t.value.slice(auf)), ...c.slice(i + 1, j), text(ende.value.slice(0, zu + 1))];
+      const span = { type: "element", tagName: "span", properties: { className: ["beleg"] }, children: innen };
+      const neu = [text(t.value.slice(0, auf)), span, text(ende.value.slice(zu + 1))].filter((n) => n.type !== "text" || n.value);
+      c.splice(i, j - i + 1, ...neu);
+      i += neu.indexOf(span);
+    }
+    c.forEach(lauf);
+  })(baum);
 }
 
 /* ── 4. Rohes HTML ──
@@ -233,6 +295,7 @@ export default function rehypeVorlesen() {
     doiInLinks(baum);
     doiOhneLink(baum);
     zeichen(baum);
+    leiseBelege(baum);
     rohesHtml(baum);
     sprachen(baum);
   };

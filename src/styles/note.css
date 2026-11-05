@@ -1345,3 +1345,12 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
   text-decoration: none; outline: 2px solid var(--akzent); outline-offset: 2px;
 }
 #inhalt:focus { outline: none; }
+
+/* ══════════════  Leise Belege  ══════════════
+   Die Klammer um einen DOI-Beleg tritt zurück: kleiner, im leisen Grau, der
+   Link nur angedeutet. Die DOI-Nummer selbst steht im Link und erscheint beim
+   Darüberfahren (rehype-vorlesen.mjs, 05.11.2026). Der Satz bleibt vorn. */
+.beleg { font-size: .84em; color: var(--tinte-fern); }
+.beleg a { color: inherit; text-decoration-color: color-mix(in oklab, currentColor 40%, transparent); }
+.beleg a:hover { color: var(--akzent); }
+.beleg__nr { display: none; }
