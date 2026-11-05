@@ -531,6 +531,9 @@ export default function remarkGedankenwelten() {
         ? k.children[0] : (k.type === "image" ? k : null);
       if (bild && /\.(?:jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i.test(bild.url)) {
         fm.banner = bild.url;
+        // `![[…-banner.jpg|Beschreibung|1200]]`: Was das Bild zeigt, für die,
+        // die es nicht sehen. Ohne Beschreibung bleibt es Zier (05.11.2026).
+        fm.bannerAlt = bild.alt ?? "";
         tree.children.splice(i, 1);
         break;
       }

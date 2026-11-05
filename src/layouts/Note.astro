@@ -92,7 +92,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 <main id="inhalt" tabindex="-1">
 <article class="blatt">
   <header class="strang">
-    {kopf.banner && <img class="banner" src={kopf.banner} alt="">}
+    {kopf.banner && <img class="banner" src={kopf.banner} alt={kopf.bannerAlt ?? ""}>}
     {/* Die sichtbare Klinke am Tor: dieselbe Tür wie der Doppelklick aufs
         Banner (raum-tor.js), nur dass man sie nicht kennen muss. Man steht
         dann im Saal dieser Note. */}
