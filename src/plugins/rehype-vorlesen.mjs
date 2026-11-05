@@ -183,7 +183,7 @@ const DE = new Set(("der die das und ist nicht ein eine einen zu den von mit sic
   + "ich sie er auch als wie dass aber oder war wird sind noch nur zum zur bei hat haben werden kann "
   + "über nach einer eines wenn doch schon sein ihre ihr uns laut keine kein neue neuen gegen durch unter "
   + "vor ohne seine seit bis weil sowie sondern diese dieser dieses beim vom jetzt heute wieder immer samt "
-  + "zwei drei jahre jahren sagt zitiert").split(" "));
+  + "zwei drei jahre jahren sagt zitiert quelle quellen siehe vortrag notiz transkript abbildung").split(" "));
 
 function englisch(text) {
   const woerter = text.toLowerCase().match(/[a-zäöüß']+/g) ?? [];
