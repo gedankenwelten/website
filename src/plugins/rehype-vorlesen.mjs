@@ -36,9 +36,10 @@ const stumm = (wert) => ({
   children: [{ type: "text", value: wert }],
 });
 // Was nur die Stimme hört. Aus der Suche heraus, sonst stünde es in den Treffern.
+// Immer deutsch, auch mitten in einem englischen Titel.
 const leise = (wert) => ({
   type: "element", tagName: "span",
-  properties: { className: ["vorlesen"], dataPagefindIgnore: "" },
+  properties: { className: ["vorlesen"], dataPagefindIgnore: "", lang: "de" },
   children: [{ type: "text", value: wert }],
 });
 const text = (wert) => ({ type: "text", value: wert });
@@ -164,11 +165,75 @@ function rohesHtml(baum) {
   })(baum);
 }
 
+/* ── 5. Englisch als Englisch ──
+   Eine deutsche Stimme liest „The Coming Race“ mit deutscher Aussprache,
+   und ein ganzes englisches Zitat wird Kauderwelsch. Mit `lang="en"`
+   wechselt der Screenreader die Stimme. Erkannt wird an den kleinen
+   Wörtern, die jede Sprache ständig braucht: Wo englische deutlich
+   überwiegen und es genug davon gibt, ist der Text englisch. Kurze
+   Titel aus zwei, drei Wörtern bleiben deutsch gelesen, für sie reicht
+   das Zeichen nicht. Gesetzt wird es am kleinsten Element, das ganz
+   englisch ist: Absatz, Listenpunkt, Link, Kursives, oder ein Zitat in
+   Anführungszeichen mitten im deutschen Satz. Steht auch nur ein deutsches
+   Wort darin (ab dreißig Wörtern eines je dreißig), bleibt es deutsch. */
+const EN = new Set(("the and of to is are was were that this with for on you we they it be not have has had "
+  + "what who how why from by our your their will would can could do does did if or at but my me "
+  + "there been which when about into than them these those its just more only out up all one").split(" "));
+const DE = new Set(("der die das und ist nicht ein eine einen zu den von mit sich des auf für im dem es wir "
+  + "ich sie er auch als wie dass aber oder war wird sind noch nur zum zur bei hat haben werden kann "
+  + "über nach einer eines wenn doch schon sein ihre ihr uns laut keine kein neue neuen gegen durch unter "
+  + "vor ohne seine seit bis weil sowie sondern diese dieser dieses beim vom jetzt heute wieder immer samt "
+  + "zwei drei jahre jahren sagt zitiert").split(" "));
+
+function englisch(text) {
+  const woerter = text.toLowerCase().match(/[a-zäöüß']+/g) ?? [];
+  if (woerter.length < 4) return false;
+  let en = 0, de = 0;
+  // Ein Umlaut oder ß ist eine deutsche Spur, auch in einem Namen: Dann
+  // entscheidet die feinere Ebene (der Titel im Link, das Kursive).
+  for (const w of woerter) { if (EN.has(w)) en++; else if (DE.has(w) || /[äöüß]/.test(w)) de++; }
+  // So gut wie kein deutsches Wort: Ein deutscher Satz mit englischem Zitat
+  // („Er sagt: … und lacht“) bleibt deutsch, das Zitat darin wird erkannt.
+  return en >= 2 && de <= Math.floor(woerter.length / 30) && en / woerter.length >= 0.12;
+}
+
+const BLOCK = new Set(["p", "li", "blockquote", "td", "th", "figcaption", "h2", "h3", "h4", "h5", "h6", "dd", "dt"]);
+const INLINE = new Set(["a", "em", "i", "strong", "b", "q", "cite", "span"]);
+// Ohne das, was nur die Stimme hört („Quelle (DOI)“ ist deutsch).
+function sprechtext(k) {
+  if (k.type === "text") return k.value;
+  if (k.type !== "element" || k.properties?.className?.includes?.("vorlesen")) return "";
+  return (k.children ?? []).map(sprechtext).join("");
+}
+
+function sprachen(baum) {
+  (function lauf(k) {
+    if (k.type !== "element" && k.type !== "root") return;
+    if (k.type === "element") {
+      if (AUSSEN_VOR.has(k.tagName) || k.properties?.lang) return;
+      if ((BLOCK.has(k.tagName) || INLINE.has(k.tagName)) && englisch(sprechtext(k))) {
+        (k.properties ??= {}).lang = "en";
+        return;
+      }
+    }
+    // Zitate in Anführungszeichen mitten im Satz
+    for (let i = 0; i < (k.children?.length ?? 0); i++) {
+      const t = k.children[i];
+      if (t.type !== "text") continue;
+      const teile = zerlege(t.value, /([„“"»])([^„“"»«]{12,}?)([“”"«])/g, (m) =>
+        englisch(m[2]) ? { knoten: [text(m[1]), { type: "element", tagName: "span", properties: { lang: "en" }, children: [text(m[2])] }, text(m[3])] } : null);
+      if (teile) { k.children.splice(i, 1, ...teile); i += teile.length - 1; }
+    }
+    (k.children ?? []).forEach(lauf);
+  })(baum);
+}
+
 export default function rehypeVorlesen() {
   return (baum) => {
     doiInLinks(baum);
     doiOhneLink(baum);
     zeichen(baum);
     rohesHtml(baum);
+    sprachen(baum);
   };
 }
