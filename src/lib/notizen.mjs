@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { slugify, noteUrl } from "./slug.mjs";
-import { datumVon } from "./datum.mjs";
+import { datumVon, isoVon } from "./datum.mjs";
 
 /* Der Markdown-Pool. Auf dem Mac liegt er unter ~/Gedankenwelten/content,
    auf dem Pi unter ~/services/gedankenwelten/content — `GW_INHALT` sagt
@@ -241,6 +241,10 @@ export function ladeIndex() {
         raetsel: typeof fm.raetsel === "string" ? fm.raetsel.trim() : null,
         auszug: auszugVon(rumpf),
         datum: datumVon(fm, basis),
+        // Beide Daten offen, für den MCP („was ist neu?“): wann die Note
+        // entstand und wann sie zuletzt inhaltlich wuchs.
+        erstellt: isoVon(fm.erstellt) ?? isoVon(fm.date) ?? null,
+        aktualisiert: isoVon(fm.aktualisiert) ?? null,
         banner,
         vorschau,
         tags: [].concat(fm.tags ?? []).filter(Boolean).map(String),
