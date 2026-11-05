@@ -350,7 +350,7 @@ h1 {
   font-family: "Inter", -apple-system, sans-serif; font-size: var(--lese-raster);
   color: var(--tinte-leise); margin: 1.5rem 0; line-height: 1.6;
 }
-.strang details summary { cursor: pointer; opacity: .6; }
+.strang details summary { cursor: pointer; color: var(--tinte-fern); } /* statt opacity .6: 2,9:1 → 5:1 */
 .strang details[open] summary { margin-bottom: .8rem; }
 
 /* ── Marginalie ── */
