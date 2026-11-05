@@ -14,6 +14,7 @@ import Suche from "../components/Suche.astro";
 </head>
 <body class="ist-beiseite">
 <Kopfleiste />
+<main id="inhalt" tabindex="-1">
 <article class="blatt blatt--beiseite">
   <header class="strang">
     <div class="kennung"><b>404</b><i>·</i>nichts unter dieser Adresse</div>
@@ -25,6 +26,7 @@ import Suche from "../components/Suche.astro";
     <p><a href="/">Zur Startseite</a> · <a href="#" data-suche-auf>Im Bestand suchen</a></p>
   </div>
 </article>
+</main>
 <Fusszeile />
 <Suche />
 <script src={`/leser.js?v=${BUILD}`} is:inline></script>

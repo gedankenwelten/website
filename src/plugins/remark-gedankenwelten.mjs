@@ -149,7 +149,9 @@ export default function remarkGedankenwelten() {
           const [, a, b, c] = m;
           // `12:34` sind Minuten und Sekunden, `1:02:03` Stunden dazu.
           const t = c ? +a * 3600 + +b * 60 + +c : +a * 60 + +b;
-          const eigen = { className: ["ts", "ts--stumm"], "data-t": String(t) };
+          // Ohne Ziel führt die Marke nirgends hin. Vorgelesen wäre sie nur
+          // „12 Uhr 34“ mitten im Satz, darum schweigt sie für Screenreader.
+          const eigen = { className: ["ts", "ts--stumm"], "data-t": String(t), "aria-hidden": "true" };
           if (n > 0) eigen.style = `top:calc(.5em + ${(n * 1.55).toFixed(2)}em)`;
           teile.push({
             type: "emphasis",
@@ -183,11 +185,18 @@ export default function remarkGedankenwelten() {
 
         if (eingebettet && BILD.test(ziel)) {
           const datei = ziel.split("/").pop();
-          const breite = /^\d+$/.test(zusatz ?? "") ? zusatz : null;
+          /* Obsidians eigene Form: `![[bild.jpg|Beschreibung|700]]`. Die Zahl
+             ist die Breite, der Rest die Beschreibung für alle, die das Bild
+             nicht sehen — ein Screenreader liest sie vor. Ohne Beschreibung
+             bleibt `alt=""`: Das Bild gilt dann als Zierde und wird
+             übersprungen (so bei den Bannern, 05.11.2026). */
+          const angaben = (zusatz ?? "").split("|").map((s) => s.trim()).filter(Boolean);
+          const breite = angaben.find((s) => /^\d+$/.test(s)) ?? null;
+          const beschreibung = angaben.filter((s) => !/^\d+$/.test(s)).join(" ");
           teile.push({
             type: "image",
             url: `/assets/${encodeURIComponent(datei)}`,
-            alt: "",
+            alt: beschreibung,
             data: {
               hProperties: {
                 loading: "lazy",

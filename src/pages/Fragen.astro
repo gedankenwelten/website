@@ -65,6 +65,7 @@ const fragen = teile.map((teil) => {
 </head>
 <body class="ist-beiseite ist-fragen">
 <Kopfleiste />
+<main id="inhalt" tabindex="-1">
 <article class="blatt blatt--beiseite blatt--fragen">
   <header class="strang">
     <div class="kennung"><b><a class="kennung__rubrik" href="/">Gedankenwelten</a></b></div>
@@ -172,6 +173,7 @@ const fragen = teile.map((teil) => {
 
   {schluss.trim() && <div class="strang fragen__schluss">{absaetze(schluss).map((a) => <p set:html={zeile(a)} />)}</div>}
 </article>
+</main>
 <Fusszeile />
 <Schau />
 <Suche />

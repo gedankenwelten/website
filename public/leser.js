@@ -160,6 +160,31 @@ document.querySelectorAll(".ts").forEach((ts) => {
   });
 });
 
+/* ── Die Zeitmarken für Tastatur und Vorlesestimme ──
+   Vorgelesen hieß „13:11“ bisher „13 Uhr 11“, mitten im Satz, und mit der
+   Tastatur kam man nicht hin. Wo die Marke etwas abspielt, wird sie ein
+   Knopf mit einem Namen, der sagt, was er tut. Wo sie nichts tut (kein
+   Video, oder sie steht in einer Überschrift, deren Name sie sonst
+   verlängerte), schweigt sie (05.11.2026). */
+const tasteWieKlick = (el) => el.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); }
+});
+const gesprocheneZeit = (s) => {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  if (h) return `${h} ${h === 1 ? "Stunde" : "Stunden"}${m ? ` ${m} ${m === 1 ? "Minute" : "Minuten"}` : ""}`;
+  return m ? `Minute ${m}` : `Sekunde ${Math.floor(s % 60)}`;
+};
+document.querySelectorAll(".ts:not(.ts--stumm)").forEach((ts) => {
+  if (!videoId || ts.closest("h1, h2, h3, h4, h5, h6")) {
+    ts.setAttribute("aria-hidden", "true");
+    return;
+  }
+  ts.setAttribute("role", "button");
+  ts.tabIndex = 0;
+  ts.setAttribute("aria-label", `Video ab ${gesprocheneZeit(+ts.dataset.t)}`);
+  tasteWieKlick(ts);
+});
+
 document.querySelectorAll(".oton[data-t]").forEach((q) => {
   q.addEventListener("click", () => {
     if (klingtSchon(q)) return schliessen();
@@ -327,6 +352,10 @@ document.getElementById("zu")?.addEventListener("click", (e) => {
   e.stopPropagation();
   schliessen();
 });
+// Knopf und „schließen“ sind keine <button> (die Bühne liegt darüber), also
+// bringen wir ihnen Enter und Leertaste selbst bei.
+[begleiter?.querySelector(".begleiter__knopf"), document.getElementById("zu")]
+  .forEach((el) => el && tasteWieKlick(el));
 
 /* ── Das Tastenkürzel ──
    Eine Taste auf, dieselbe Taste zu. Auf geht es an der Lesestelle — dort,

@@ -19,6 +19,9 @@ import { alleRubriken } from "../lib/rubriken.mjs";
 const { rubrik = null, teilen = false } = Astro.props;
 const rubriken = alleRubriken();
 ---
+{/* Für die Tastatur und die Vorlesestimme: einmal Tab, und man ist im Text,
+    statt erst durch Marke, Rubriken, Suche und Schriftgrade (05.11.2026). */}
+<a class="sprung" href="#inhalt">Zum Text springen</a>
 <header class="kopfleiste" id="kopfleiste">
 
   <nav class="kopfleiste__weg" aria-label="Hauptnavigation">

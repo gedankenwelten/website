@@ -10,7 +10,9 @@
   --papier-tief: #f2ede4;
   --tinte:       #22201c;
   --tinte-leise: #574f43;
-  --tinte-fern:  #8f8577;
+  /* War #8f8577 (3,4:1 auf Papier). Kleine Schrift braucht 4,5:1, damit
+     auch lesen kann, wer schlecht sieht (05.11.2026). */
+  --tinte-fern:  #736a5d;
   --linie:       #ddd5c7;
   --akzent:      #b0512b;
   --akzent-weich:#e8d9cf;
@@ -360,7 +362,7 @@ h1 {
   color: var(--tinte-fern); cursor: pointer; user-select: none;
   transition: color .2s; white-space: nowrap;
 }
-.ts::after { content: "▶"; font-size: 7px; margin-left: .45em; opacity: 0; transition: opacity .2s; }
+.ts::after { content: "▶"; content: "▶" / ""; font-size: 7px; margin-left: .45em; opacity: 0; transition: opacity .2s; }
 .ts:hover { color: var(--akzent); }
 .ts:hover::after { opacity: 1; }
 .ts.klingt { color: var(--akzent); font-weight: 600; }
@@ -696,7 +698,7 @@ h1 {
 .marken-zeile a:hover { color: var(--akzent); }
 .marken-zeile span { color: var(--tinte-fern); }
 .marken-zeile > * + *::before {
-  content: "·"; color: var(--tinte-fern); margin: 0 .75em; letter-spacing: 0;
+  content: "·"; content: "·" / ""; color: var(--tinte-fern); margin: 0 .75em; letter-spacing: 0;
 }
 
 /* ── Begleiter ── */
@@ -969,6 +971,7 @@ body.hoert .fernseher { opacity: 0; pointer-events: none; }
   font-family: "Literata", Georgia, serif; font-weight: 500; line-height: 1;
   color: var(--tinte-fern); background: none; border: 0; cursor: pointer;
   padding: 0 .38rem; align-self: center; transition: color .2s;
+  min-width: 24px; min-height: 24px;
 }
 .kopfleiste__grad button[data-schrift="klein"] { font-size: 11px; }
 .kopfleiste__grad button[data-schrift="mittel"] { font-size: 14px; }
@@ -1320,3 +1323,25 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
   opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
 }
 .teilen-hinweis.da { opacity: 1; transform: translate(-50%, 0); }
+
+/* ══════════════  Für die, die nicht sehen  ══════════════
+   `.vorlesen` ist Text nur für die Stimme: Ein Screenreader liest ihn, das
+   Auge sieht ihn nicht (rehype-vorlesen.mjs setzt ihn statt Zeichen wie
+   DOI-Nummern, Pfeilen und Tilden). Der Sprunglink ist das Erste auf jeder
+   Seite: Wer mit der Tastatur kommt, muss nicht durch die ganze
+   Kopfleiste, bevor der Text beginnt. Er zeigt sich erst, wenn er den
+   Fokus hat. */
+.vorlesen, .sprung:not(:focus) {
+  position: absolute !important; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  user-select: none;
+}
+.sprung:focus {
+  position: fixed; top: .6rem; left: .6rem; z-index: 200;
+  padding: .55rem .9rem; border-radius: 6px;
+  background: var(--tinte); color: var(--papier);
+  font-family: "Inter", -apple-system, sans-serif; font-size: 14px;
+  text-decoration: none; outline: 2px solid var(--akzent); outline-offset: 2px;
+}
+#inhalt:focus { outline: none; }

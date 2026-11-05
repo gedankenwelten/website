@@ -295,6 +295,10 @@
       g.textContent = "anfassen";
       g.setAttribute("aria-label", `Abschnitt „${a.titel}“ neu fassen`);
       g.addEventListener("click", (e) => { e.preventDefault(); oeffnen(i, g); });
+      // Der Griff sitzt in der Überschrift. Ohne eigenen Namen hieße sie für
+      // die Vorlesestimme „… anfassen“, bei jedem Sprung von Abschnitt zu
+      // Abschnitt. Der Knopf bleibt erreichbar, nur nicht als Teil des Titels.
+      a.kopf.setAttribute("aria-label", a.titel);
       a.kopf.append(g);
     });
   }

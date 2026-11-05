@@ -82,13 +82,14 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 <Kopfleiste rubrik={rubrik} teilen />
 
 {dauer > 0 && (
-  <div class="rail" id="rail" data-dauer={dauer}>
+  <div class="rail" id="rail" data-dauer={dauer} aria-hidden="true">
     <div class="rail__cap rail__cap--oben">0:00</div>
     <div class="rail__line"></div>
     <div class="rail__cap rail__cap--unten">{hm(dauer)}</div>
   </div>
 )}
 
+<main id="inhalt" tabindex="-1">
 <article class="blatt">
   <header class="strang">
     {kopf.banner && <img class="banner" src={kopf.banner} alt="">}
@@ -111,14 +112,14 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
           welcher man ist. */}
       <b><a class="kennung__rubrik" href={`/${rubrik}`}>{rubrik}</a></b>
       {gewachsen
-        ? <><i>·</i><span>erstellt {erstellt}</span><i>·</i><span>aktualisiert {datum}</span></>
-        : (erstellt ?? datum) && <><i>·</i><span>{erstellt ? "erstellt" : "aktualisiert"} {erstellt ?? datum}</span></>}
-      <i>·</i><span>{lesezeit} Min. Lesezeit</span>
-      {zeitstempel.length > 0 && <><i>·</i>{zeitstempel.length} Belegstellen</>}
+        ? <><i aria-hidden="true">·</i><span>erstellt {erstellt}</span><i aria-hidden="true">·</i><span>aktualisiert {datum}</span></>
+        : (erstellt ?? datum) && <><i aria-hidden="true">·</i><span>{erstellt ? "erstellt" : "aktualisiert"} {erstellt ?? datum}</span></>}
+      <i aria-hidden="true">·</i><span>{lesezeit} Min. Lesezeit</span>
+      {zeitstempel.length > 0 && <><i aria-hidden="true">·</i>{zeitstempel.length} Belegstellen</>}
       {/* Herkunft offen, nicht als Haftungsausschluss (der schützt nicht), sondern
           weil es stimmt — und seit 02.08.2026 verlangt es die KI-Verordnung
           (Art. 50). Eigene Texte tragen `entstehung: mensch` (Andreas, 25.10.2026). */}
-      <i>·</i>{d.entstehung === "mensch"
+      <i aria-hidden="true">·</i>{d.entstehung === "mensch"
         ? <span>von Luc geschrieben</span>
         : (
           /* Beim Darüberfahren klappt der Kern auf (Andreas, 25.10.2026);
@@ -279,15 +280,16 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
 
   <Stern id={note.id} />
 </article>
+</main>
 <Fusszeile rubrik={rubrik} />
 {anfassbar && <Verbessern note={note.id} titel={d.title ?? note.id} oeffentlich={verbesserbar} />}
 
-<figure class="guck" id="guck"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
+<figure class="guck" id="guck" aria-hidden="true"><img id="guckBild" alt=""><figcaption id="guckZeit"></figcaption></figure>
 
 {kopf.video && (
   <div class="begleiter" id="begleiter" data-video={kopf.video} data-taste="p"
        title="Hören, wo du gerade liest — Taste P">
-    <div class="begleiter__knopf">▶<kbd class="begleiter__taste" aria-hidden="true">P</kbd></div>
+    <div class="begleiter__knopf" role="button" tabindex="0" aria-label="Video zur Note hören, an der Stelle, wo du liest (Taste P)"><span aria-hidden="true">▶</span><kbd class="begleiter__taste" aria-hidden="true">P</kbd></div>
     <div class="begleiter__buehne">
       <div id="buehne"></div>
       <div class="begleiter__leiste">
@@ -298,7 +300,7 @@ const verbessernMail = "mailto:luc@gedankenwelten.org?subject="
             <path class="folgen-play" d="M3.2 2.2 9.4 6l-6.2 3.8z"/>
             <g class="folgen-pause"><rect x="3.1" y="2.3" width="2.2" height="7.4" rx=".5"/><rect x="6.7" y="2.3" width="2.2" height="7.4" rx=".5"/></g>
           </svg>mitlaufen<i class="begleiter__haken" aria-hidden="true"></i></button>
-        <span class="begleiter__zu" id="zu" title="Taste P oder Esc — oder die Marke noch einmal klicken · ← → zehn Sekunden · Shift ← → zur nächsten Marke">schließen <kbd>P</kbd></span>
+        <span class="begleiter__zu" id="zu" role="button" tabindex="0" title="Taste P oder Esc — oder die Marke noch einmal klicken · ← → zehn Sekunden · Shift ← → zur nächsten Marke">schließen <kbd>P</kbd></span>
       </div>
     </div>
   </div>

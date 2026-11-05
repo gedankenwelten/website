@@ -40,7 +40,7 @@
 .rubrik__gewaehlt {
   color: var(--akzent); letter-spacing: .1em;
 }
-.rubrik__gewaehlt::before { content: "· "; color: var(--linie); }
+.rubrik__gewaehlt::before { content: "· "; content: "· " / ""; color: var(--linie); }
 
 .rubrik__zurueckstellen button {
   font-family: inherit; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
