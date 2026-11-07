@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { slugify, noteUrl } from "./slug.mjs";
-import { datumVon, isoVon } from "./datum.mjs";
+import { datumVon, erstelltVon, isoVon } from "./datum.mjs";
 
 /* Der Markdown-Pool. Auf dem Mac liegt er unter ~/Gedankenwelten/content,
    auf dem Pi unter ~/services/gedankenwelten/content — `GW_INHALT` sagt
@@ -243,7 +243,9 @@ export function ladeIndex() {
         datum: datumVon(fm, basis),
         // Beide Daten offen, für den MCP („was ist neu?“): wann die Note
         // entstand und wann sie zuletzt inhaltlich wuchs.
-        erstellt: isoVon(fm.erstellt) ?? isoVon(fm.date) ?? null,
+        // Ohne Frontmatter zählt die Erstanlage im Cortex (Git) — sonst
+        // hätten 150 Notes, fast alle Vitas, gar keinen Anfang.
+        erstellt: erstelltVon(fm, basis),
         aktualisiert: isoVon(fm.aktualisiert) ?? null,
         banner,
         vorschau,

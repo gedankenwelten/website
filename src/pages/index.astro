@@ -75,6 +75,14 @@ const inWolke = new Set(wolke.map((t) => t.name));
 const feld = [...inhaltlich].sort((a, b) =>
   String(b.datum ?? "").localeCompare(String(a.datum ?? "")));
 
+/* Beide Daten auf der Karte (07.11.2026, Andreas): Das Feld ordnet nach
+   `aktualisiert:`, und eine vertiefte Note rückt nach oben, als wäre sie
+   neu. Wer beide Tage sieht, erkennt, was gewachsen und was entstanden
+   ist. Der Anfang ist nie später als der letzte Stand — die Erstanlage
+   in Git kann nach einem Umzug jünger sein als das kuratierte Datum. */
+const anfang = (n) => (n.erstellt && n.datum && n.erstellt > n.datum ? n.datum : n.erstellt ?? n.datum);
+const gewachsen = (n) => !!(n.aktualisiert && anfang(n) && n.aktualisiert > anfang(n));
+
 /* ── Die Nachbarschaft jeder Karte ──
    Für das Aufklappen an Ort und Stelle: Welche Karten treten hervor, wenn
    man bei einer „Verwandtes" drückt. Als *Platznummern*, nicht als
@@ -323,6 +331,14 @@ const kurzMonat = (d) => {
         <span class="zeig-im-feld">Einen Faden gehen</span>
         <span class="zeig-im-faden">Zurück ins Feld</span>
       </button>
+      {/* Das Feld ordnet nach dem letzten Stand; wer nur sehen will, was
+          wirklich neu entstanden ist, ordnet nach dem Anfang (07.11.2026).
+          Bleibt gemerkt, im localStorage; von Haus aus aus. */}
+      <button class="neueste" id="nurNeueste" type="button" role="switch" aria-checked="false"
+              title="Nach dem Tag ordnen, an dem eine Note entstand — vertiefte Notes rücken nicht mehr nach oben">
+        <span class="neueste__bahn" aria-hidden="true"></span>
+        Nur Neueste
+      </button>
     </div>
   </div>
 
@@ -431,6 +447,7 @@ const kurzMonat = (d) => {
             data-nah={nachbarschaft[i].length ? nachbarschaft[i].join(",") : null}
             data-titel={n.titel}
             data-marken={markenVon(n) || null}
+            data-erstellt={anfang(n)}
             hidden={i >= ERSTE_LADUNG}>
           <a class="kachel__weg" href={n.url}>
             <span class="kachel__bild">
@@ -441,7 +458,12 @@ const kurzMonat = (d) => {
             <span class="kachel__kennung">
               <span class={`regal__punkt regal__punkt--${n.rubrik.toLowerCase()}`}></span>
               {n.rubrik}
-              {n.datum && <em>{kurzDatum(n.datum)}</em>}
+              {anfang(n) && (
+                <em class="kachel__daten">
+                  <span>erstellt {kurzDatum(anfang(n))}</span>
+                  {gewachsen(n) && <span class="kachel__wuchs">aktualisiert {kurzDatum(n.aktualisiert)}</span>}
+                </em>
+              )}
             </span>
             <span class="kachel__titel">{n.titel}</span>
           </a>
@@ -495,7 +517,7 @@ const kurzMonat = (d) => {
           </div>
         </li>
           {zeileNach.has(i + 1) && (
-            <li class="wiederkehr" aria-label={zeileNach.get(i + 1).map((k) => k.art).join(" und ")} data-karten={zeileNach.get(i + 1).length}>
+            <li class="wiederkehr" aria-label={zeileNach.get(i + 1).map((k) => k.art).join(" und ")} data-karten={zeileNach.get(i + 1).length} data-nach={i + 1}>
               {zeileNach.get(i + 1).map((k) => (
                 /* Der Vorschau-Knopf liegt neben dem Link, nicht in ihm (ein Knopf
                    in einem Link ist ungültig) — oben links über dem Bild, wo er nie
@@ -676,6 +698,14 @@ const kurzMonat = (d) => {
   const themenVon = kacheln.map((k) => new Set((k.dataset.themen ?? "").split(" ")));
   const themenbalken = document.getElementById("themenbalken");
   let treffer = null;   // Map Platz → Gewicht, solange das Sieb etwas enthält
+  /* „Nur Neueste": dieselben Karten, nach dem Anfang statt nach dem
+     letzten Stand. Die Reihe einmal rechnen; Gleichstand behält die
+     Folge des Feldes. */
+  let nurNeueste = false;
+  try { nurNeueste = localStorage.getItem("gw-nur-neueste") === "1"; } catch {}
+  const nachAnfang = kacheln.map((_, i) => i).sort((a, b) =>
+    (kacheln[b].dataset.erstellt ?? "").localeCompare(kacheln[a].dataset.erstellt ?? "") || a - b);
+  const rangAnfang = new Map(nachAnfang.map((i, n) => [i, n]));
   const passt = (k, i) => (!rubrik || k.dataset.rubrik === rubrik) && (!thema || themenVon[i].has(thema))
     && (!treffer || treffer.has(i));
   const siebbalken = document.getElementById("siebbalken");
@@ -737,21 +767,27 @@ const kurzMonat = (d) => {
     /* Ohne Sieb stehen die Karten nach Datum, mit Sieb nach Gewicht — was
        im Titel trifft, vor dem, was nur im Teaser vorkommt. Gleich schwere
        behalten ihre Datumsfolge. */
+    const folge = nurNeueste ? (a, b) => rangAnfang.get(a) - rangAnfang.get(b) : (a, b) => a - b;
     const reihe = treffer
-      ? [...treffer.keys()].sort((a, b) => treffer.get(b) - treffer.get(a) || a - b)
-      : kacheln.map((_, i) => i);
+      ? [...treffer.keys()].sort((a, b) => treffer.get(b) - treffer.get(a) || folge(a, b))
+      : nurNeueste ? nachAnfang : kacheln.map((_, i) => i);
+    const umgeordnet = !!treffer || nurNeueste;
     for (const k of kacheln) {
       k.hidden = true;
       k.style.order = "";
       k.classList.remove("kachel--quelle");
     }
+    /* Ordnet `order` die Karten um, müssen die Wiederkehr-Zeilen mit:
+       Ohne eigenen Wert stünden sie alle ganz oben. Karte n bekommt 2n+2,
+       die Zeile nach der neunten Karte 19 — sie bleibt zwischen den Reihen. */
+    for (const z of wiederkehrZeilen) z.style.order = umgeordnet ? 2 * Number(z.dataset.nach) + 1 : "";
     let passend = 0, sichtbar = 0;
     for (const [n, i] of reihe.entries()) {
       if (!passt(kacheln[i], i)) continue;
       passend++;
       if (sichtbar >= gezeigt) continue;
       kacheln[i].hidden = false;
-      if (treffer) kacheln[i].style.order = n;
+      if (umgeordnet) kacheln[i].style.order = 2 * n + 2;
       sichtbar++;
     }
     mehr.hidden = sichtbar >= passend;
@@ -881,6 +917,19 @@ const kurzMonat = (d) => {
   });
 
   mehr.addEventListener("click", () => { gezeigt += PORTION; auslegen(); });
+
+  const neuesteKnopf = document.getElementById("nurNeueste");
+  neuesteKnopf.setAttribute("aria-checked", String(nurNeueste));
+  neuesteKnopf.addEventListener("click", () => {
+    nurNeueste = !nurNeueste;
+    neuesteKnopf.setAttribute("aria-checked", String(nurNeueste));
+    try {
+      if (nurNeueste) localStorage.setItem("gw-nur-neueste", "1");
+      else localStorage.removeItem("gw-nur-neueste");
+    } catch {}
+    gezeigt = PORTION;
+    welle(() => { quelle = null; balken.hidden = true; auslegen(); });
+  });
 
   /* ── Auf dem Telefon von selbst nachlegen ──
      Ein Knopf am Ende einer Spalte ist auf dem Schirm mit der Maus ein

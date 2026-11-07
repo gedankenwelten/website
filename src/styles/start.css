@@ -153,7 +153,36 @@
 #siebbalken button + button { margin-left: .4rem; }
 /* Ein Chip, der aus der jetzigen Auswahl nichts machen würde, tritt zurück. */
 .chip--leer { opacity: .45; }
-.lenkung__ansicht { display: flex; gap: .45rem; flex: 0 0 auto; }
+.lenkung__ansicht { position: relative; display: flex; gap: .45rem; flex: 0 0 auto; margin-bottom: 1.9rem; }
+[data-ansicht="faden"] .neueste { display: none; }
+
+/* ── „Nur Neueste" ──
+   Kein Knopf wie die anderen, sondern ein Schalter: Er wählt keine
+   Ansicht, er stellt eine ein, die bleibt. Darum leise, in eigener
+   Zeile unter den Wegen, mit einer kleinen Bahn, die sagt, ob er an ist. */
+.neueste {
+  /* Unter den Wegen, ohne die Leiste breiter zu machen: Im Fluss zählte
+     er mit, wenn die Leiste ihre Breite rechnet, und drückte die Chips
+     in eine dritte Zeile. Auf schmalen Schirmen steht er im Fluss. */
+  position: absolute; top: 100%; left: .1rem; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: "Inter", -apple-system, sans-serif; font-size: 10px;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--tinte-fern);
+  background: none; border: 0; padding: .3rem .2rem; cursor: pointer; transition: color .2s;
+}
+.neueste:hover { color: var(--tinte); }
+.neueste__bahn {
+  position: relative; width: 24px; height: 13px; flex: 0 0 auto;
+  border: 1px solid currentColor; border-radius: 100px; transition: background .2s, border-color .2s;
+}
+.neueste__bahn::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 7px; height: 7px;
+  border-radius: 50%; background: currentColor; transition: transform .2s;
+}
+.neueste[aria-checked="true"] { color: var(--tinte); }
+.neueste[aria-checked="true"] .neueste__bahn { background: var(--tinte); border-color: var(--tinte); }
+.neueste[aria-checked="true"] .neueste__bahn::after { background: var(--papier); transform: translateX(11px); }
+.neueste:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; border-radius: 4px; }
 
 .chip {
   display: inline-flex; align-items: center; gap: .42rem;
@@ -418,6 +447,12 @@
   margin-left: auto; font-style: normal; letter-spacing: .06em;
   font-variant-numeric: tabular-nums;
 }
+/* Erstellt und, wenn sie gewachsen ist, aktualisiert. Der zweite Tag
+   ist der, nach dem das Feld ordnet — er steht etwas deutlicher. */
+.kachel__daten { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 .5rem; text-align: right; }
+.kachel__daten span { white-space: nowrap; }
+.kachel__wuchs { color: var(--tinte-leise); }
+.kachel__wuchs::before { content: "·"; margin-right: .5rem; color: var(--tinte-fern); }
 
 .kachel__titel {
   display: block; font-size: 1.2rem; line-height: 1.24; font-weight: 600;
@@ -706,7 +741,8 @@
   }
   .lenkung__rubriken::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; }
-  .lenkung__ansicht { justify-content: flex-start; }
+  .lenkung__ansicht { justify-content: flex-start; flex-wrap: wrap; margin-bottom: 0; }
+  .neueste { position: static; flex: 0 0 100%; }
   .feld__gitter { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.4rem; row-gap: 2.4rem; }
   .kachel__bild img { height: auto; aspect-ratio: 12 / 5; }
   /* Kein Hovern — die Wörter an den Griffen stehen. */

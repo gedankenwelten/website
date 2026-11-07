@@ -79,3 +79,14 @@ export function datumVon(fm, basis) {
       ?? gitDaten().get(basis.normalize("NFC").toLowerCase())
       ?? null;
 }
+
+/**
+ * Wann eine Note entstand: `erstellt:`, sonst `date:`, sonst die
+ * Erstanlage im Cortex. Für den Schalter „Nur Neueste“ auf der
+ * Startseite, der nach diesem Tag ordnet statt nach `aktualisiert:`.
+ */
+export function erstelltVon(fm, basis) {
+  return lies(fm.erstellt) ?? lies(fm.date)
+      ?? gitDaten().get(basis.normalize("NFC").toLowerCase())
+      ?? null;
+}
