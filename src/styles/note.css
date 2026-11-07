@@ -367,23 +367,8 @@ h1 {
 .ts:hover::after { opacity: 1; }
 .ts.klingt { color: var(--akzent); font-weight: 600; }
 
-.guck {
-  position: fixed; z-index: 60; width: 204px; border-radius: 4px; overflow: hidden;
-  box-shadow: var(--schatten); background: var(--papier-tief);
-  opacity: 0; transform: translateY(6px) scale(.97);
-  transition: opacity .19s ease, transform .19s cubic-bezier(.2,.8,.2,1);
-  pointer-events: none;
-}
-.guck.da { opacity: 1; transform: translateY(0) scale(1); }
-.guck img { width: 100%; display: block; margin: 0; border-radius: 0; }
-.guck figcaption {
-  font-family: "Inter", -apple-system, sans-serif; font-size: var(--lese-etikett);
-  letter-spacing: .04em; color: var(--tinte-leise); padding: .5rem .65rem .55rem;
-}
-
 /* ── Blick in die Zielnote (blick.js) ──
-   Die Schwester des Vorschaubilds am Zeitstempel: dieselbe Bewegung,
-   derselbe Schatten. Sie folgt nicht der Maus und nimmt keine Klicks —
+   Früher die Schwester des Vorschaubilds am Zeitstempel (bis 07.11.2026). Sie folgt nicht der Maus und nimmt keine Klicks —
    ein Blick, kein zweites Fenster. In Pixeln, nicht in rem: Die Karte
    soll beim großen Schriftgrad nicht über den halben Text wachsen. */
 .blick {

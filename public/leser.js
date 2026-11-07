@@ -126,36 +126,21 @@ if (rail && anker.length) {
   };
 }
 
-/* ── Vorschaubild am Zeitstempel ──
-   Aus YouTubes eigenem Storyboard geschnitten. Fehlt der Frame, bleibt der
-   Zeitstempel ein Zeitstempel — kein kaputtes Bild. */
-const guck = document.getElementById("guck");
-const guckBild = document.getElementById("guckBild");
-const guckZeit = document.getElementById("guckZeit");
+/* ── Zeitstempel: Überfahren lädt die API, Klick spielt ──
+   Bis 07.11.2026 zeigte das Überfahren ein Vorschaubild mit Zeit. Standbilder
+   gab es aber nur für das Beckert-Video (der Entwurf vom August); überall sonst
+   lief jede Berührung in ein 404 und die Vorschau blieb leer. Frames fremder
+   Videos massenhaft selbst zu hosten, wollten wir nicht. Also ganz weg, Bild
+   und Zeitschild (Andreas). */
 const videoId = document.getElementById("begleiter")?.dataset.video;
 
-guckBild?.addEventListener("error", () => guck.classList.remove("da"));
-
 document.querySelectorAll(".ts").forEach((ts) => {
-  ts.addEventListener("mouseenter", () => {
-    if (!videoId) return;
-    // Die API schon beim Überfahren holen, nicht erst beim Klick. Safari
-    // lässt die Nutzergeste über ein `await` hinweg verfallen — wenn die API
-    // beim Klick bereitliegt, bleibt das Gestenfenster intakt.
-    apiLaden().catch(() => {});
-    const t = ts.dataset.t;
-    guckBild.src = `/frames/${ts.dataset.v || videoId}/${t}.jpg`;
-    guckZeit.textContent = begleiter?.classList.contains("offen") && ts.classList.contains("klingt")
-      ? `bei ${mmss(+t)} — klicken schließt`
-      : `bei ${mmss(+t)} — klicken zum Hören`;
-    const r = ts.getBoundingClientRect();
-    guck.style.left = Math.max(80, r.left - 216) + "px";
-    guck.style.top = Math.min(innerHeight - 186, Math.max(12, r.top - 14)) + "px";
-    guck.classList.add("da");
-  });
-  ts.addEventListener("mouseleave", () => guck.classList.remove("da"));
+  // Die API schon beim Überfahren holen, nicht erst beim Klick. Safari
+  // lässt die Nutzergeste über ein `await` hinweg verfallen — wenn die API
+  // beim Klick bereitliegt, bleibt das Gestenfenster intakt.
+  ts.addEventListener("mouseenter", () => { if (videoId) apiLaden().catch(() => {}); });
   ts.addEventListener("click", () => {
-    if (klingtSchon(ts)) { schliessen(); guck.classList.remove("da"); return; }
+    if (klingtSchon(ts)) { schliessen(); return; }
     spielen(+ts.dataset.t, ts, null, ts.dataset.v);
   });
 });

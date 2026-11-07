@@ -29,7 +29,7 @@
   /* ── Grundmaße ── */
   :root { --spalte: auto; --marge: 0px; --neben: 0px; --luft: 0px; --spalt: 0px; }
   :root { --lese: calc(18px * var(--schrift, 1)); }
-  .rail, .guck { display: none !important; }
+  .rail { display: none !important; }
 
   /* ── Kopfleiste ── */
   .kopfleiste { padding: 0 1rem; }
