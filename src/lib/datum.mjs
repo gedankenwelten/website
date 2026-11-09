@@ -27,7 +27,7 @@ function gitDaten() {
   try {
     const roh = execFileSync(
       "git",
-      ["log", "--diff-filter=A", "--format=@%aI", "--name-only", "--", "Gedankenwelten/"],
+      ["-c", "core.quotePath=false", "log", "--diff-filter=A", "--format=@%aI", "--name-only", "--", "Gedankenwelten/"],
       { cwd: CORTEX, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
     );
     let datum = null;
