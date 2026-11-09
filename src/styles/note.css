@@ -861,6 +861,10 @@ body.hoert .fernseher { opacity: 0; pointer-events: none; }
   background: transparent; border-bottom: 1px solid transparent;
   transition: background .3s ease, border-color .3s ease;
 }
+/* Ist ein Menü der Kopfleiste offen (Rubriken, „Aa“), steht die ganze Leiste
+   über der fliegenden Wortmarke (z 75, start.css). Sonst malte sich die
+   Marke über das offene Menü, und es wirkte durchsichtig (09.11.2026). */
+.kopfleiste:has(#rubrikwahl[data-offen], #anzeige[data-offen]) { z-index: 80; }
 .ist-gescrollt .kopfleiste {
   background: var(--papier);
   border-bottom-color: var(--linie);
