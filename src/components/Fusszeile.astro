@@ -30,7 +30,15 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
 ---
 <footer class={`fusszeile${fest ? " fusszeile--fest" : ""}`}>
   {!fest && <p class="fusszeile__satz">{SITE.satz}</p>}
-  <nav class="fusszeile__wege" aria-label="Beiwerk">
+  {/* Auf dem Telefon (09.11.2026, Andreas): Die feste Leiste war vier
+      Zeilen hoch, ein Sechstel des Schirms. Dort bleibt eine Zeile —
+      „Mehr“, Impressum, Datenschutz —, der Rest klappt auf Tippen auf.
+      Auf größeren Schirmen ist der Knopf unsichtbar, nichts ändert sich. */}
+  {fest && (
+    <button class="fusszeile__mehr" id="fussMehr" type="button"
+            aria-expanded="false" aria-controls="fussWege">Mehr</button>
+  )}
+  <nav class="fusszeile__wege" id={fest ? "fussWege" : undefined} aria-label="Beiwerk">
     <a href="/Fragen" title="Zwölf Fragen, jede führt zu drei Notes">Fragen</a>
     <a href="/raum" title="Ein Museum aus den Notes — man beginnt in einem zufälligen Saal">Gedankenraum</a>
     <a href="/Feeds">RSS-Feeds</a>
@@ -79,3 +87,21 @@ const mailto = "mailto:luc@gedankenwelten.org?subject=" + encodeURIComponent("Fe
 </div>
 
 <script src={`/rueckmeldung.js?v=${BUILD}`} is:inline></script>
+{fest && (
+  <script is:inline>
+    {
+      const k = document.getElementById("fussMehr"), f = k && k.closest(".fusszeile");
+      if (k) {
+        const zu = () => { f.classList.remove("ist-offen"); k.setAttribute("aria-expanded", "false"); };
+        k.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const auf = !f.classList.contains("ist-offen");
+          f.classList.toggle("ist-offen", auf);
+          k.setAttribute("aria-expanded", String(auf));
+        });
+        document.addEventListener("click", (e) => { if (!f.contains(e.target)) zu(); });
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape") zu(); });
+      }
+    }
+  </script>
+)}

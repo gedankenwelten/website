@@ -1218,6 +1218,9 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
 
+/* Der Knopf „Mehr“ gibt es nur auf dem Telefon (mobil.css). */
+.fusszeile__mehr { display: none; }
+
 /* ── Beiseiten ── */
 .blatt--beiseite { padding-top: calc(var(--kopf) + 3rem); padding-bottom: 4rem; }
 .blatt--beiseite .kennung { margin-top: 0; }

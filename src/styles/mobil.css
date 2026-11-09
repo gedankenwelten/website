@@ -180,6 +180,31 @@
   .stern-buehne__blatt { max-height: 84vh; }
   .marken-zeile { font-size: 10px; }
   .feed { flex-direction: column; align-items: flex-start; gap: .7rem; }
+
+  /* ── Die feste Fußzeile auf dem Telefon: eine Zeile ──
+     „Mehr“ vorn, Impressum und Datenschutz bleiben stehen (ein Tipp, wie
+     es sich gehört), alles andere klappt über ihnen auf. */
+  .fusszeile--fest {
+    display: flex; align-items: baseline;
+    padding: .5rem 1.15rem calc(.55rem + env(safe-area-inset-bottom, 0px));
+  }
+  .fusszeile--fest.ist-offen { flex-direction: column; align-items: flex-start; }
+  .fusszeile--fest .fusszeile__wege { gap: .45rem 1.1rem; align-items: center; }
+  .fusszeile--fest:not(.ist-offen) .fusszeile__wege a:not([href="/Impressum"]):not([href="/Datenschutz"]) { display: none; }
+  .fusszeile--fest .fusszeile__mehr {
+    display: inline-flex; align-items: baseline; gap: .35rem; flex: none;
+    margin: 0 1.1rem 0 0; padding: 0; border: 0; background: none; line-height: inherit;
+    font-family: "Inter", -apple-system, sans-serif; font-size: 10.5px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--tinte); cursor: pointer;
+  }
+  .fusszeile--fest .fusszeile__mehr::after {
+    content: ""; border: 4px solid transparent; border-bottom-color: currentColor;
+    border-top-width: 0; transition: transform .2s; align-self: center;
+  }
+  .fusszeile--fest.ist-offen .fusszeile__mehr::after { transform: rotate(180deg); }
+  .fusszeile--fest.ist-offen .fusszeile__mehr { margin: 0 0 .7rem; }
+  .fusszeile--fest.ist-offen .fusszeile__wege a { padding: .2rem 0; }
+  body:has(.fusszeile--fest) .start { padding-bottom: 3.5rem; }
 }
 
 
