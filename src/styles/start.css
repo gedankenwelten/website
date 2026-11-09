@@ -830,6 +830,14 @@
   .lenkung__ansicht::-webkit-scrollbar { display: none; }
   .lenkung__ansicht > * { flex: 0 0 auto; }
   .neueste { position: static; flex: 0 0 auto; padding: .3rem .4rem; }
+  /* Ein Datum je Note statt zwei (09.11.2026, Andreas): Erstellt und
+     Aktualisiert brachen auf zwei Zeilen um, jede Note wurde eine Zeile
+     höher. Es bleibt das jüngere — wer „Nur Neueste“ wählt, ordnet nach
+     dem Anfang und sieht darum das Erstelldatum. */
+  .kachel__daten:has(.kachel__wuchs) > span:first-child { display: none; }
+  .kachel__wuchs::before { content: none; }
+  body:has(#nurNeueste[aria-checked="true"]) .kachel__daten > span:first-child { display: inline; }
+  body:has(#nurNeueste[aria-checked="true"]) .kachel__wuchs { display: none; }
 
   /* ── Das Feld als Liste ──
      Wie ein Nachrichtenstrom: Zeile für Zeile untereinander, Text links,
