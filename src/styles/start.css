@@ -816,6 +816,20 @@
   .lenkung.ist-offen .lenkung__rubriken { display: flex; }
   .lenkung__ansicht { margin-left: auto; gap: .35rem; }
   .lenkung__knopf { padding: .42rem .7rem; font-size: 9.5px; letter-spacing: .08em; }
+  /* Die Wege in einer Zeile zum Wischen, neben der Klappe (09.11.2026,
+     Andreas): Vorher liefen sie rechts aus dem Bild und „Nur Neueste“
+     hatte eine eigene Zeile, drei Zeilen vor der ersten Note. Jetzt eine.
+     Randlos bis an die rechte Kante; dort blendet die Zeile aus, damit man
+     sieht, dass es weitergeht. */
+  .lenkung__ansicht {
+    flex: 1 1 0; min-width: 0; margin: 0 -1.15rem 0 0; padding: .1rem 1.15rem .1rem .1rem;
+    flex-wrap: nowrap; align-items: center; overflow-x: auto; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  }
+  .lenkung__ansicht::-webkit-scrollbar { display: none; }
+  .lenkung__ansicht > * { flex: 0 0 auto; }
+  .neueste { position: static; flex: 0 0 auto; padding: .3rem .4rem; }
 
   /* ── Das Feld als Liste ──
      Wie ein Nachrichtenstrom: Zeile für Zeile untereinander, Text links,
