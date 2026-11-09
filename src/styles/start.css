@@ -771,7 +771,11 @@
   .wortmarke__bild[data-stil="hokusai"]  { height: 3.85rem; }
   .wortmarke:has([data-stil="klint"])    { height: 3.7rem; }
   .wortmarke:has([data-stil="hokusai"])  { height: 3.85rem; }
-  .start__satz { font-size: .95rem; }
+  /* Auf dem Telefon nur die Marke, dann gleich das Suchfeld (09.11.2026,
+     Andreas): Spruch und Satz waren ein halber Schirm vor dem Eingang. Wer
+     wissen will, wie die Notes entstehen, findet es unten im Fuß. */
+  .start__spruch, .start__satz { display: none; }
+  .start__kopf { margin-bottom: 1rem; }
   .wolke__wort { font-size: calc(.8rem + var(--grad) * 1.15rem); }
   .wolke__liste { gap: .15rem .8rem; }
   .feld__gitter { grid-template-columns: 1fr; row-gap: 2.2rem; }
