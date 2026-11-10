@@ -22,11 +22,14 @@
  * besser als ein dünner. Die Karte ist auch der Weg, Älteres zum Tag nach
  * vorn zu holen, ohne `aktualisiert:` zu verbiegen.
  *
- * Gebaut wird nicht am Tag selbst, sondern mehrmals täglich und nachts um
- * drei. Darum kommen gestern, heute und morgen ins Dokument, alle verborgen;
- * welcher gilt, entscheidet der Kalendertag des Lesers (Inline-Skript in
- * index.astro). So steht die Karte ab Mitternacht, auch wenn der letzte Build
- * am Vorabend lief.
+ * Gebaut wird nicht am Tag selbst, sondern bei jedem Sync, und der Pi baut
+ * nachts um drei nur, wenn sich etwas geändert hat. Darum kommen gestern,
+ * heute und die nächsten sieben Tage ins Dokument, alle verborgen; welcher
+ * gilt, entscheidet der Kalendertag des Lesers (Inline-Skript in
+ * index.astro). So steht eine Karte ab Mitternacht, wenn sie irgendwann in
+ * der Woche davor eingetragen und gesynct wurde (seit 10.11.2026, vorher
+ * nur „morgen“ — ein Eintrag Tage im Voraus hing sonst am Zufall eines
+ * Syncs am Vorabend).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -72,8 +75,11 @@ export function ladeTage() {
   return tage;
 }
 
-/** Die Einträge für gestern, heute und morgen (vom Build aus gesehen). */
+const VORAUS = 7;   // so viele Tage im Voraus darf eine Karte eingetragen werden
+
+/** Die Einträge von gestern bis in VORAUS Tagen (vom Build aus gesehen). */
 export function tageUmHeute(heute = new Date()) {
-  const fenster = new Set([-1, 0, 1].map((d) => isoTag(new Date(heute.getTime() + d * 86400000))));
+  const fenster = new Set(Array.from({ length: VORAUS + 2 }, (_, k) => k - 1)
+    .map((d) => isoTag(new Date(heute.getTime() + d * 86400000))));
   return ladeTage().filter((t) => fenster.has(t.tag));
 }

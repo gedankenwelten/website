@@ -124,7 +124,7 @@ const wiederkehr = wiederkehrDieserWoche(heute);
 // Zuerst vormerken, damit keine Zufalls- oder Zählkarte dieselbe Note zieht.
 const wahl = claudesWahl();
 if (wahl) gezeigt.add(wahl.note.id);
-/* Der Tag (→ dertag.mjs): gestern, heute, morgen, der Leser wählt. Was die
+/* Der Tag (→ dertag.mjs): gestern bis in sieben Tagen, der Leser wählt. Was die
    Karte von heute zeigt, zieht keine Wiederkehr-Karte ein zweites Mal. */
 const tagFormat = new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 const dertage = tageUmHeute(heute).map((t) => {
