@@ -24,6 +24,7 @@ import { ladeGraph, sternFuer } from "../lib/graph.mjs";
 import { alleRubriken, themenwolke, gefragteMenschen, RUBRIKEN_INFO } from "../lib/rubriken.mjs";
 import { wiederkehrDieserWoche, gefundenDieserWoche, meistgelesen, zufallsdenker, zufallsfund,
          aussenweltDieserWoche, claudesWahl } from "../lib/wiederkehr.mjs";
+import { tageUmHeute } from "../lib/dertag.mjs";
 import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
@@ -123,6 +124,22 @@ const wiederkehr = wiederkehrDieserWoche(heute);
 // Zuerst vormerken, damit keine Zufalls- oder Zählkarte dieselbe Note zieht.
 const wahl = claudesWahl();
 if (wahl) gezeigt.add(wahl.note.id);
+/* Der Tag (→ dertag.mjs): gestern, heute, morgen, der Leser wählt. Was die
+   Karte von heute zeigt, zieht keine Wiederkehr-Karte ein zweites Mal. */
+const tagFormat = new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const dertage = tageUmHeute(heute).map((t) => {
+  const [j, m, d] = t.tag.split("-").map(Number);
+  return { ...t, datum: tagFormat.format(Date.UTC(j, m - 1, d)) };   // „Dienstag, 10. November“
+});
+const heuteIso = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Berlin" }).format(heute);
+for (const t of dertage) if (t.tag === heuteIso) for (const e of t.notes) gezeigt.add(e.note.id);
+// Der Kalendertag des Lesers entscheidet, nicht der des Builds.
+const DERTAG_SKRIPT = `(() => {
+  const d = new Date(), z = (n) => String(n).padStart(2, "0");
+  const heute = d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+  for (const t of document.querySelectorAll(".dertag"))
+    if (t.dataset.tag === heute) { t.classList.add("ist-heute"); t.hidden = false; }
+})();`;
 const zeilen = [
   [nimm("Wiedergelesen", wiederkehr, wiederkehr?.warum), nimm("Gefunden", gefundenDieserWoche(heute, gezeigt))],
   [nimm("Zufallsdenker", zufallsdenker(heute, gezeigt)), nimm("Zufallsfund", zufallsfund(heute, gezeigt))],
@@ -440,6 +457,43 @@ const kurzMonat = (d) => {
     </section>
 
     <ol class="feld__gitter" id="gitter">
+      {/* ── Der Tag ── über allen Spalten, nur im Grundzustand und nur am
+          Kalendertag des Lesers (das Skript gleich darunter schaltet ihn
+          frei, bevor gezeichnet wird). */}
+      {dertage.map((t) => (
+        <li class="dertag" data-tag={t.tag} hidden aria-label={`Der Tag: ${t.titel}`}>
+          <div class="dertag__kopf">
+            <span class="dertag__kennung"><b>Der Tag</b> <em>{t.datum}</em></span>
+            <h2 class="dertag__titel">{t.titel}</h2>
+            {t.text.map((absatz) => <p class="dertag__text">{absatz}</p>)}
+          </div>
+          {t.notes.length > 0 && (
+            <ul class="dertag__notes" data-zahl={t.notes.length}>
+              {t.notes.map((e, k) => (
+                <li class={`dertag__note${k === 0 ? " dertag__note--haupt" : ""}`}>
+                  <a class="dertag__weg" href={e.note.url}>
+                    <span class="dertag__bild">
+                      <img src={e.note.vorschau ?? rubrikBild(e.note.rubrik)} alt=""
+                           width="1200" height="500" loading="eager" decoding="async">
+                    </span>
+                    <span class="dertag__notetext">
+                      <span class="dertag__notekennung">
+                        <span class={`regal__punkt regal__punkt--${e.note.rubrik.toLowerCase()}`}></span>
+                        {k === 0 && e.note.tags?.includes("kalender") ? `Tagesnote · ${e.note.rubrik}` : e.note.rubrik}
+                      </span>
+                      <span class="dertag__notetitel">{e.note.titel}</span>
+                      {(e.satz ?? e.note.beschreibung) && <span class="dertag__satz">{e.satz ?? e.note.beschreibung}</span>}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+      {dertage.length > 0 && (
+        <script is:inline set:html={DERTAG_SKRIPT} />
+      )}
       {feld.map((n, i) => (
         <>
         <li class="kachel" data-rubrik={n.rubrik} data-platz={i}
@@ -692,6 +746,7 @@ const kurzMonat = (d) => {
   const balken = document.getElementById("verwandtschaft");
   const balkenTitel = document.getElementById("verwandtschaftTitel");
   const wiederkehrZeilen = [...document.querySelectorAll(".wiederkehr")];
+  const dertag = document.querySelector(".dertag.ist-heute");
   const PORTION = 54;   // wie ERSTE_LADUNG
   let rubrik = "";      // "" heißt: alles
   let thema = "";       // "" heißt: kein Thema gewählt
@@ -730,6 +785,7 @@ const kurzMonat = (d) => {
     if (imRegister) {
       quelle = null; balken.hidden = true;
       for (const z of wiederkehrZeilen) z.hidden = true;
+      if (dertag) dertag.hidden = true;
       themenbalken.hidden = true;
       siebMenschen.hidden = true;
       menschenAuslegen();
@@ -749,6 +805,7 @@ const kurzMonat = (d) => {
         k.classList.toggle("kachel--quelle", i === quelle);
       });
       for (const z of wiederkehrZeilen) z.hidden = true;
+      if (dertag) dertag.hidden = true;
       themenbalken.hidden = true;
       siebbalken.hidden = true;
       siebMenschen.hidden = true;
@@ -761,6 +818,7 @@ const kurzMonat = (d) => {
     // Die Wiederkehr-Zeilen gehören zum Grundzustand: Wer eine Rubrik
     // wählt, will diese Rubrik sehen, nicht den Blick zurück.
     for (const z of wiederkehrZeilen) z.hidden = !!(rubrik || thema || treffer);
+    if (dertag) dertag.hidden = !!(rubrik || thema || treffer);
     themenbalken.hidden = !thema;
     if (thema) document.getElementById("themenbalkenWort").textContent = thema.replace(/-/g, " ");
 

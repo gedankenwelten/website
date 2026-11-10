@@ -1104,3 +1104,74 @@
   .menschen-treffer { margin-bottom: 1.6rem; }
 }
 .mensch__alle { margin-top: 2rem; padding-top: 1.4rem; }
+
+/* ── Der Tag ──
+   Eine Karte über alle Spalten, ganz oben, nur an einem Tag, der trägt
+   (`Der-Tag.md`, → dertag.mjs). Links ein paar Sätze zum Tag, rechts die
+   Tagesnote groß und die Notes aus dem Bestand darunter. Ruhig gehalten:
+   Sie soll ankündigen, nicht übertönen. */
+.dertag {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 1.4rem 2.2rem;
+  padding: 1.4rem 1.5rem 1.5rem;
+  border: 1px solid var(--linie);
+  border-top: 3px solid var(--akzent);
+  border-radius: 6px;
+  background: var(--papier-tief);
+}
+.dertag[hidden] { display: none; }
+.dertag__kopf { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
+.dertag__kennung {
+  display: flex; align-items: baseline; gap: .55rem; flex-wrap: wrap;
+  font-size: var(--lese-etikett); color: var(--tinte-leise); letter-spacing: .02em;
+}
+.dertag__kennung b { color: var(--akzent); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.dertag__kennung em { font-style: normal; color: var(--tinte-fern); }
+.dertag__titel { margin: 0; font-size: 1.55rem; line-height: 1.2; font-weight: 600; color: var(--tinte); text-wrap: balance; }
+.dertag__text { margin: 0; font-size: var(--lese-neben); line-height: 1.6; color: var(--tinte-leise); }
+
+.dertag__notes {
+  list-style: none; margin: 0; padding: 0; min-width: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem 1.2rem; align-content: start;
+}
+.dertag__note { min-width: 0; }
+.dertag__note--haupt { grid-column: 1 / -1; }
+.dertag__notes[data-zahl="2"] .dertag__note:not(.dertag__note--haupt) { grid-column: 1 / -1; }
+.dertag__weg {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: .8rem; align-items: start;
+  color: inherit; text-decoration: none;
+}
+.dertag__note--haupt .dertag__weg { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: 1.1rem; }
+.dertag__bild { display: block; min-width: 0; aspect-ratio: 12 / 5; overflow: hidden; border-radius: 4px; }
+.dertag__note:not(.dertag__note--haupt) .dertag__bild { aspect-ratio: 92 / 66; }
+.dertag__bild img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.dertag__weg:hover .dertag__bild img { transform: scale(1.03); }
+.dertag__notetext { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.dertag__notekennung {
+  display: flex; align-items: center; gap: .45rem;
+  font-size: var(--lese-etikett); color: var(--tinte-leise); letter-spacing: .02em;
+}
+.dertag__notetitel { font-size: 1rem; line-height: 1.28; color: var(--tinte); }
+.dertag__note--haupt .dertag__notetitel { font-size: 1.15rem; }
+.dertag__weg:hover .dertag__notetitel { color: var(--akzent); }
+.dertag__satz {
+  font-size: var(--lese-neben); line-height: 1.45; color: var(--tinte-leise);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.dertag__note:not(.dertag__note--haupt) .dertag__satz { -webkit-line-clamp: 2; font-size: .84rem; }
+
+@media (max-width: 1179px) {
+  .dertag { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .dertag { padding: 1.1rem 1rem 1.2rem; gap: 1.1rem; margin: 0 0 1rem; }
+  .dertag__titel { font-size: 1.3rem; }
+  .dertag__notes { grid-template-columns: minmax(0, 1fr); }
+  .dertag__note--haupt .dertag__weg { grid-template-columns: minmax(0, 1fr); gap: .7rem; }
+  .dertag__satz { -webkit-line-clamp: unset; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dertag__bild img { transition: none; }
+}
