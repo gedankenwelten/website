@@ -30,6 +30,30 @@ export const SPRUECHE = [
     text: "Die Gedanken sind frei, wer kann sie erraten? Sie fliehen vorbei wie nächtliche Schatten.",
     wer: "Volkslied, um 1800",
   },
+  /* Seit 10.11.2026, von Andreas gewählt. Wortlaut an gemeinfreien Ausgaben
+     geprüft (zeno.org; die ersten drei auch in der Primärtexte-Sammlung),
+     Rechtschreibung behutsam heutig (daß → dass, muß → muss), wie beim
+     Volkslied. */
+  {
+    // Fragment B 45, Übersetzung Hermann Diels
+    text: "Der Seele Grenzen kannst du nicht ausfinden, und ob du jegliche Straße abschrittest; so tiefen Grund hat sie.",
+    wer: "Heraklit, Fragment 45",
+  },
+  {
+    // Apologie 21d, Übersetzung Friedrich Schleiermacher — die Stelle hinter „Ich weiß, dass ich nicht weiß“
+    text: "Ich scheine also um dieses wenige doch weiser zu sein als er, dass ich, was ich nicht weiß, auch nicht glaube zu wissen.",
+    wer: "Sokrates, in Platons Apologie",
+  },
+  {
+    // Schöpferische Konfession (1920), erster Satz von Abschnitt I
+    text: "Kunst gibt nicht das Sichtbare wieder, sondern macht sichtbar.",
+    wer: "Paul Klee, 1920",
+  },
+  {
+    // Wilhelm Meisters Wanderjahre (1829), Betrachtungen im Sinne der Wanderer; Berliner Ausgabe Bd. 18, S. 545
+    text: "Alles Gescheite ist schon gedacht worden, man muss nur versuchen, es noch einmal zu denken.",
+    wer: "Goethe, Wanderjahre, 1829",
+  },
 ];
 
 /** Tage seit 1970 im Ortskalender — dieselbe Rechnung wie im Browser. */
