@@ -15,7 +15,6 @@ export const SEITEN = [
   { datei: "Quellen & Links.md", titel: "Quellen & Links" },
   { datei: "Wie die Notes entstehen.md", titel: "Wie die Notes entstehen" },
   { datei: "Barrierefreiheit.md", titel: "Barrierefreiheit" },
-  { datei: "Fehler.md", titel: "Was wir falsch hatten" },
 ];
 
 export function alleSeiten() {
