@@ -1346,3 +1346,17 @@ details.malerhand p:last-child { color: var(--tinte-fern); font-size: .94em; }
 .beleg a { color: inherit; text-decoration-color: color-mix(in oklab, currentColor 40%, transparent); }
 .beleg a:hover { color: var(--akzent); }
 .beleg__nr { display: none; }
+
+/* ── Codeblöcke mit Kopieren-Knopf (12.11.2026) ──
+   Vorher standen <pre> nackt im Text. Jetzt eine ruhige Fläche, umbrechend
+   (ein Prompt soll ohne Querscrollen lesbar sein), Knopf oben rechts
+   (kopieren.js, Gestalt von .feed__kopieren). */
+.codeblock { position: relative; margin: 1.4rem 0; }
+.blatt .codeblock pre, .blatt--beiseite .strang .codeblock pre {
+  margin: 0; padding: 2.6rem 1.2rem 1rem; overflow-x: visible;
+  background: var(--papier-tief); border: 1px solid var(--linie);
+  border-radius: 6px; white-space: pre-wrap; word-break: break-word;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .8rem; line-height: 1.6;
+  color: var(--tinte);
+}
+.codeblock__kopieren { position: absolute; top: .55rem; right: .55rem; }
