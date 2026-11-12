@@ -117,7 +117,7 @@ import { BUILD, SITE } from "../../lib/site.mjs";
     <p>Ein Museum aus den Notes der Gedankenwelten, gebaut in 3D: Jede Note ist ein Saal mit ihrem Bild, ihre Verbindungen sind Türen. Der Raum ist zum Anschauen gemacht, mit Maus, Finger oder den Tasten W, A, S und D, und bleibt für einen Screenreader stumm. Jede Note gibt es auch als Text.</p>
   </div>
   <a id="vorlesenZurueck" href="/">Zurück zu den Gedankenwelten</a>
-  <script is:inline>try { const v = new URL(location.href).searchParams.get("von"); if (v && v.startsWith("/")) { const a = document.getElementById("vorlesenZurueck"); a.href = v; a.textContent = "Zurück zur Note"; } } catch {}</script>
+  <script is:inline>try { const v = new URL(location.href).searchParams.get("von"); if (v && v.startsWith("/") && new URL(v, location.origin).origin === location.origin) { const a = document.getElementById("vorlesenZurueck"); a.href = v; a.textContent = "Zurück zur Note"; } } catch {}</script>
   <canvas id="c" aria-hidden="true"></canvas>
   <div id="raetsel" aria-live="polite"></div>
   <div id="saaltext" role="dialog" aria-label="Saaltext"></div>

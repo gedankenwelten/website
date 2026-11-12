@@ -88,7 +88,13 @@ function typVon(i) {
 }
 
 const such = new URLSearchParams(location.search);
-const VON = such.get("von"), VON_Y = +such.get("y") || 0;
+/* „von“ kommt aus der Adresse, also von jedem, der einen Link baut. Es wird iframe-Quelle und
+   Sprungziel — darum nur ein Pfad auf dieser Domain, nie javascript:, //fremd oder /\fremd (12.11.2026). */
+const eigenerPfad = (v) => {
+  if (!v || !v.startsWith("/")) return null;
+  try { return new URL(v, location.origin).origin === location.origin ? v : null; } catch { return null; }
+};
+const VON = eigenerPfad(such.get("von")), VON_Y = +such.get("y") || 0;
 const DUNKEL = new THREE.Color("#1c1916");
 
 /* ══ Bühne ═══════════════════════════════════════════════════════════════ */
