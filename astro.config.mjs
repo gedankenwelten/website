@@ -8,6 +8,8 @@ import rehypeVorlesen from "./src/plugins/rehype-vorlesen.mjs";
 import { INHALT, RUBRIKEN } from "./src/lib/notizen.mjs";
 import { slugify, noteUrl } from "./src/lib/slug.mjs";
 import { SEITEN } from "./src/lib/seiten.mjs";
+import { SITE } from "./src/lib/site.mjs";
+const SITE_UMAMI_HOST = SITE.umami.host;
 
 /* ── Die Aliasse ──
    496 Notes tragen `aliases:` im Frontmatter — Kurznamen, unter denen sie
@@ -72,6 +74,44 @@ export default defineConfig({
     smartypants: false,
   },
   devToolbar: { enabled: false },
+  /* ── Content-Security-Policy (seit 14.11.2026) ──
+     Die Hausordnung für den Browser: Skripte laufen nur, wenn sie von hier
+     kommen oder ihr Fingerabdruck stimmt. Astro rechnet die Fingerabdrücke
+     (sha256) der Inline-Skripte und -Styles beim Bauen und schreibt je Seite
+     ein <meta http-equiv="content-security-policy">. Anlass: die `?von=`-Lücke
+     im Gedankenraum (12.11.) — eine CSP hätte sie als zweiter Riegel gefangen.
+     - Skripte streng: eigene, Umami, YouTube-Player-API; 'wasm-unsafe-eval'
+       nur für Pagefind (WebAssembly, Safari ab 16).
+     - Verbindungen `https:` allgemein: Fernseher und Admin-Eingang holen ihr
+       Ziel aus dem localStorage, und ihre Adressen gehören nicht in
+       öffentlichen Code. Der Schutz liegt bei den Skripten.
+     - style-Attribute erlaubt (22.000 Stück in den Notes; Safari ab 15.4).
+     - frame-ancestors kann ein Meta-Tag nicht; das deckt X-Frame-Options im
+       Caddy. */
+  security: {
+    csp: {
+      algorithm: "SHA-256",
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data: blob: https:",
+        "media-src 'self' https:",
+        "font-src 'self'",
+        "connect-src 'self' https:",
+        "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
+        "worker-src 'self' blob:",
+        "manifest-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ],
+      scriptDirective: {
+        resources: ["'self'", SITE_UMAMI_HOST, "https://www.youtube.com", "'wasm-unsafe-eval'"],
+      },
+      styleDirective: {
+        resources: ["'self'", { resource: "'unsafe-inline'", kind: "attribute" }],
+      },
+    },
+  },
   /* Der CSS-Minifierer schreibt `max-width: 700px` sonst als
      `(width <= 700px)` — Bereichs-Syntax, die Safari erst seit 16.4
      kennt. Ein älteres Telefon bekäme die Desktop-Fassung. */
