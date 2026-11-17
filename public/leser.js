@@ -317,7 +317,11 @@ function schliessen() {
 }
 
 /* Auf, wo man gerade liest — nicht am Anfang des Gesprächs. Wer auf halber
-   Strecke hören will, meint diese Stelle, nicht die erste Marke. */
+   Strecke hören will, meint diese Stelle, nicht die erste Marke.
+   Steht man aber noch vor der ersten Marke (Kopf, Aufmacher, erster Absatz),
+   hat man noch nichts gelesen, das zu einer Stelle gehört: dann von vorn,
+   bei 0:00. Wer in eine Note einsteigt, will oft auch ins Gespräch von
+   Anfang an (Andreas, 17.11.2026). */
 function amLesenOeffnen() {
   const a = lesestelle();
   if (pause && pause.stelle === a && player?.playVideo) {
@@ -325,6 +329,10 @@ function amLesenOeffnen() {
     begleiterStellen(true);
     klingtT = null;          // das Mitlesen setzt die Marke gleich wieder
     player.playVideo();
+    return;
+  }
+  if (anker.length && anker[0].getBoundingClientRect().top > innerHeight * 0.42) {
+    spielen(0, null, null, begleiter.dataset.video || anker[0].dataset.v);
     return;
   }
   if (a) spielen(+a.dataset.t, a, null, a.dataset.v);
