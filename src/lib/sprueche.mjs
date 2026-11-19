@@ -54,6 +54,15 @@ export const SPRUECHE = [
     text: "Alles Gescheite ist schon gedacht worden, man muss nur versuchen, es noch einmal zu denken.",
     wer: "Goethe, Wanderjahre, 1829",
   },
+  /* Seit 19.11.2026, von Andreas gewählt, aus „Gefangene des Systems“. Die erste
+     Hälfte fasst Adorno, „Erziehung nach Auschwitz“ (1966): „Ich möchte nicht die
+     Liebe predigen. Sie zu predigen, halte ich für vergeblich.“ Die zweite ist
+     unser Satz, Adorno war dort skeptischer (Wärme „künstlich andrehen“). Darum
+     „nach Adorno“ und nie unter seinem Namen allein. */
+  {
+    text: "Liebe kann man nicht predigen. Man kann Bedingungen schaffen, unter denen sie wahrscheinlicher wird.",
+    wer: "Luc, nach Adorno",
+  },
 ];
 
 /** Tage seit 1970 im Ortskalender — dieselbe Rechnung wie im Browser. */
