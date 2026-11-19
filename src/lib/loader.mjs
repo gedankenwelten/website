@@ -22,7 +22,17 @@ import { alleSeiten } from "./seiten.mjs";
  * Also maskieren wir ihn; remark macht daraus beim Parsen wieder ein `|`.
  */
 function vorbereiten(markdown) {
-  return markdown.replace(/\[\[[^\]\n]*\]\]/g, (m) => ohneBetonung(m).replace(/(?<!\\)\|/g, "\\|"));
+  return luftUmDetails(markdown).replace(/\[\[[^\]\n]*\]\]/g, (m) => ohneBetonung(m).replace(/(?<!\\)\|/g, "\\|"));
+}
+
+/**
+ * Nach `<details><summary>…</summary>` und nach `</details>` braucht Markdown
+ * eine Leerzeile, sonst gilt alles bis zur nächsten Leerzeile als rohes HTML:
+ * Die Liste „Weitere Stimmen“ stand dann mit Sternchen und `[[…]]` da
+ * (19.11.2026, zwei Panoramen). Fehlt sie, setzen wir sie hier.
+ */
+function luftUmDetails(markdown) {
+  return markdown.replace(/^([ \t]*(?:<details>.*<\/summary>|<\/details>)[ \t]*)\n(?=[ \t]*\S)/gm, "$1\n\n");
 }
 
 /**
@@ -46,7 +56,7 @@ function ohneBetonung(link) {
  * stehen — die Datei hat sich ja nicht bewegt. Das kostet sonst eine
  * Viertelstunde Fehlersuche an einem Fehler, den es gar nicht gibt.
  */
-const FORM_VERSION = 7;
+const FORM_VERSION = 8;
 
 export function notizenLoader() {
   return {
