@@ -22,7 +22,20 @@ import { alleSeiten } from "./seiten.mjs";
  * Also maskieren wir ihn; remark macht daraus beim Parsen wieder ein `|`.
  */
 function vorbereiten(markdown) {
-  return markdown.replace(/\[\[[^\]\n]*\]\]/g, (m) => m.replace(/(?<!\\)\|/g, "\\|"));
+  return markdown.replace(/\[\[[^\]\n]*\]\]/g, (m) => ohneBetonung(m).replace(/(?<!\\)\|/g, "\\|"));
+}
+
+/**
+ * Kursiv oder fett im Linktext (`[[Note|Salon der *Neuen Zwanziger*]]`) zerlegt
+ * remark in mehrere Knoten, bevor das Plugin den Wikilink sieht — dann stand
+ * der Link roh als `[[…]]` auf der Seite (19.11.2026, drei Notes). Obsidian
+ * kann das, wir nicht: Die Sternchen fallen im Linktext weg, der Link bleibt.
+ */
+function ohneBetonung(link) {
+  const strich = link.indexOf("|");
+  if (strich < 0) return link;
+  const text = link.slice(strich, -2).replace(/(\*{1,2}|_{1,2})(?=\S)(.+?)(?<=\S)\1/g, "$2");
+  return link.slice(0, strich) + text + "]]";
 }
 
 /**
@@ -33,7 +46,7 @@ function vorbereiten(markdown) {
  * stehen — die Datei hat sich ja nicht bewegt. Das kostet sonst eine
  * Viertelstunde Fehlersuche an einem Fehler, den es gar nicht gibt.
  */
-const FORM_VERSION = 6;
+const FORM_VERSION = 7;
 
 export function notizenLoader() {
   return {
