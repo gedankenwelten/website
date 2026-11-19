@@ -17,9 +17,10 @@
  * Darum hier, inline und blockierend. Die paar Zeilen kosten weniger als
  * das, was sie verhindern.
  */
-import { WORTMARKEN } from "../lib/wortmarke.mjs";
+import { WORTMARKEN, wortmarkeTabelle } from "../lib/wortmarke.mjs";
+const WM_TABELLE = wortmarkeTabelle();
 ---
-<script is:inline define:vars={{ WORTMARKEN }}>
+<script is:inline define:vars={{ WORTMARKEN, WM_TABELLE }}>
   const w = document.documentElement;
   try {
     const t = localStorage.getItem("gw-theme");
@@ -27,7 +28,9 @@ import { WORTMARKEN } from "../lib/wortmarke.mjs";
     const g = localStorage.getItem("gw-schrift");
     if (g === "klein" || g === "gross") w.dataset.schrift = g;
   } catch {}
-  // Dieselbe Rechnung wie `wortmarkeDesTages()` in src/lib/wortmarke.mjs
-  // und wie in der Quartz-Fassung: Tag im Monat, minus eins, modulo Pool.
-  w.dataset.wm = WORTMARKEN[(new Date().getDate() - 1) % WORTMARKEN.length];
+  // Gemischte Runden (src/lib/reigen.mjs), vom Build vorgerechnet; außerhalb
+  // der Tabelle die alte Reihe als Rückfall.
+  const d = new Date(), tag = Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+  const i = WM_TABELLE.folge[tag - WM_TABELLE.ab];
+  w.dataset.wm = WORTMARKEN[i ?? ((tag % WORTMARKEN.length) + WORTMARKEN.length) % WORTMARKEN.length];
 </script>

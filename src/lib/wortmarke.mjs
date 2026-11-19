@@ -20,21 +20,21 @@
  */
 export const WORTMARKEN = ["klee", "sumie", "aquarell", "aether", "buntglas", "miniatur", "scherenschnitt", "klint", "hokusai", "merian", "secession", "escher"];
 
+import { reigen, reigenTabelle, tagNummer, SALZ_WORTMARKE } from "./reigen.mjs";
+
 /**
- * Welche Marke an einem Tag gilt — dieselbe Rechnung wie in der
- * Quartz-Fassung (`quartz/components/scripts/pageTitle.inline.ts`):
- * Tag im Monat, minus eins, modulo Poolgröße.
- *
- * Absichtlich nicht „besser": So zeigen beide Fassungen am selben Tag
- * dieselbe Hand. Der Preis ist bekannt und in Kauf genommen — am 31. fällt
- * es auf Platz 0 zurück, und der 1. des Folgemonats liegt auch dort. In
- * sieben Monaten im Jahr steht die Marke also zwei Tage hintereinander.
- * Eine Rechnung über die Tage seit der Epoche hätte das nicht, aber dann
- * liefen die beiden Seiten auseinander.
+ * Welche Marke an einem Tag gilt. Bis 19.11.2026 dieselbe Rechnung wie in der
+ * Quartz-Fassung (Tag im Monat, minus eins, modulo Pool), damit beide Seiten
+ * dieselbe Hand zeigten. Seit die Astro-Fassung live ist, ist Quartz nur der
+ * Rückweg; der Gleichlauf ist aufgegeben zugunsten gemischter Runden
+ * (`reigen.mjs`) — die Folge soll sich nicht erraten lassen (Andreas).
+ * Nebenbei fällt die doppelte Marke am Monatswechsel weg.
  *
  * Läuft im Build (für das erste Bild) und im Browser (für den Tag des
- * Lesers) — die Fassung im Browser steht in `components/Vorspann.astro`.
+ * Lesers) — dort nach der Tabelle in `components/Vorspann.astro`.
  */
 export function wortmarkeDesTages(datum = new Date()) {
-  return WORTMARKEN[(datum.getDate() - 1) % WORTMARKEN.length];
+  return WORTMARKEN[reigen(tagNummer(datum), WORTMARKEN.length, SALZ_WORTMARKE)];
 }
+
+export const wortmarkeTabelle = () => reigenTabelle(WORTMARKEN.length, SALZ_WORTMARKE);

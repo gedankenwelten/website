@@ -29,7 +29,8 @@ import Suche from "../components/Suche.astro";
 import Kopfleiste from "../components/Kopfleiste.astro";
 import Kopf from "../components/Kopf.astro";
 import Fusszeile from "../components/Fusszeile.astro";
-import { SPRUECHE, spruchIndex } from "../lib/sprueche.mjs";
+import { SPRUECHE, spruchIndex, spruchTabelle } from "../lib/sprueche.mjs";
+const SPRUCH_TABELLE = spruchTabelle();
 import Schau from "../components/Schau.astro";
 import "../styles/mobil.css";
 
@@ -264,10 +265,12 @@ const kurzMonat = (d) => {
       <blockquote class="start__spruch-text">{SPRUECHE[spruchIndex()].text}</blockquote>
       <figcaption class="start__spruch-wer">{SPRUECHE[spruchIndex()].wer}</figcaption>
     </figure>
-    <script is:inline define:vars={{ SPRUECHE }}>
+    <script is:inline define:vars={{ SPRUECHE, SPRUCH_TABELLE }}>
       {
         const d = new Date(), f = document.getElementById("spruch");
-        const s = SPRUECHE[Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000) % SPRUECHE.length];
+        const tag = Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+        const i = SPRUCH_TABELLE.folge[tag - SPRUCH_TABELLE.ab];   // gemischte Runden, vom Build vorgerechnet
+        const s = SPRUECHE[i ?? tag % SPRUECHE.length];
         f.querySelector("blockquote").textContent = s.text;
         f.querySelector("figcaption").textContent = s.wer;
       }
