@@ -339,9 +339,31 @@ export default function remarkGedankenwelten() {
       const kopf = /^\[!(\w+)\][+-]?\s*(.*)/.exec(roh);
 
       if (kopf) {
-        const [, art, titel] = kopf;
+        let [, art, titel] = kopf;
         const klassen = CALLOUT[art.toLowerCase()] ?? ["kopfnote"];
         ersterText.value = roh.slice(kopf[0].length).replace(/^\n/, "");
+        /* Zeitmarken im Titel — „> [!warning] Vereinfacht — X ([▶ 1:52](…)–[▶ 2:30](…))“,
+           rund 200 Faktencheck-Titel in 17 Notes (seit der Reihe KI-Agenten). Der Titel
+           ist nur der Text bis zur ersten Marke; die Marken wandern in den Rand, und
+           zurück blieben „(“ im Titel und „–)“ am Anfang des Absatzes (Andreas, 21.11.2026).
+           Stehen zwischen den Klammern nur Marken und Satzzeichen, gehen die Klammern
+           und Striche mit, wie bei den Klammern im Fließtext (Schritt 1). */
+        if (/\(\s*$/.test(titel ?? "") && !ersterText.value.trim()) {
+          const kinder = ersterAbsatz.children;
+          let ende = -1;
+          for (let k = 1; k < kinder.length; k++) {
+            const c = kinder[k];
+            if (c.data?.hProperties?.className?.includes?.("ts")) continue;
+            if (c.type === "text" && /^\s*[–—,;-]?\s*$/.test(c.value)) continue;
+            if (c.type === "text" && /^\s*\)/.test(c.value)) ende = k;
+            break;
+          }
+          if (ende > 0) {
+            titel = titel.replace(/\s*\(\s*$/, "");
+            for (let k = 1; k < ende; k++) if (kinder[k].type === "text") kinder[k].value = "";
+            kinder[ende].value = kinder[ende].value.replace(/^\s*\)\s*\n?/, "");
+          }
+        }
         if (!ersterText.value.trim() && ersterAbsatz.children.length === 1) {
           node.children.shift();
         }
